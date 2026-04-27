@@ -260,7 +260,7 @@ public abstract class ComponentEntity
             ) ;
         }
 
-    protected abstract URI getWebappPath() ;
+    public abstract URI getWebappPath() ;
     
     protected IvoaComponentMetadata fillMeta(
         final URIBuilder builder,
