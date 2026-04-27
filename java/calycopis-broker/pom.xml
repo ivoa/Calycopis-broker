@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--+
+    |
+    | <meta:header>
+    |   <meta:licence>
+    |     Copyright (C) 2026 University of Manchester.
+    |
+    |     This information is free software: you can redistribute it and/or modify
+    |     it under the terms of the GNU General Public License as published by
+    |     the Free Software Foundation, either version 3 of the License, or
+    |     (at your option) any later version.
+    |
+    |     This information is distributed in the hope that it will be useful,
+    |     but WITHOUT ANY WARRANTY; without even the implied warranty of
+    |     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    |     GNU General Public License for more details.
+    |
+    |     You should have received a copy of the GNU General Public License
+    |     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    |   </meta:licence>
+    | </meta:header>
+    |
+    | AIMetrics: [
+    |     {
+    |     "timestamp": "2026-04-27T13:46:34",
+    |     "name": "Copilot",
+    |     "version": "unknown",
+    |     "model": "claude-sonnet-4.5",
+    |     "contribution": {
+    |       "value": 100,
+    |       "units": "%"
+    |       }
+    |     }
+    |   ]
+    |
+    +-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>net.ivoa.calycopis</groupId>
+        <artifactId>calycopis-parent</artifactId>
+        <version>1.0.3-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>calycopis-broker</artifactId>
+    <packaging>jar</packaging>
+    <name>Calycopis broker webapp</name>
+    <description>IVOA ExecutionBroker Spring Boot implementation</description>
+
+    <dependencies>
+        <!--+
+            | Include the calycopis-engine core library.
+            +-->
+        <dependency>
+            <groupId>net.ivoa.calycopis</groupId>
+            <artifactId>calycopis-engine</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!--+
+            | Include the Spring Boot classes generated from the schema.
+            | https://github.com/Zarquan/Calycopis-schema
+            +-->
+        <dependency>
+            <groupId>net.ivoa.calycopis</groupId>
+            <artifactId>calycopis-spring</artifactId>
+            <version>1.0.4-SNAPSHOT</version>
+        </dependency>
+
+        <!--+
+            | Include our generated Skaha client.
+        <dependency>
+            <groupId>net.ivoa.calycopis</groupId>
+            <artifactId>skaha-client</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+            +-->
+
+        <!--+
+            | GitHub UUID generator.
+            +-->
+        <dependency>
+            <groupId>com.github.f4b6a3</groupId>
+            <artifactId>uuid-creator</artifactId>
+        </dependency>
+
+        <!--+
+            | Embedded H2 database.
+            | https://www.baeldung.com/spring-boot-h2-database
+            +-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--+
+            | ThreeTen time classes.
+            | https://github.com/ThreeTen/threeten-extra
+            +-->
+        <dependency>
+            <groupId>org.threeten</groupId>
+            <artifactId>threeten-extra</artifactId>
+        </dependency>
+
+        <!--+
+            | Add slf4j and log4j logging.
+            | https://www.baeldung.com/java-logging-intro
+            | (versions are managed by SpringBoot)
+            +-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+
+        <!--+
+            | Exclude default logging from SpringBoot.
+            | https://stackoverflow.com/a/61873064
+            +-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+
+        <!--+
+            | Project Lombok
+            | https://projectlombok.org/
+            +-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--+
+            | Java Servlet
+            | https://stackoverflow.com/a/76034931
+            +-->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>wtf.metio.storage-units</groupId>
+            <artifactId>storage-units-model</artifactId>
+        </dependency>
+
+        <!--+
+            | Spring dependencies.
+            | (versions are managed by SpringBoot)
+            +-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--+
+            | Jackson annotations.
+            | (versions are managed by SpringBoot)
+            +-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
+        <!--+
+            | Added springdoc-openapi to generate OpenAPI spec.
+            | https://stackoverflow.com/questions/55938207/how-to-generate-openapi-3-0-spec-from-existing-spring-boot-app
+            | https://www.baeldung.com/spring-rest-openapi-documentation
+            | Fails due to an incompatible version issue.
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.8.9</version>
+        </dependency>
+            +-->
+
+        <!--+
+            | PostgreSQL JDBC driver
+            +-->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+
+        <!--+
+            | Docker Java client library.
+            | https://github.com/docker-java/docker-java
+            +-->
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-transport-zerodep</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+
+        <plugins>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
