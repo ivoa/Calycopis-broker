@@ -54,6 +54,8 @@ import net.ivoa.calycopis.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.functional.processing.component.ComponentProcessingRequest;
 import net.ivoa.calycopis.functional.processing.mock.MockDelayAction;
 import net.ivoa.calycopis.functional.processing.mock.MockEntitySettings;
+import net.ivoa.calycopis.broker.mapping.ComponentMetadataMappings;
+import net.ivoa.calycopis.engine.component.ComponentMetadata;
 import net.ivoa.calycopis.spring.model.IvoaComponentMetadata;
 import net.ivoa.calycopis.engine.lifecycle.LifecyclePhase;
 import net.ivoa.calycopis.spring.model.IvoaLifecycleSchedule;
@@ -82,23 +84,41 @@ implements LifecycleComponent
         }
 
     /**
-     * 
+     * Constructor that accepts an engine ComponentMetadata POJO.
+     *
      */
     public LifecycleComponentEntity(
-        final IvoaComponentMetadata meta
+        final ComponentMetadata meta
         ){
         this(
             null,
             meta
             );
         }
+
+    /**
+     * Constructor that accepts an IvoaComponentMetadata.
+     * Delegates to the ComponentMetadata constructor via the mapping layer.
+     *
+     */
+    public LifecycleComponentEntity(
+        final IvoaComponentMetadata meta
+        ){
+        this(
+            null,
+            ComponentMetadataMappings.fromIvoa(meta)
+            );
+        }
     
     /**
-     * 
+     * Constructor that accepts an engine ComponentMetadata POJO and an
+     * IvoaLifecycleSchedule. The schedule is still expressed in Ivoa types
+     * at this stage of the migration.
+     *
      */
     public LifecycleComponentEntity(
         final IvoaLifecycleSchedule schedule,
-        final IvoaComponentMetadata meta
+        final ComponentMetadata meta
         ){
         super(
             meta

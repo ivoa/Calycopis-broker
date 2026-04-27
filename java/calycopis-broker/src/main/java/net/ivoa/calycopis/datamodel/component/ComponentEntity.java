@@ -43,6 +43,8 @@ import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.datamodel.message.MessageEntity;
 import net.ivoa.calycopis.datamodel.message.MessageItemBean;
+import net.ivoa.calycopis.broker.mapping.ComponentMetadataMappings;
+import net.ivoa.calycopis.engine.component.ComponentMetadata;
 import net.ivoa.calycopis.spring.model.IvoaComponentMetadata;
 import net.ivoa.calycopis.spring.model.IvoaMessageItem;
 import net.ivoa.calycopis.spring.model.IvoaMessageItem.LevelEnum;
@@ -87,15 +89,27 @@ public abstract class ComponentEntity
         }
 
     /**
-     * Protected constructor.
+     * Protected constructor that accepts an engine ComponentMetadata POJO.
      *
      */
-    protected ComponentEntity(final IvoaComponentMetadata meta)
+    protected ComponentEntity(final ComponentMetadata meta)
         {
         this(
             meta.getName(),
             meta.getDescription(),
             Instant.now()
+            );
+        }
+
+    /**
+     * Protected constructor that accepts an IvoaComponentMetadata.
+     * Delegates to the ComponentMetadata constructor via the mapping layer.
+     *
+     */
+    protected ComponentEntity(final IvoaComponentMetadata meta)
+        {
+        this(
+            ComponentMetadataMappings.fromIvoa(meta)
             );
         }
     
