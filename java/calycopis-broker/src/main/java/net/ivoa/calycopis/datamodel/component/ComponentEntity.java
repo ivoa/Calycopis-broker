@@ -47,7 +47,7 @@ import net.ivoa.calycopis.broker.mapping.ComponentMetadataMappings;
 import net.ivoa.calycopis.engine.component.ComponentMetadata;
 import net.ivoa.calycopis.spring.model.IvoaComponentMetadata;
 import net.ivoa.calycopis.spring.model.IvoaMessageItem;
-import net.ivoa.calycopis.spring.model.IvoaMessageItem.LevelEnum;
+import net.ivoa.calycopis.engine.message.MessageLevel;
 import net.ivoa.calycopis.util.ListWrapper;
 import net.ivoa.calycopis.util.URIBuilder;
 
@@ -180,7 +180,7 @@ public abstract class ComponentEntity
         }
 
     @Override
-    public void addMessage(final LevelEnum level, final String type, final String template, final Map<String, Object> values)
+    public void addMessage(final MessageLevel level, final String type, final String template, final Map<String, Object> values)
         {
         MessageEntity message = new MessageEntity(
             this,

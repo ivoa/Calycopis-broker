@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import net.ivoa.calycopis.spring.model.IvoaMessageItem.LevelEnum;
+import net.ivoa.calycopis.engine.message.MessageLevel;
 
 /**
  * Public interface for something that has messages about it.
@@ -44,13 +44,13 @@ public interface MessageSubject
      * Add a message with a value map.
      * 
      */
-    public void addMessage(final LevelEnum level, final String type, final String template, final Map<String, Object> values);
+    public void addMessage(final MessageLevel level, final String type, final String template, final Map<String, Object> values);
 
     /**
      * Add a simple message with no value map .
      * 
      */
-    default void addMessage(final LevelEnum level, final String type, final String template)
+    default void addMessage(final MessageLevel level, final String type, final String template)
         {
         this.addMessage(
             level,
@@ -67,7 +67,7 @@ public interface MessageSubject
     default void addDebug(final String type, final String template)
         {
         this.addMessage(
-            LevelEnum.DEBUG,
+            MessageLevel.DEBUG,
             type,
             template,
             Collections.emptyMap()
@@ -81,7 +81,7 @@ public interface MessageSubject
     default void addDebug(final String type, final String template, final Map<String, Object> values)
         {
         this.addMessage(
-            LevelEnum.DEBUG,
+            MessageLevel.DEBUG,
             type,
             template,
             values
@@ -95,7 +95,7 @@ public interface MessageSubject
     default void addInfo(final String type, final String template)
         {
         this.addMessage(
-            LevelEnum.INFO,
+            MessageLevel.INFO,
             type,
             template,
             Collections.emptyMap()
@@ -109,7 +109,7 @@ public interface MessageSubject
     default void addInfo(final String type, final String template, final Map<String, Object> values)
         {
         this.addMessage(
-            LevelEnum.INFO,
+            MessageLevel.INFO,
             type,
             template,
             values
@@ -123,7 +123,7 @@ public interface MessageSubject
     default void addWarning(final String type, final String template)
         {
         this.addMessage(
-            LevelEnum.WARN,
+            MessageLevel.WARN,
             type,
             template,
             Collections.emptyMap()
@@ -137,7 +137,7 @@ public interface MessageSubject
     default void addWarning(final String type, final String template, final Map<String, Object> values)
         {
         this.addMessage(
-            LevelEnum.WARN,
+            MessageLevel.WARN,
             type,
             template,
             values
@@ -151,7 +151,7 @@ public interface MessageSubject
     default void addError(final String type, final String template)
         {
         this.addMessage(
-            LevelEnum.ERROR,
+            MessageLevel.ERROR,
             type,
             template,
             Collections.emptyMap()
@@ -165,7 +165,7 @@ public interface MessageSubject
     default void addError(final String type, final String template, final Map<String, Object> values)
         {
         this.addMessage(
-            LevelEnum.ERROR,
+            MessageLevel.ERROR,
             type,
             template,
             values

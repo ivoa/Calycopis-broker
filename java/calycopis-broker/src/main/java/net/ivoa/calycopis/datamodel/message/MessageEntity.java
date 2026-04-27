@@ -36,7 +36,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import net.ivoa.calycopis.datamodel.component.ComponentEntity;
-import net.ivoa.calycopis.spring.model.IvoaMessageItem.LevelEnum;
+import net.ivoa.calycopis.engine.message.MessageLevel;
 
 /**
  * JPA Entity for MessageItems.
@@ -80,7 +80,7 @@ public class MessageEntity
      * Public constructor
      * 
      */
-    public MessageEntity(final ComponentEntity parent, final LevelEnum level, final String type, final String template, final Map<String, Object> values)
+    public MessageEntity(final ComponentEntity parent, final MessageLevel level, final String type, final String template, final Map<String, Object> values)
         {
         this.type = type;
         this.level = level;
@@ -108,10 +108,10 @@ public class MessageEntity
         }
 
     @Column(name = "level")    
-    private LevelEnum level;
+    private MessageLevel level;
 
     @Override
-    public LevelEnum getLevel()
+    public MessageLevel getLevel()
         {
         return this.level;
         }

@@ -26,7 +26,7 @@ package net.ivoa.calycopis.datamodel.message;
 import java.time.Instant;
 import java.util.Map;
 
-import net.ivoa.calycopis.spring.model.IvoaMessageItem.LevelEnum;
+import net.ivoa.calycopis.engine.message.MessageLevel;
 
 /**
  * Public interface for messages.
@@ -52,7 +52,7 @@ public interface Message
      * The message level. 
      * @return level
      */
-    public LevelEnum getLevel();
+    public MessageLevel getLevel();
 
    /**
      * The message template. 

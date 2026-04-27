@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.util.Map;
 
 import net.ivoa.calycopis.spring.model.IvoaMessageItem;
+import net.ivoa.calycopis.broker.mapping.MessageLevelMappings;
 
 /**
  * 
@@ -55,7 +56,9 @@ public class MessageItemBean extends IvoaMessageItem
     @Override
     public LevelEnum getLevel()
         {
-        return entity.getLevel();
+        return MessageLevelMappings.toIvoa(
+            entity.getLevel()
+            );
         }
 
     @Override

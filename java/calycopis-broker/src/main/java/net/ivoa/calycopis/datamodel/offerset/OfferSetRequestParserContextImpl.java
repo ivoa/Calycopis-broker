@@ -58,7 +58,7 @@ import net.ivoa.calycopis.spring.model.IvoaAbstractStorageResource;
 import net.ivoa.calycopis.spring.model.IvoaAbstractVolumeMount;
 import net.ivoa.calycopis.spring.model.IvoaComponentMetadata;
 import net.ivoa.calycopis.spring.model.IvoaExecutionRequest;
-import net.ivoa.calycopis.spring.model.IvoaMessageItem.LevelEnum;
+import net.ivoa.calycopis.engine.message.MessageLevel;
 import net.ivoa.calycopis.spring.model.IvoaSimpleComputeResource;
 
 /**
@@ -903,7 +903,7 @@ extends ValidatorBase
         }
 
     @Override
-    public void addMessage(LevelEnum level, String type, String template, Map<String, Object> values)
+    public void addMessage(MessageLevel level, String type, String template, Map<String, Object> values)
         {
         this.messages.add(
             new MessageEntity(
