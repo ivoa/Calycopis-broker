@@ -28,6 +28,16 @@
  *       "value": 100,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-04-29T10:00:00",
+ *     "name": "Copilot",
+ *     "version": "unknown",
+ *     "model": "claude-sonnet-4.5",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -35,8 +45,10 @@
 
 package net.ivoa.calycopis.engine.platform;
 
+import net.ivoa.calycopis.engine.processing.ProcessingRequestFactory;
+
 /**
- * Framework-independent marker interface for an execution platform.
+ * Framework-independent interface for an execution platform.
  *
  * A platform provides a family of factories, validators, and repositories
  * that supply platform-specific implementations for the core engine types
@@ -48,16 +60,28 @@ package net.ivoa.calycopis.engine.platform;
  * {@code DockerPlatformImpl}) extend the broker-layer {@code Platform}
  * interface, which in turn extends this engine interface.
  *
- * The factory accessor methods are defined in the broker-layer {@code Platform}
- * interface because they return broker-specific factory types.  Those types
- * will be replaced by engine interfaces in a later migration step once the
- * entity and validator hierarchies have been fully moved to the engine module.
+ * Additional factory accessor methods (e.g. for sessions, compute, storage)
+ * are defined in the broker-layer {@code Platform} interface because they
+ * return broker-specific factory types.  Those types will be replaced by
+ * engine interfaces in a later migration step once the entity and validator
+ * hierarchies have been fully moved to the engine module.
  */
 public interface Platform
     {
+
     /**
      * Initialise the platform (register validators, configure repositories, etc.).
      *
      */
     public void initialize();
+
+    /**
+     * Get the {@link ProcessingRequestFactory} for this platform.
+     *
+     * Used by {@code ProcessingRequestEntity.done()} to delete a completed
+     * request from the processing queue.
+     *
+     */
+    public ProcessingRequestFactory getProcessingRequestFactory();
+
     }

@@ -23,18 +23,50 @@
 
 package net.ivoa.calycopis.functional.processing;
 
-import net.ivoa.calycopis.functional.factory.FactoryBase;
 import net.ivoa.calycopis.functional.processing.component.ComponentProcessingRequestFactory;
 import net.ivoa.calycopis.functional.processing.session.SessionProcessingRequestFactory;
 
 /**
- * 
+ * Broker-layer processing request factory interface.
+ *
+ * Extends the engine's {@link net.ivoa.calycopis.engine.processing.ProcessingRequestFactory}
+ * (which provides the basic {@code delete()} contract) and adds broker-specific
+ * factory accessors for session and component request factories.
+ *
+ * The engine interface requires {@code delete(engine.ProcessingRequest)}.  The broker
+ * types use the broker-layer {@code ProcessingRequest}.  A default bridge method is
+ * provided so that concrete broker implementations only need to implement the
+ * broker-typed {@code delete(ProcessingRequest)} method.
+ *
  */
 public interface ProcessingRequestFactory
-extends FactoryBase
+extends net.ivoa.calycopis.engine.processing.ProcessingRequestFactory
     {
 
+    /**
+     * Delete a completed broker-layer processing request.
+     *
+     */
     public void delete(final ProcessingRequest request);
+
+    /**
+     * Bridge: satisfy the engine interface by delegating to the broker-typed
+     * {@link #delete(ProcessingRequest)} method.
+     *
+     */
+    @Override
+    default void delete(final net.ivoa.calycopis.engine.processing.ProcessingRequest request)
+        {
+        if (request instanceof ProcessingRequest brokerRequest)
+            {
+            delete(brokerRequest);
+            }
+        else {
+            throw new IllegalArgumentException(
+                "Unexpected ProcessingRequest implementation [" + request.getClass().getName() + "]"
+                );
+            }
+        }
 
     /**
      * Get the SessionProcessingRequestFactory for this platform.

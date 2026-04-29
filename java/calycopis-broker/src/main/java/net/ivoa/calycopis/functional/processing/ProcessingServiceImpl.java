@@ -41,7 +41,7 @@ import net.ivoa.calycopis.functional.platfom.Platform;
 @Service
 public abstract class ProcessingServiceImpl
 extends FactoryBaseImpl
-implements ProcessingService
+implements ProcessingService, net.ivoa.calycopis.engine.processing.ProcessingService
     {
 
     private final Platform platform;

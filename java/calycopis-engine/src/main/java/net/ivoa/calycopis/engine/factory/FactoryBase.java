@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2025 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,23 +18,40 @@
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-04-29T10:00:00",
+ *     "name": "Copilot",
+ *     "version": "unknown",
+ *     "model": "claude-sonnet-4.5",
+ *     "contribution": {
+ *       "value": 100,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  */
 
-package net.ivoa.calycopis.functional.processing;
+package net.ivoa.calycopis.engine.factory;
+
+import java.util.UUID;
 
 /**
- * Broker-layer processing service interface.
+ * Framework-independent base interface for factory classes.
  *
- * @deprecated Use {@link net.ivoa.calycopis.engine.processing.ProcessingService} directly.
- *             This interface now extends the engine version so that all broker
- *             classes implementing it are also valid engine {@code ProcessingService}
- *             instances.
+ * This is the engine-layer replacement for the broker's
+ * {@code net.ivoa.calycopis.functional.factory.FactoryBase} interface.
+ * It carries no dependency on Spring, calycopis-spring, or any other
+ * framework-specific type.
  */
-@Deprecated
-public interface ProcessingService
-extends net.ivoa.calycopis.engine.processing.ProcessingService
+public interface FactoryBase
     {
 
-    }
+    /**
+     * Get this factory's identifier.
+     *
+     */
+    public UUID getUuid();
 
+    }
