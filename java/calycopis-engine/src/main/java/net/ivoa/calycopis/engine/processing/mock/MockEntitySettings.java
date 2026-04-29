@@ -63,12 +63,12 @@ public class MockEntitySettings
 
     public int getPrepareDelayMillis()
         {
-        return actions.getPrepare().getDelay() * 1000;
+        return (int) Math.min((long) actions.getPrepare().getDelay() * 1000L, Integer.MAX_VALUE);
         }
 
     public int getMonitorDelayMillis()
         {
-        return actions.getMonitor().getDelay() * 1000;
+        return (int) Math.min((long) actions.getMonitor().getDelay() * 1000L, Integer.MAX_VALUE);
         }
 
     public int getMonitorCount()
@@ -78,17 +78,17 @@ public class MockEntitySettings
 
     public int getReleaseDelayMillis()
         {
-        return actions.getRelease().getDelay() * 1000;
+        return (int) Math.min((long) actions.getRelease().getDelay() * 1000L, Integer.MAX_VALUE);
         }
 
     public int getCancelDelayMillis()
         {
-        return actions.getCancel().getDelay() * 1000;
+        return (int) Math.min((long) actions.getCancel().getDelay() * 1000L, Integer.MAX_VALUE);
         }
 
     public int getFailDelayMillis()
         {
-        return actions.getFail().getDelay() * 1000;
+        return (int) Math.min((long) actions.getFail().getDelay() * 1000L, Integer.MAX_VALUE);
         }
 
     public static class Actions

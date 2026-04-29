@@ -42,12 +42,14 @@ import net.ivoa.calycopis.engine.factory.FactoryBase;
  *
  * Defines the minimum contract required by the engine's {@link ProcessingRequestEntity}
  * to delete a completed request.  The broker-layer extension adds session- and
- * component-specific factory methods that return broker entity types.
+ * component-specific factory methods that return broker entity types, and provides
+ * a bridge default method that adapts the engine-typed {@code delete(ProcessingRequest)}
+ * call to the broker's concrete repository-backed deletion logic.
  *
- * This is the engine-layer replacement for the broker's
- * {@code net.ivoa.calycopis.functional.processing.ProcessingRequestFactory} interface.
- * It carries no dependency on Spring, calycopis-spring, or any other
- * framework-specific type.
+ * Concrete implementations live in the broker module
+ * ({@code ProcessingRequestFactoryImpl}) and use a JPA repository to remove the
+ * entity from the database.  The engine interface carries no dependency on Spring,
+ * calycopis-spring, or any other framework-specific type.
  */
 public interface ProcessingRequestFactory
 extends FactoryBase
