@@ -74,19 +74,19 @@ implements MockAmazonS3DataResourceValidator
             );
         }
 
-    public static final List<String> ENDPOINT_BLACKLIST = List.of(
-        "https://s3.blacklisted.example.com",
-        "https://s3.forbidden.example.com"
+    public static final List<String> EXCLUDED_ENDPOINTS = List.of(
+        "https://s3.excluded-one.example.com",
+        "https://s3.excluded-two.example.com"
         );
 
     @Override
     protected boolean validateEndpoint(String endpoint, OfferSetRequestParserContext context)
         {
-        if (ENDPOINT_BLACKLIST.contains(endpoint))
+        if (EXCLUDED_ENDPOINTS.contains(endpoint))
             {
             context.addWarning(
                 "urn:invalid-value",
-                "S3DataResource - endpoint is blacklisted [${value}]",
+                "S3DataResource - endpoint [${value}] is excluded",
                 Map.of(
                     "value",
                     endpoint

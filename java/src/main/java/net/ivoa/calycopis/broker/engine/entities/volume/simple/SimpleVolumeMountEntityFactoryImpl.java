@@ -37,16 +37,14 @@ package net.ivoa.calycopis.broker.engine.entities.volume.simple;
 
 import java.net.URI;
 
-import org.springframework.stereotype.Component;
-
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityFactoryImpl;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityRepository;
 
 /**
  *
  */
 @Slf4j
-@Component
 public abstract class SimpleVolumeMountEntityFactoryImpl
 extends AbstractVolumeMountEntityFactoryImpl
 implements SimpleVolumeMountEntityFactory
@@ -57,9 +55,9 @@ implements SimpleVolumeMountEntityFactory
      *
      */
     protected SimpleVolumeMountEntityFactoryImpl(
-        final SimpleVolumeMountEntityRepository repository
+        final AbstractVolumeMountEntityRepository volumeMountEntityRepository
         ){
-        super(repository);
+        super(volumeMountEntityRepository);
         }
     
     @Override

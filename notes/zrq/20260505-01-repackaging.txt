@@ -25,14 +25,13 @@
 
     Target:
 
-        Success
+        Re-packaging the project to separate business logic from Spring framework.
 
     Result:
 
         Work in progress ...
 
 
-# -----------------------------------------------------
 # -----------------------------------------------------
 # Create new branches to work in.
 #[user@desktop]

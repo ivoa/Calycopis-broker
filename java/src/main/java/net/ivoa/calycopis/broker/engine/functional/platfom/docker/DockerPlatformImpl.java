@@ -308,7 +308,6 @@ implements DockerPlatform
     
     @Autowired
     private DockerSimpleComputeResourceEntityRepository dockerSimpleComputeResourceEntityRepository;
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
     private DockerSimpleComputeResourceEntityFactory dockerSimpleComputeResourceEntityFactory;
 
     private AbstractComputeResourceValidatorFactory abstractComputeResourceValidatorFactory = new AbstractComputeResourceValidatorFactoryImpl();
@@ -322,12 +321,10 @@ implements DockerPlatform
     
     @Autowired
     private DockerFileResourceEntityRepository dockerFileResourceEntityRepository;
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
     private DockerFileResourceEntityFactory dockerFileResourceEntityFactory ;
 
     @Autowired
     private DockerHttpResourceEntityRepository dockerHttpResourceEntityRepository;
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
     private DockerHttpResourceEntityFactory dockerHttpResourceEntityFactory ;
 
     private AbstractDataResourceValidatorFactory abstractDataResourceValidatorFactory = new AbstractDataResourceValidatorFactoryImpl();
@@ -341,7 +338,6 @@ implements DockerPlatform
     
     @Autowired
     private AbstractExecutableEntityRepository abstractExecutableEntityRepository ;  
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
     private DockerDockerContainerEntityFactory dockerContainerEntityFactory;  
     @Override
     public DockerContainerEntityFactory getDockerContainerEntityFactory()
@@ -366,12 +362,10 @@ implements DockerPlatform
 
     @Autowired
     private DockerBindMountStorageEntityRepository bindMountStorageResourceEntityRepository;
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
     private DockerBindMountStorageEntityFactory bindMountStorageResourceEntityFactory;
 
     @Autowired
     private DockerVolumeMountStorageEntityRepository volumeMountStorageResourceEntityRepository;
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
     private DockerVolumeMountStorageEntityFactory volumeMountStorageResourceEntityFactory;
     
     private AbstractStorageResourceValidatorFactory storageResourceValidatorFactory = new AbstractStorageResourceValidatorFactoryImpl() ;

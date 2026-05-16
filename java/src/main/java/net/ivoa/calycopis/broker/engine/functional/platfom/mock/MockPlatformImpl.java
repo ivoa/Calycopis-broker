@@ -125,10 +125,14 @@ import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataReso
 import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataResourceValidatorImpl;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactory;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.mock.MockDockerContainerEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.executable.docker.mock.MockDockerContainerEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.mock.MockDockerContainerValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJupyterNotebookEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJupyterNotebookEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJupyterNotebookValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetFactory;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetFactoryImpl;
@@ -141,11 +145,19 @@ import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionS
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdateHandler;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdateHandlerImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactory;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.mock.MockSimpleStorageResourceEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.storage.simple.mock.MockSimpleStorageResourceEntityFactoryImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.simple.mock.MockSimpleStorageResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.mock.MockSimpleStorageResourceValidatorImpl;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactory;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountEntityFactoryImpl;
+import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountValidatorImpl;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOfferFactory;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
@@ -213,6 +225,22 @@ implements MockPlatform
             this.storageResourceValidatorFactory
             );
 
+        this.dockerContainerEntityFactory = new MockDockerContainerEntityFactoryImpl(
+            this.abstractExecutableEntityRepository
+            );
+
+        this.jupyterNotebookEntityFactory = new MockJupyterNotebookEntityFactoryImpl(
+            this.abstractExecutableEntityRepository
+            );
+
+        this.storageResourceEntityFactory = new MockSimpleStorageResourceEntityFactoryImpl(
+            this.storageResourceEntityRepository
+            ); 
+        
+        this.volumeMountEntityFactory = new MockSimpleVolumeMountEntityFactoryImpl(
+            this.volumeMountEntityRepository
+            );
+        
         this.sessionEntityFactory = new SimpleExecutionSessionEntityFactoryImpl(
             this.sessionEntityRepository
             );
@@ -339,7 +367,6 @@ implements MockPlatform
     private MockSimpleComputeResourceEntityRepository simpleComputeResourceEntityRepository;
     private MockSimpleComputeResourceEntityFactory    simpleComputeResourceEntityFactory;
 
-    // This just provides the iteration part of the ValidatorFactory interface.
     private AbstractComputeResourceValidatorFactory abstractComputeResourceValidatorFactory = new AbstractComputeResourceValidatorFactoryImpl();
     @Override
     public AbstractComputeResourceValidatorFactory getComputeResourceValidators()
@@ -368,7 +395,6 @@ implements MockPlatform
     private MockSkaoDataResourceEntityRepository skaoDataResourceEntityRepository;
     private MockSkaoDataResourceEntityFactory    skaoDataResourceEntityFactory;
 
-    // This just provides the iteration part of the ValidatorFactory interface.
     private AbstractDataResourceValidatorFactory abstractDataResourceValidatorFactory = new AbstractDataResourceValidatorFactoryImpl();
     @Override
     public AbstractDataResourceValidatorFactory getDataResourceValidators()
@@ -379,26 +405,25 @@ implements MockPlatform
 // Executable    
 
     @Autowired
-    private AbstractExecutableValidatorFactory executableValidatorFactory;
+    private AbstractExecutableEntityRepository abstractExecutableEntityRepository ;  
+
+    private MockDockerContainerEntityFactory dockerContainerEntityFactory;  
+    private MockJupyterNotebookEntityFactory jupyterNotebookEntityFactory;
+    
+    private AbstractExecutableValidatorFactory executableValidatorFactory = new AbstractExecutableValidatorFactoryImpl();
     @Override
     public AbstractExecutableValidatorFactory getExecutableValidators()
         {
         return this.executableValidatorFactory;
         }
     
-    @Autowired
-    private MockDockerContainerEntityFactory dockerContainerEntityFactory;  
-
-    @Autowired
-    private MockJupyterNotebookEntityFactory jupyterNotebookEntityFactory;
-    
 // Storage
 
     @Autowired
-    private MockSimpleStorageResourceEntityFactory storageResourceEntityFactory;
-
-    @Autowired
-    private AbstractStorageResourceValidatorFactory storageResourceValidatorFactory;
+    private MockSimpleStorageResourceEntityRepository storageResourceEntityRepository;
+    private MockSimpleStorageResourceEntityFactory    storageResourceEntityFactory; 
+    
+    private AbstractStorageResourceValidatorFactory storageResourceValidatorFactory = new AbstractStorageResourceValidatorFactoryImpl();
     @Override
     public AbstractStorageResourceValidatorFactory getStorageResourceValidators()
         {
@@ -415,10 +440,10 @@ implements MockPlatform
 // Volume
     
     @Autowired
-    private MockSimpleVolumeMountEntityFactory volumeMountEntityFactory;
+    private MockSimpleVolumeMountEntityRepository volumeMountEntityRepository;
+    private MockSimpleVolumeMountEntityFactory    volumeMountEntityFactory;
 
-    @Autowired
-    private AbstractVolumeMountValidatorFactory volumeMountValidatorFactory;
+    private AbstractVolumeMountValidatorFactory volumeMountValidatorFactory = new AbstractVolumeMountValidatorFactoryImpl();
     @Override
     public AbstractVolumeMountValidatorFactory getVolumeMountValidators()
         {
@@ -429,9 +454,7 @@ implements MockPlatform
     
     @Autowired
     private SimpleExecutionSessionEntityRepository sessionEntityRepository;
-
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
-    private SimpleExecutionSessionEntityFactory sessionEntityFactory;
+    private SimpleExecutionSessionEntityFactory    sessionEntityFactory;
     @Override
     public SimpleExecutionSessionEntityFactory getSessionEntityFactory()
         {

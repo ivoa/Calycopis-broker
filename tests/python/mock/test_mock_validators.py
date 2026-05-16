@@ -46,18 +46,18 @@
 Integration tests for all mock validation rules.
 
 Each mock validator implements platform-specific validation rules
-(blacklists, resource limits, etc.) that can be tested via the
+(excluded, resource limits, etc.) that can be tested via the
 OfferSetRequest API. This module performs positive and negative
 tests for every mock validation rule.
 
 Mock validators tested:
-  - MockDockerContainerValidatorImpl   (port path/number blacklists)
-  - MockJupyterNotebookValidatorImpl   (location blacklist)
+  - MockDockerContainerValidatorImpl   (excluded port path/number)
+  - MockJupyterNotebookValidatorImpl   (excluded location)
   - MockSimpleComputeResourceValidatorImpl (cores/memory limits)
   - MockSimpleStorageResourceValidatorImpl (size limit)
-  - MockSimpleDataResourceValidatorImpl    (location blacklist)
-  - MockAmazonS3DataResourceValidatorImpl  (endpoint blacklist)
-  - MockIvoaDataResourceValidatorImpl      (ivoid blacklist)
+  - MockSimpleDataResourceValidatorImpl    (excluded location)
+  - MockAmazonS3DataResourceValidatorImpl  (excluded endpoint)
+  - MockIvoaDataResourceValidatorImpl      (excluded ivoid)
   - MockSkaoDataResourceValidatorImpl      (excluded namespace)
 
 Requires:
@@ -227,8 +227,8 @@ class TestDockerContainerValidation:
     Tests for MockDockerContainerValidatorImpl.
 
     Mock rules:
-      - PORT_PATH_BLACKLIST: ["/badpath", "/alsobadpath"]
-      - PORT_NUMBER_BLACKLIST: [1234, 5678]
+      - PORT_PATH_EXCLUDED: ["/badpath", "/alsobadpath"]
+      - PORT_NUMBER_EXCLUDED: [1234, 5678]
     Also tests built-in validation:
       - privileged execution not supported
       - protocol must be UDP/TCP/HTTP/HTTPS
@@ -263,9 +263,9 @@ class TestDockerContainerValidation:
         response = _submit(client, request)
         _assert_accepted(response, "Valid Docker with network should be accepted")
 
-    def test_blacklisted_port_path(self, client):
+    def test_excluded_port_path(self, client):
         """
-        A DockerContainer with a blacklisted network port path
+        A DockerContainer with an excluded network port path
         ("/badpath") should be rejected.
         """
         request = ExecutionRequest(
@@ -289,11 +289,11 @@ class TestDockerContainerValidation:
             ),
         )
         response = _submit(client, request)
-        _assert_rejected(response, "Blacklisted port path '/badpath' should be rejected")
+        _assert_rejected(response, "Excluded port path '/badpath' should be rejected")
 
-    def test_blacklisted_port_path_also(self, client):
+    def test_excluded_port_path_also(self, client):
         """
-        A DockerContainer with the other blacklisted port path
+        A DockerContainer with the other excluded port path
         ("/alsobadpath") should also be rejected.
         """
         request = ExecutionRequest(
@@ -317,11 +317,11 @@ class TestDockerContainerValidation:
             ),
         )
         response = _submit(client, request)
-        _assert_rejected(response, "Blacklisted port path '/alsobadpath' should be rejected")
+        _assert_rejected(response, "Excluded port path '/alsobadpath' should be rejected")
 
-    def test_blacklisted_port_number(self, client):
+    def test_excluded_port_number(self, client):
         """
-        A DockerContainer with a blacklisted port number (1234)
+        A DockerContainer with a excluded port number (1234)
         should be rejected.
         """
         request = ExecutionRequest(
@@ -345,11 +345,11 @@ class TestDockerContainerValidation:
             ),
         )
         response = _submit(client, request)
-        _assert_rejected(response, "Blacklisted port number 1234 should be rejected")
+        _assert_rejected(response, "Excluded port number 1234 should be rejected")
 
-    def test_blacklisted_port_number_5678(self, client):
+    def test_excluded_port_number_5678(self, client):
         """
-        A DockerContainer with the other blacklisted port number (5678)
+        A DockerContainer with the other excluded port number (5678)
         should also be rejected.
         """
         request = ExecutionRequest(
@@ -373,7 +373,7 @@ class TestDockerContainerValidation:
             ),
         )
         response = _submit(client, request)
-        _assert_rejected(response, "Blacklisted port number 5678 should be rejected")
+        _assert_rejected(response, "Excluded port number 5678 should be rejected")
 
     def test_privileged_execution_rejected(self, client):
         """
@@ -460,12 +460,12 @@ class TestJupyterNotebookValidation:
     Tests for MockJupyterNotebookValidatorImpl.
 
     Mock rules:
-      - LOCATION_BLACKLIST: ["http://example.com/blacklisted.ipynb"]
+      - LOCATION_EXCLUDED: ["http://example.com/excluded-one.ipynb"]
     """
 
     def test_valid_notebook_location(self, client):
         """
-        A JupyterNotebook with a valid (non-blacklisted) location
+        A JupyterNotebook with a valid location
         should be accepted.
         """
         request = ExecutionRequest(
@@ -477,18 +477,18 @@ class TestJupyterNotebookValidation:
         response = _submit(client, request)
         _assert_accepted(response, "Valid notebook location should be accepted")
 
-    def test_blacklisted_notebook_location(self, client):
+    def test_excluded_notebook_location(self, client):
         """
-        A JupyterNotebook with a blacklisted location should be rejected.
+        A JupyterNotebook with an excluded location should be rejected.
         """
         request = ExecutionRequest(
             executable=_make_jupyter_executable(
-                name="notebook-blacklisted",
-                location="http://example.com/blacklisted.ipynb",
+                name="notebook-excluded",
+                location="http://example.com/excluded-one.ipynb",
             ),
         )
         response = _submit(client, request)
-        _assert_rejected(response, "Blacklisted notebook location should be rejected")
+        _assert_rejected(response, "Excluded notebook location should be rejected")
 
     def test_missing_notebook_location(self, client):
         """
@@ -710,15 +710,15 @@ class TestSimpleDataResourceValidation:
     Tests for MockSimpleDataResourceValidatorImpl.
 
     Mock rules:
-      - LOCATION_BLACKLIST: [
-            "http://example.com/blacklisted.dat",
+      - EXCLUDED_LOCATIONS: [
+            "http://example.com/excluded.dat",
             "http://example.com/forbidden.dat"
         ]
     """
 
     def test_valid_data_location(self, client):
         """
-        A SimpleDataResource with a valid (non-blacklisted) location
+        A SimpleDataResource with a valid (non-excluded) location
         should be accepted.
         """
         request = ExecutionRequest(
@@ -796,15 +796,15 @@ class TestAmazonS3DataResourceValidation:
     Tests for MockAmazonS3DataResourceValidatorImpl.
 
     Mock rules:
-      - ENDPOINT_BLACKLIST: [
-            "https://s3.blacklisted.example.com",
+      - EXCLUDED_ENDPOINTS: [
+            "https://s3.excluded.example.com",
             "https://s3.forbidden.example.com"
         ]
     """
 
     def test_valid_s3_data_resource(self, client):
         """
-        An S3DataResource with valid (non-blacklisted) endpoint
+        An S3DataResource with valid (non-excluded) endpoint
         should be accepted.
         """
         request = ExecutionRequest(
@@ -823,30 +823,29 @@ class TestAmazonS3DataResourceValidation:
         response = _submit(client, request)
         _assert_accepted(response, "Valid S3 data resource should be accepted")
 
-    def test_blacklisted_s3_endpoint(self, client):
+    def test_excluded_s3_endpoint_one(self, client):
         """
-        An S3DataResource with a blacklisted endpoint should be rejected.
+        An S3DataResource with an excluded endpoint should be rejected.
         """
         request = ExecutionRequest(
-            executable=_make_docker_executable("s3-data-blacklisted"),
+            executable=_make_docker_executable("s3-data-excluded"),
             data=[
                 S3DataResource(
                     kind=S3_DATA_KIND,
-                    meta=ComponentMetadata(name="blacklisted-s3"),
-                    endpoint="https://s3.blacklisted.example.com",
-                    template="https://s3.blacklisted.example.com/{bucket}/{object}",
+                    meta=ComponentMetadata(name="excluded-s3"),
+                    endpoint="https://s3.excluded-one.example.com",
+                    template="https://s3.excluded-one.example.com/{bucket}/{object}",
                     bucket="my-bucket",
                     object="my-object.fits",
                 ),
             ],
         )
         response = _submit(client, request)
-        _assert_rejected(response, "Blacklisted S3 endpoint should be rejected")
+        _assert_rejected(response, "Excluded S3 endpoint should be rejected")
 
-    def test_blacklisted_s3_endpoint_forbidden(self, client):
+    def test_excluded_s3_endpoint_two(self, client):
         """
-        An S3DataResource with the other blacklisted endpoint
-        should also be rejected.
+        An S3DataResource with an excluded endpoint should be rejected.
         """
         request = ExecutionRequest(
             executable=_make_docker_executable("s3-data-forbidden"),
@@ -854,15 +853,15 @@ class TestAmazonS3DataResourceValidation:
                 S3DataResource(
                     kind=S3_DATA_KIND,
                     meta=ComponentMetadata(name="forbidden-s3"),
-                    endpoint="https://s3.forbidden.example.com",
-                    template="https://s3.forbidden.example.com/{bucket}/{object}",
+                    endpoint="https://s3.excluded-two.example.com",
+                    template="https://s3.excluded-two.example.com/{bucket}/{object}",
                     bucket="my-bucket",
                     object="my-object.fits",
                 ),
             ],
         )
         response = _submit(client, request)
-        _assert_rejected(response, "Blacklisted S3 endpoint (forbidden) should be rejected")
+        _assert_rejected(response, "Excluded S3 endpoint should be rejected")
 
     def test_missing_s3_endpoint(self, client):
         """
@@ -931,7 +930,7 @@ class TestIvoaDataResourceValidation:
     Tests for MockIvoaDataResourceValidatorImpl.
 
     Mock rules:
-      - IVOID_BLACKLIST: [
+      - EXCLUDED_IVOIDS: [
             URI("ivo://example.com/excluded"),
             URI("ivo://example.com/forbidden")
         ]
@@ -1040,15 +1039,15 @@ class TestSkaoDataResourceValidation:
     Tests for MockSkaoDataResourceValidatorImpl.
 
     Mock rules:
-      - NAMESPACE_BLACKLIST: [
-            "blacklisted-namespace",
+      - EXCLUDED_NAMESPACES: [
+            "excluded-namespace",
             "forbidden-namespace"
         ]
     """
 
     def test_valid_skao_data_resource(self, client):
         """
-        A SkaoDataResource with a valid (non-blacklisted) namespace
+        A SkaoDataResource with a valid namespace
         should be accepted.
         """
         request = ExecutionRequest(

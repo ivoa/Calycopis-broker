@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.SimpleStorageResourceEntityFactoryImpl;
 
@@ -37,9 +38,9 @@ implements MockSimpleStorageResourceEntityFactory
      * 
      */
     public MockSimpleStorageResourceEntityFactoryImpl(
-        final MockSimpleStorageResourceEntityRepository repository
+        final AbstractStorageResourceEntityRepository abstractStorageResourceEntityRepository
         ){
-        super(repository);
+        super(abstractStorageResourceEntityRepository);
         }
 
     @Override

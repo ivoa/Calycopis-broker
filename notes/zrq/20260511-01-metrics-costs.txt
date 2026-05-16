@@ -1,0 +1,209 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Add metrics and costs to the schema.
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+# metrics
+
+    #
+    # Simple form
+    # `kind` identifies the meaning and structure of the metric
+
+    metrics:
+      - kind: uri:example-metric - extends min-max-float-metric
+        min: float
+        max: float
+
+    Clients/services that don't understand the kind reject the message.
+
+    #
+    # Separate the structure from the meaning.
+    # `kind` identifies the strcture
+    # `metric` identifies the meaning of metric
+
+    metrics:
+      - kind: uri:min-max-float-metric
+        metric: uri:example-metric
+        min: float
+        max: float
+
+    Clients/services that don't understand the structure (kind) reject the message.
+    Clients/services that don't understand the meaning (metric) can choose whether they reject the message or not.
+    Does this actually provide any benefit ?
+
+        It allows a 3rd party to add a new type of metric (meaning) without having to define it in a schema.
+
+    If a service doesn't understand the type of metric (meaning), then it can't know whether it can ignore it or not.
+    Unless we add an 'optional' flag.
+
+    Does this actually provide any benefit ?
+
+        Not really. If a metric is optional, don't include it in the request.
+
+    If a service offers a metric that the client doesn't understand, then we don't want the client to reject it.
+    Does this actually provide any benefit ?
+
+        Yes. A service can list all of the metrics that it has and the client can decide which ones to take notice of.
+
+    Do we want to get into AND/OR combinations at this point - probably not.
+    Assume all metrics are AND for now.
+
+    metrics:
+      - kind: uri:min-max-float-metric
+        metric: uri:example-metric-one
+        min: float
+        max: float
+      - kind: uri:min-max-float-metric
+        metric: uri:example-metric-two
+        min: float
+        max: float
+
+    TODO
+    * Add metrics list to AbstractComponent.
+    * Everything, Sessions and Components, can have metrics applied to it.
+    * General rule, the Session aggregates the metrics from it's components.
+
+    Trying to find a common term, how about `form` for structure and `kind` for meaning.
+
+    metrics:
+      - form: uri:min-max-float-metric
+        kind: uri:example-metric-one
+        min: float
+        max: float
+
+    No, this is using `kind` in a different way to the rest of the schema.
+    Potentially confusing.
+
+
+
+# -----------------------------------------------------
+# costs
+
+    #
+    # Simple form
+    # `kind` identifies the meaning and structure of the cost
+
+    costs:
+      - kind: uri:example-cost - extends min-max-float-cost
+        min: float
+        max: float
+
+    Clients/services that don't understand the kind reject the message.
+
+    #
+    # Separate the structure from the meaning.
+    # `kind` identifies the strcture
+    # `cost` identifies the meaning
+
+    metrics:
+      - kind: uri:min-max-float-cost
+        cost: uri:example-cost
+        min: float
+        max: float
+
+    Clients/services that don't understand the structure (kind) reject the message.
+    Clients/services that don't understand the meaning (type) can choose whether they reject the message or not.
+    Does this actually provide any benefit ?
+
+        It allows a 3rd party to add a new type (meaning) without having to define it in a schema.
+
+    Costs
+
+# -----------------------------------------------------
+
+    Use the same pattern for both.
+    `kind` for structure and `type` for meaning.
+
+    TODO
+    * Add metrics list to AbstractComponent.
+    * Everything, Sessions and Components, can have metrics applied to it.
+    * General rule, the Session aggregates the metrics from it's components.
+    * Metrics and costs are combined with AND.
+    * If you want OR, use separate requests/offers.
+
+    This means a request/offer for a compute node that is capable of BOTH these metrics.
+
+        metrics:
+          - kind: uri:min-max-float-metric
+            type: uri:example-metric-one
+            min: float
+            max: float
+          - kind: uri:min-max-float-metric
+            type: uri:example-metric-two
+            min: float
+            max: float
+
+    This means a request/offer for a session that will cost BOTH of these costs.
+
+        costs:
+          - kind: uri:min-max-float-cost
+            type: uri:example-cost-one
+            min: float
+            max: float
+          - kind: uri:min-max-float-cost
+            type: uri:example-cost-two
+            min: float
+            max: float
+
+# -----------------------------------------------------
+# 402 redirect
+# https://www.x402.org/
+
+    Add 'payment-required' redirect.
+    Headers:
+        location: https://payment.service.endpoint/....
+        x-ivoa-payment-kind: uri:uksrc-carbon-payment
+
+    #
+    # Growing ecosystem of payment handling platforms.
+    # https://www.x402.org/ecosystem
+
+    Benfits:
+    * Client to specify maximum payment they are offering (bid)
+    * Service can specify min and max cost (ask) before the job is executed.
+    * User (or agent) chooses to accept the offer.
+    * Updating to ACCEPTED can return 402 redirect if not already paid.
+
+
+    AWS/Cloudfront payment filter
+    https://builder.aws.com/content/38fLQk6zKRfLnaUNzcLPsUexUlZ
+    https://builder.aws.com/content/38fLQk6zKRfLnaUNzcLPsUexUlZ/monetize-any-http-application-with-x402-and-cloudfront-lambdaedge
+
+
+
+
+
+
+
+
+
+

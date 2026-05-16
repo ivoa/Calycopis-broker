@@ -35,13 +35,11 @@
 
 package net.ivoa.calycopis.broker.engine.entities.volume.simple.mock;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountValidator;
 
@@ -49,17 +47,19 @@ import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMount
  *
  */
 @Slf4j
-@Component
 public class MockSimpleVolumeMountEntityFactoryImpl
 extends SimpleVolumeMountEntityFactoryImpl
 implements MockSimpleVolumeMountEntityFactory
     {
 
-    @Autowired
+    /**
+     * Public constructor, used by our Platform.
+     * 
+     */
     public MockSimpleVolumeMountEntityFactoryImpl(
-        final MockSimpleVolumeMountEntityRepository repository
+        final AbstractVolumeMountEntityRepository volumeMountEntityRepository
         ){
-        super(repository);
+        super(volumeMountEntityRepository);
         }
 
     @Override
