@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
-import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestEntityImpl;
+import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestEntity;
 import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 
 /**
@@ -49,7 +49,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
     strategy = InheritanceType.JOINED
     )
 public abstract class ComponentProcessingRequestEntityImpl
-extends ProcessingRequestEntityImpl
+extends ProcessingRequestEntity
 implements ComponentProcessingRequest
     {
 

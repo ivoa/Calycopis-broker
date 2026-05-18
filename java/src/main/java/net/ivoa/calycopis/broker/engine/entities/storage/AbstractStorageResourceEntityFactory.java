@@ -30,14 +30,14 @@ import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionS
  *
  */
 public interface AbstractStorageResourceEntityFactory
-extends LifecycleComponentEntityFactory<AbstractStorageResourceEntityImpl>
+extends LifecycleComponentEntityFactory<AbstractStorageResourceEntity>
     {
 
     /**
      * Create a new StorageResourceEntity based on a Validator Result.
      *
      */
-    public AbstractStorageResourceEntityImpl create(
+    public AbstractStorageResourceEntity create(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result
         );

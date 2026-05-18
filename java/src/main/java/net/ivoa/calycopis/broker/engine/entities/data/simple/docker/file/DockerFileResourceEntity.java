@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponent;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingAction;
@@ -76,7 +76,7 @@ implements DockerFileResource
      */
     protected DockerFileResourceEntity(
         final SimpleExecutionSessionEntity session,
-        final AbstractStorageResourceEntityImpl storage,
+        final AbstractStorageResourceEntity storage,
         final DockerFileResourceValidator.Result result
         ){
         super(

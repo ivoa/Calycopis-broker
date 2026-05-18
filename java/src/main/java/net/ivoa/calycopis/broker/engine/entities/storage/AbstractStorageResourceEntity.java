@@ -52,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
@@ -68,7 +68,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public abstract class AbstractStorageResourceEntityImpl
+public abstract class AbstractStorageResourceEntity
 extends LifecycleComponentEntity
 implements AbstractStorageResource
     {
@@ -77,7 +77,7 @@ implements AbstractStorageResource
      * Protected constructor for JPA entities.
      * 
      */
-    protected AbstractStorageResourceEntityImpl()
+    protected AbstractStorageResourceEntity()
         {
         super();
         }
@@ -86,7 +86,7 @@ implements AbstractStorageResource
      * Protected constructor used by derived classes.
      * 
      */
-    protected AbstractStorageResourceEntityImpl(
+    protected AbstractStorageResourceEntity(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result
         ){
@@ -158,15 +158,15 @@ implements AbstractStorageResource
         cascade = CascadeType.ALL,
         orphanRemoval = true
         )
-    List<AbstractVolumeMountEntityImpl> volumeMounts = new ArrayList<AbstractVolumeMountEntityImpl>();
+    List<AbstractVolumeMountEntity> volumeMounts = new ArrayList<AbstractVolumeMountEntity>();
 
     @Override
-    public List<AbstractVolumeMountEntityImpl> getVolumeMounts()
+    public List<AbstractVolumeMountEntity> getVolumeMounts()
         {
         return volumeMounts;
         }
 
-    public void addVolumeMount(final AbstractVolumeMountEntityImpl volume)
+    public void addVolumeMount(final AbstractVolumeMountEntity volume)
         {
         volume.setStorageResource(
             this

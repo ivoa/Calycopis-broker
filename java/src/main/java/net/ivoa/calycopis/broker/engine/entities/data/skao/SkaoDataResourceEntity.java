@@ -48,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
@@ -93,7 +93,7 @@ implements SkaoDataResource
      */
     protected SkaoDataResourceEntity(
         final SimpleExecutionSessionEntity session,
-        final AbstractStorageResourceEntityImpl storage,
+        final AbstractStorageResourceEntity storage,
         final AbstractDataResourceValidator.Result result
         ){
         this(
@@ -111,7 +111,7 @@ implements SkaoDataResource
      */
     public SkaoDataResourceEntity(
         final SimpleExecutionSessionEntity session,
-        final AbstractStorageResourceEntityImpl storage,
+        final AbstractStorageResourceEntity storage,
         final AbstractDataResourceValidator.Result result,
         final IvoaSkaoDataResource validated
         ){

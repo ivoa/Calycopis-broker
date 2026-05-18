@@ -50,7 +50,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
  * 
  */
 public interface AbstractStorageResourceValidator
-extends Validator<IvoaAbstractStorageResource, AbstractStorageResourceEntityImpl>
+extends Validator<IvoaAbstractStorageResource, AbstractStorageResourceEntity>
     {
 
     /**
@@ -67,7 +67,7 @@ extends Validator<IvoaAbstractStorageResource, AbstractStorageResourceEntityImpl
      * 
      */
     public interface Result
-    extends Validator.Result<IvoaAbstractStorageResource, AbstractStorageResourceEntityImpl> 
+    extends Validator.Result<IvoaAbstractStorageResource, AbstractStorageResourceEntity> 
         {
 
         /**
@@ -86,7 +86,7 @@ extends Validator<IvoaAbstractStorageResource, AbstractStorageResourceEntityImpl
          * Build an entity based on our validation result.
          * 
          */
-        public AbstractStorageResourceEntityImpl build(final SimpleExecutionSessionEntity session);
+        public AbstractStorageResourceEntity build(final SimpleExecutionSessionEntity session);
 
         }
 
@@ -96,7 +96,7 @@ extends Validator<IvoaAbstractStorageResource, AbstractStorageResourceEntityImpl
      */
     @Slf4j
     public static class ResultBean
-    extends Validator.ResultBean<IvoaAbstractStorageResource, AbstractStorageResourceEntityImpl>
+    extends Validator.ResultBean<IvoaAbstractStorageResource, AbstractStorageResourceEntity>
     implements Result
         {
         /**

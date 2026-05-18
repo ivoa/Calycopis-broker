@@ -33,34 +33,33 @@
  *
  */
 
-package net.ivoa.calycopis.broker.engine.entities.volume.simple.docker;
+package net.ivoa.calycopis.broker.engine.entities.volume.simple.mock;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountValidator;
 
 /**
- * A MockSimpleVolumeMount Entity.
  *
  */
 @Entity
 @Table(
-    name = "dockersimplevolumemounts"
+    name = "mocksimplevolumemounts"
     )
-public class DockerSimpleVolumeMountEntityImpl
-extends SimpleVolumeMountEntityImpl
-implements DockerSimpleVolumeMount
+public class MockSimpleVolumeMountEntity
+extends SimpleVolumeMountEntity
+implements MockSimpleVolumeMount
     {
 
     /**
      * Protected constructor for JPA entities.
      *
      */
-    protected DockerSimpleVolumeMountEntityImpl()
+    protected MockSimpleVolumeMountEntity()
         {
         super();
         }
@@ -69,9 +68,9 @@ implements DockerSimpleVolumeMount
      * Protected constructor for a DataResource.
      *
      */
-    protected DockerSimpleVolumeMountEntityImpl(
+    protected MockSimpleVolumeMountEntity(
         final AbstractComputeResourceEntity computeResource,
-        final AbstractDataResourceEntity        dataResource,
+        final AbstractDataResourceEntity    dataResource,
         final SimpleVolumeMountValidator.Result result
         ){
         super(
@@ -85,9 +84,9 @@ implements DockerSimpleVolumeMount
      * Protected constructor for a StorageResource.
      *
      */
-    public DockerSimpleVolumeMountEntityImpl(
+    public MockSimpleVolumeMountEntity(
         final AbstractComputeResourceEntity computeResource,
-        final AbstractStorageResourceEntityImpl storageResource,
+        final AbstractStorageResourceEntity storageResource,
         final SimpleVolumeMountValidator.Result result
         ){
         super(

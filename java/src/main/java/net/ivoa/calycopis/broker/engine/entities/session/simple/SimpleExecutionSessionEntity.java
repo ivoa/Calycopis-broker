@@ -64,7 +64,7 @@ import net.ivoa.calycopis.broker.engine.entities.message.MessageEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.functional.booking.ResourceOffer;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractOption;
@@ -220,15 +220,15 @@ implements SimpleExecutionSession
         cascade = CascadeType.ALL,
         orphanRemoval = true
         )
-    List<AbstractStorageResourceEntityImpl> storageresources = new ArrayList<AbstractStorageResourceEntityImpl>();
+    List<AbstractStorageResourceEntity> storageresources = new ArrayList<AbstractStorageResourceEntity>();
 
     @Override
-    public List<AbstractStorageResourceEntityImpl> getStorageResources()
+    public List<AbstractStorageResourceEntity> getStorageResources()
         {
         return storageresources;
         }
 
-    public void addStorageResource(final AbstractStorageResourceEntityImpl resource)
+    public void addStorageResource(final AbstractStorageResourceEntity resource)
         {
         storageresources.add(
             resource
@@ -619,7 +619,7 @@ implements SimpleExecutionSession
                 );
             }
 
-        for (AbstractStorageResourceEntityImpl resource : this.getStorageResources())
+        for (AbstractStorageResourceEntity resource : this.getStorageResources())
             {
             bean.addStorageItem(
                 resource.makeBean(

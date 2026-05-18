@@ -40,7 +40,7 @@ import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.storage.simple.SimpleStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.simple.SimpleStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
@@ -61,8 +61,8 @@ import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockReleaseAc
 @DiscriminatorValue(
     value="uri:mock-simple-storage-resource"
     )
-public class MockSimpleStorageResourceEntityImpl
-extends SimpleStorageResourceEntityImpl
+public class MockSimpleStorageResourceEntity
+extends SimpleStorageResourceEntity
 implements MockSimpleStorageResource
     {
 
@@ -70,7 +70,7 @@ implements MockSimpleStorageResource
      * Protected constructor for JPA entities.
      * 
      */
-    protected MockSimpleStorageResourceEntityImpl()
+    protected MockSimpleStorageResourceEntity()
         {
         super();
         }
@@ -79,7 +79,7 @@ implements MockSimpleStorageResource
      * Protected constructor used by our Factories.
      *
      */
-    protected MockSimpleStorageResourceEntityImpl(
+    protected MockSimpleStorageResourceEntity(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result
         ){

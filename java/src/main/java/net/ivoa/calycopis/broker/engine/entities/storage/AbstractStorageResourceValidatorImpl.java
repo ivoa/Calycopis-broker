@@ -30,7 +30,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
  * 
  */
 public abstract class AbstractStorageResourceValidatorImpl
-extends AbstractValidatorImpl<IvoaAbstractStorageResource, AbstractStorageResourceEntityImpl>
+extends AbstractValidatorImpl<IvoaAbstractStorageResource, AbstractStorageResourceEntity>
 implements AbstractStorageResourceValidator
     {
     }

@@ -24,7 +24,7 @@
 package net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.bind;
 
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator.Result;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerSimpleStorageResourceEntityFactoryImpl;
@@ -48,13 +48,13 @@ implements DockerBindMountStorageEntityFactory
         }
 
     @Override
-    public DockerBindMountStorageEntityImpl create(
+    public DockerBindMountStorageEntity create(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result,
         final String path
         ){
-        DockerBindMountStorageEntityImpl entity = this.repository.save(
-            new DockerBindMountStorageEntityImpl(
+        DockerBindMountStorageEntity entity = this.repository.save(
+            new DockerBindMountStorageEntity(
                 session,
                 result,
                 path
@@ -64,7 +64,7 @@ implements DockerBindMountStorageEntityFactory
         }
 
     @Override
-    public AbstractStorageResourceEntityImpl create(
+    public AbstractStorageResourceEntity create(
         final SimpleExecutionSessionEntity session,
         final Result result
         ){

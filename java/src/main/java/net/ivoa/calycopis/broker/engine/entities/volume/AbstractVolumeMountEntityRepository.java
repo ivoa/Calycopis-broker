@@ -29,6 +29,6 @@ import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntityReposi
  * 
  */
 public interface AbstractVolumeMountEntityRepository
-extends ComponentEntityRepository<AbstractVolumeMountEntityImpl>
+extends ComponentEntityRepository<AbstractVolumeMountEntity>
     {
     }

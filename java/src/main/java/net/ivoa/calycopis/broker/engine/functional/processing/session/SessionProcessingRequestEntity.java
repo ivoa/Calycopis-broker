@@ -36,10 +36,10 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
-import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestEntityImpl;
+import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestEntity;
 import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
@@ -54,17 +54,17 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public abstract class SessionProcessingRequestEntityImpl
-extends ProcessingRequestEntityImpl
+public abstract class SessionProcessingRequestEntity
+extends ProcessingRequestEntity
 implements SessionProcessingRequest
     {
 
-    protected SessionProcessingRequestEntityImpl()
+    protected SessionProcessingRequestEntity()
         {
         super();
         }
 
-    protected SessionProcessingRequestEntityImpl(final URI kind, final SimpleExecutionSessionEntity session)
+    protected SessionProcessingRequestEntity(final URI kind, final SimpleExecutionSessionEntity session)
         {
         super(kind);
         log.debug("Created SessionProcessingRequestEntity kind [{}] for session [{}]", kind, session.getUuid());
@@ -171,7 +171,7 @@ implements SessionProcessingRequest
                 dataResource
                 );
             }
-        for (AbstractStorageResourceEntityImpl storageResource : this.session.getStorageResources())
+        for (AbstractStorageResourceEntity storageResource : this.session.getStorageResources())
             {
             scheduleReleaseIfActive(
                 platform,

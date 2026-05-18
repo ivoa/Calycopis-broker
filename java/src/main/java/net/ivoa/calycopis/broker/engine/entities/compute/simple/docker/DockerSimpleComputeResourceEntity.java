@@ -66,8 +66,8 @@ import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContain
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinkerBean;
-import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
+import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory;
@@ -234,16 +234,16 @@ implements DockerSimpleComputeResource
             "Resolving volume mounts for compute resource [{}]",
             resourceUuid
             );
-        for (AbstractVolumeMountEntityImpl volumeMount : this.getVolumeMountEntities())
+        for (AbstractVolumeMountEntity volumeMount : this.getVolumeMountEntities())
             {
             log.debug(
                 "Volume mount [{}] type [{}]",
                 volumeMount.getUuid(),
                 volumeMount.getClass().getSimpleName()
                 );
-            if (volumeMount instanceof SimpleVolumeMountEntityImpl)
+            if (volumeMount instanceof SimpleVolumeMountEntity)
                 {
-                SimpleVolumeMountEntityImpl simpleMount = (SimpleVolumeMountEntityImpl) volumeMount;
+                SimpleVolumeMountEntity simpleMount = (SimpleVolumeMountEntity) volumeMount;
                 AbstractDataResourceEntity dataResource = simpleMount.getDataResource();
                 log.debug(
                     "SimpleVolumeMount [{}] dataResource [{}]",

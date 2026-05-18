@@ -38,7 +38,7 @@ package net.ivoa.calycopis.broker.engine.entities.volume.simple.docker;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountValidator;
 
@@ -62,13 +62,13 @@ implements DockerSimpleVolumeMountEntityFactory
         }
 
     @Override
-    public DockerSimpleVolumeMountEntityImpl create(
+    public DockerSimpleVolumeMountEntity create(
         final AbstractComputeResourceEntity computeResource,
         final AbstractDataResourceEntity        dataResource,
         final SimpleVolumeMountValidator.Result result
         ){
         return this.repository.save(
-            new DockerSimpleVolumeMountEntityImpl(
+            new DockerSimpleVolumeMountEntity(
                 computeResource,
                 dataResource,
                 result
@@ -77,13 +77,13 @@ implements DockerSimpleVolumeMountEntityFactory
         }
 
     @Override
-    public DockerSimpleVolumeMountEntityImpl create(
+    public DockerSimpleVolumeMountEntity create(
         final AbstractComputeResourceEntity computeResource,
-        final AbstractStorageResourceEntityImpl storageResource,
+        final AbstractStorageResourceEntity storageResource,
         final SimpleVolumeMountValidator.Result result
         ){
         return this.repository.save(
-            new DockerSimpleVolumeMountEntityImpl(
+            new DockerSimpleVolumeMountEntity(
                 computeResource,
                 storageResource,
                 result

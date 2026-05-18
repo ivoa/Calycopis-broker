@@ -47,7 +47,7 @@ import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponent;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.storage.simple.SimpleStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.simple.SimpleStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinker;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory;
@@ -69,7 +69,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
     value="uri:docker-volume-storage"
     )
 public class DockerVolumeMountStorageEntity
-extends SimpleStorageResourceEntityImpl
+extends SimpleStorageResourceEntity
 implements DockerVolumeMountStorage
     {
 

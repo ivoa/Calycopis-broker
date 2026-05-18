@@ -48,7 +48,7 @@ import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public abstract class ProcessingRequestEntityImpl
+public abstract class ProcessingRequestEntity
 implements ProcessingRequest
     {
 
@@ -56,7 +56,7 @@ implements ProcessingRequest
      * Protected constructor for JPA entities.
      *  
      */
-    protected ProcessingRequestEntityImpl()
+    protected ProcessingRequestEntity()
         {
         super();
         }
@@ -65,7 +65,7 @@ implements ProcessingRequest
      * Protected constructor used by derived classes.
      * 
      */
-    protected ProcessingRequestEntityImpl(final URI kind)
+    protected ProcessingRequestEntity(final URI kind)
         {
         super();
         this.kind = kind;

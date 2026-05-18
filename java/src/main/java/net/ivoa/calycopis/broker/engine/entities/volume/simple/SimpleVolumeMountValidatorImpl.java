@@ -53,7 +53,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValida
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorImpl;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
@@ -235,7 +235,7 @@ implements SimpleVolumeMountValidator
                     validated
                     ){
                     @Override
-                    public SimpleVolumeMountEntityImpl build(
+                    public SimpleVolumeMountEntity build(
                         final AbstractComputeResourceEntity computeResource
                         ){
                         return volumeMountFactory.create(
@@ -276,7 +276,7 @@ implements SimpleVolumeMountValidator
                     validated
                     ){
                     @Override
-                    public AbstractVolumeMountEntityImpl build(
+                    public AbstractVolumeMountEntity build(
                         final AbstractComputeResourceEntity computeResource
                         ){
                         this.entity = SimpleVolumeMountValidatorImpl.this.volumeMountFactory.create(

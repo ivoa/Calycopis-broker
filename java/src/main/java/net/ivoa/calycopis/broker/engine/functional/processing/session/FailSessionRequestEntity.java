@@ -30,34 +30,34 @@ import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
- * A session-level processing request that schedules release requests
- * for all active components in the session.
+ * 
  */
 @Slf4j
 @Entity
 @Table(
-    name = "releasesessionrequests"
+    name = "failsessionrequests"
     )
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public class ReleaseSessionRequestEntityImpl
-extends SessionProcessingRequestEntityImpl
+@Deprecated
+public class FailSessionRequestEntity
+extends SessionProcessingRequestEntity
 implements SessionProcessingRequest
     {
 
-    protected ReleaseSessionRequestEntityImpl()
+    protected FailSessionRequestEntity()
         {
         super();
         }
 
-    protected ReleaseSessionRequestEntityImpl(final SimpleExecutionSessionEntity session)
+    protected FailSessionRequestEntity(final SimpleExecutionSessionEntity session)
         {
         super(
             SessionProcessingRequest.KIND,
@@ -69,12 +69,11 @@ implements SessionProcessingRequest
     public ProcessingAction preProcess(final Platform platform)
         {
         log.debug(
-            "Pre-processing [RELEASE] for session [{}][{}][{}]",
+            "Pre-processing [FAIL] for session [{}][{}][{}]",
             this.session.getUuid(),
             this.session.getClass().getSimpleName(),
             this.session.getPhase()
             );
-
         //
         // Check the current phase.
         switch (this.session.getPhase())
@@ -91,14 +90,13 @@ implements SessionProcessingRequest
             case IvoaSimpleExecutionSessionPhase.RELEASING:
 
                 //
-                // Set the session phase to RELEASING.
+                // Set the session phase to CANCELLED.
                 log.debug(
-                    "Setting session [{}][{}] phase to [RELEASING]",
-                    this.session.getUuid(),
-                    this.session.getClass().getSimpleName()
+                    "Setting session phase to [{}][FAILED]",
+                    this.session.getUuid()
                     );
                 this.session.setPhase(
-                    IvoaSimpleExecutionSessionPhase.RELEASING
+                    IvoaSimpleExecutionSessionPhase.FAILED
                     );
                 break;
 
@@ -110,7 +108,7 @@ implements SessionProcessingRequest
             case IvoaSimpleExecutionSessionPhase.COMPLETED:
             case IvoaSimpleExecutionSessionPhase.FAILED:
                 log.debug(
-                    "Skipping [RELEASE] for session [{}][{}], phase is already [{}]",
+                    "Skipping [FAIL] for session [{}][{}], phase is already [{}]",
                     this.session.getUuid(),
                     this.session.getClass().getSimpleName(),
                     this.session.getPhase()
@@ -126,41 +124,41 @@ implements SessionProcessingRequest
                     );
                 break;
             }
-        
-        scheduleReleaseIfActive(
+        //
+        // Cancel all of the components.
+        scheduleCancelIfActive(
             platform,
             this.session.getExecutable()
             );
-        scheduleReleaseIfActive(
+        scheduleCancelIfActive(
             platform,
             this.session.getComputeResource()
             );
         for (AbstractDataResourceEntity dataResource : this.session.getDataResources())
             {
-            scheduleReleaseIfActive(
+            scheduleCancelIfActive(
                 platform,
                 dataResource
                 );
             }
-        for (AbstractStorageResourceEntityImpl storageResource : this.session.getStorageResources())
+        for (AbstractStorageResourceEntity storageResource : this.session.getStorageResources())
             {
-            scheduleReleaseIfActive(
+            scheduleCancelIfActive(
                 platform,
                 storageResource
                 );
             }
 
-        return ProcessingAction.NO_ACTION;
+        return ProcessingAction.NO_ACTION ;
         }
 
     @Override
     public void postProcess(final Platform platform, final ProcessingAction action)
         {
         log.debug(
-            "Post-processing release for session [{}][{}][{}]",
+            "Post-processing [FAIL] for session [{}][{}]",
             this.session.getUuid(),
-            this.session.getClass().getSimpleName(),
-            this.session.getPhase()
+            this.session.getClass().getSimpleName()
             );
         this.done(
             platform

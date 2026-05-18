@@ -52,8 +52,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
 
@@ -88,7 +88,7 @@ implements AbstractDataResource
      */
     protected AbstractDataResourceEntity(
         final SimpleExecutionSessionEntity session,
-        final AbstractStorageResourceEntityImpl storage,
+        final AbstractStorageResourceEntity storage,
         final AbstractDataResourceValidator.Result result
         ){
         super(
@@ -135,13 +135,13 @@ implements AbstractDataResource
     
     @JoinColumn(name = "storage", referencedColumnName = "uuid", nullable = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private AbstractStorageResourceEntityImpl storage;
+    private AbstractStorageResourceEntity storage;
     @Override
     public AbstractStorageResource getStorage()
         {
         return this.storage;
         }
-    public void setStorage(final AbstractStorageResourceEntityImpl storage)
+    public void setStorage(final AbstractStorageResourceEntity storage)
         {
         this.storage = storage;
         }
@@ -152,14 +152,14 @@ implements AbstractDataResource
         cascade = CascadeType.ALL,
         orphanRemoval = true
         )
-    List<AbstractVolumeMountEntityImpl> volumeMounts = new ArrayList<AbstractVolumeMountEntityImpl>();
+    List<AbstractVolumeMountEntity> volumeMounts = new ArrayList<AbstractVolumeMountEntity>();
 
-    public List<AbstractVolumeMountEntityImpl> getVolumeMountEntities()
+    public List<AbstractVolumeMountEntity> getVolumeMountEntities()
         {
         return volumeMounts;
         }
 
-    public void addVolumeMount(final AbstractVolumeMountEntityImpl volume)
+    public void addVolumeMount(final AbstractVolumeMountEntity volume)
         {
         volume.setDataResource(
             this

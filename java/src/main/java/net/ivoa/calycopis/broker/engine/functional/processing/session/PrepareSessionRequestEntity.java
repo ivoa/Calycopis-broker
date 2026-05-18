@@ -33,7 +33,7 @@ import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
@@ -49,19 +49,19 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public class PrepareSessionRequestEntityImpl
-extends SessionProcessingRequestEntityImpl
+public class PrepareSessionRequestEntity
+extends SessionProcessingRequestEntity
 implements SessionProcessingRequest
     {
 
     public static final Duration DEFAULT_POLL_INTERVAL = Duration.ofSeconds(5);
 
-    protected PrepareSessionRequestEntityImpl()
+    protected PrepareSessionRequestEntity()
         {
         super();
         }
 
-    protected PrepareSessionRequestEntityImpl(final SimpleExecutionSessionEntity session)
+    protected PrepareSessionRequestEntity(final SimpleExecutionSessionEntity session)
         {
         super(
             SessionProcessingRequest.KIND,
@@ -183,7 +183,7 @@ implements SessionProcessingRequest
             this.session.getComputeResource()
             );
 
-        for(AbstractStorageResourceEntityImpl storageResource : this.session.getStorageResources())
+        for(AbstractStorageResourceEntity storageResource : this.session.getStorageResources())
             {
             log.debug(
                 "Scheduling [PREPARE] request for storage resource [{}][{}]",

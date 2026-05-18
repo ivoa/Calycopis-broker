@@ -38,7 +38,7 @@ package net.ivoa.calycopis.broker.engine.entities.volume.simple.mock;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountValidator;
@@ -63,13 +63,13 @@ implements MockSimpleVolumeMountEntityFactory
         }
 
     @Override
-    public MockSimpleVolumeMountEntityImpl create(
+    public MockSimpleVolumeMountEntity create(
         final AbstractComputeResourceEntity computeResource,
         final AbstractDataResourceEntity        dataResource,
         final SimpleVolumeMountValidator.Result result
         ){
         return this.repository.save(
-            new MockSimpleVolumeMountEntityImpl(
+            new MockSimpleVolumeMountEntity(
                 computeResource,
                 dataResource,
                 result
@@ -78,13 +78,13 @@ implements MockSimpleVolumeMountEntityFactory
         }
 
     @Override
-    public MockSimpleVolumeMountEntityImpl create(
+    public MockSimpleVolumeMountEntity create(
         final AbstractComputeResourceEntity computeResource,
-        final AbstractStorageResourceEntityImpl storageResource,
+        final AbstractStorageResourceEntity storageResource,
         final SimpleVolumeMountValidator.Result result
         ){
         return this.repository.save(
-            new MockSimpleVolumeMountEntityImpl(
+            new MockSimpleVolumeMountEntity(
                 computeResource,
                 storageResource,
                 result

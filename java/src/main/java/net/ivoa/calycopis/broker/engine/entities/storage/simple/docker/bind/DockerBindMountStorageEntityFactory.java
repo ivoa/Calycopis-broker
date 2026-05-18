@@ -38,7 +38,7 @@ extends SimpleStorageResourceEntityFactory
      * Create a DockerBindMountStorageEntity using the specified path.
      * 
      */
-    public DockerBindMountStorageEntityImpl create(
+    public DockerBindMountStorageEntity create(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result,
         final String path

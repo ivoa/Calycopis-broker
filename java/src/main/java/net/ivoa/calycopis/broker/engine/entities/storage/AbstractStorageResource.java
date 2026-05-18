@@ -28,7 +28,7 @@ import java.util.List;
 
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponent;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
-import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 
 /**
  * 
@@ -55,7 +55,7 @@ extends LifecycleComponent
      * TODO make this more abstract.
      *
      */
-    public List<AbstractVolumeMountEntityImpl> getVolumeMounts();
+    public List<AbstractVolumeMountEntity> getVolumeMounts();
 
     /**
      * Link this storage resource to a compute resource via

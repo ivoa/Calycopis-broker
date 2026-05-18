@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  */
 public interface ProcessingRequestRepository
-extends JpaRepository<ProcessingRequestEntityImpl, UUID>
+extends JpaRepository<ProcessingRequestEntity, UUID>
     {
 
     public UUID findByUuid(@Param("uuid") final UUID uuid) ;
@@ -50,7 +50,7 @@ extends JpaRepository<ProcessingRequestEntityImpl, UUID>
         SELECT
             p.uuid
         FROM
-            ProcessingRequestEntityImpl p
+            ProcessingRequestEntity p
         WHERE
             p.service = :service
         AND
@@ -70,7 +70,7 @@ extends JpaRepository<ProcessingRequestEntityImpl, UUID>
     @Query(
         """
         UPDATE
-            ProcessingRequestEntityImpl pe
+            ProcessingRequestEntity pe
         SET
             pe.service = :service
         WHERE
@@ -78,7 +78,7 @@ extends JpaRepository<ProcessingRequestEntityImpl, UUID>
                 SELECT
                     q.uuid
                 FROM
-                    ProcessingRequestEntityImpl q
+                    ProcessingRequestEntity q
                 WHERE
                     q.service IS NULL
                 AND

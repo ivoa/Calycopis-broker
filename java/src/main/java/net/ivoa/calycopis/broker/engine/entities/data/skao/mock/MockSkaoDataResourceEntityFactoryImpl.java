@@ -42,7 +42,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValida
 import net.ivoa.calycopis.broker.engine.entities.data.skao.SkaoDataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.skao.SkaoDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 
 /**
  *
@@ -77,7 +77,7 @@ implements MockSkaoDataResourceEntityFactory
     @Override
     public SkaoDataResourceEntity create(
         final SimpleExecutionSessionEntity session,
-        final AbstractStorageResourceEntityImpl storage,
+        final AbstractStorageResourceEntity storage,
         final AbstractDataResourceValidator.Result result
         ){
         return this.skaoDataResourceEntityRepository.save(

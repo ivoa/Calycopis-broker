@@ -47,7 +47,7 @@ import jakarta.persistence.Table;
 import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
 import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
@@ -62,7 +62,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public abstract class AbstractVolumeMountEntityImpl
+public abstract class AbstractVolumeMountEntity
 extends ComponentEntity
 implements AbstractVolumeMount
     {
@@ -71,7 +71,7 @@ implements AbstractVolumeMount
      * Protected constructor for JPA entities.
      *
      */
-    protected AbstractVolumeMountEntityImpl()
+    protected AbstractVolumeMountEntity()
         {
         super();
         }
@@ -80,7 +80,7 @@ implements AbstractVolumeMount
      * Protected constructor used by derived classes.
      *
      */
-    protected AbstractVolumeMountEntityImpl(
+    protected AbstractVolumeMountEntity(
         final AbstractComputeResourceEntity computeResource,
         final AbstractDataResourceEntity dataResource,
         final IvoaComponentMetadata meta
@@ -100,9 +100,9 @@ implements AbstractVolumeMount
      * Protected constructor.
      *
      */
-    protected AbstractVolumeMountEntityImpl(
+    protected AbstractVolumeMountEntity(
         final AbstractComputeResourceEntity computeResource,
-        final AbstractStorageResourceEntityImpl storageResource,
+        final AbstractStorageResourceEntity storageResource,
         final IvoaComponentMetadata meta
         ){
         super(meta);
@@ -146,14 +146,14 @@ implements AbstractVolumeMount
 
     @JoinColumn(name = "storageresource", referencedColumnName = "uuid", nullable = true)
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
-    private AbstractStorageResourceEntityImpl storageResource;
+    private AbstractStorageResourceEntity storageResource;
 
     @Override
-    public AbstractStorageResourceEntityImpl getStorageResource()
+    public AbstractStorageResourceEntity getStorageResource()
         {
         return this.storageResource;
         }
-    public void setStorageResource(final AbstractStorageResourceEntityImpl storageResource)
+    public void setStorageResource(final AbstractStorageResourceEntity storageResource)
         {
         this.storageResource = storageResource;
         }

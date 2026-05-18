@@ -42,8 +42,8 @@ import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleVolumeMount;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleVolumeMount.ModeEnum;
@@ -57,8 +57,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleVolumeMount.ModeEnum;
 @Table(
     name = "simplevolumemounts"
     )
-public class SimpleVolumeMountEntityImpl
-extends AbstractVolumeMountEntityImpl
+public class SimpleVolumeMountEntity
+extends AbstractVolumeMountEntity
 implements SimpleVolumeMount
     {
     
@@ -72,7 +72,7 @@ implements SimpleVolumeMount
      * Protected constructor for JPA entities.
      *
      */
-    protected SimpleVolumeMountEntityImpl()
+    protected SimpleVolumeMountEntity()
         {
         super();
         }
@@ -81,7 +81,7 @@ implements SimpleVolumeMount
      * Protected constructor used by our factory.
      *
      */
-    protected SimpleVolumeMountEntityImpl(
+    protected SimpleVolumeMountEntity(
         final AbstractComputeResourceEntity computeResource,
         final AbstractDataResourceEntity        dataResource,
         final SimpleVolumeMountValidator.Result result
@@ -100,9 +100,9 @@ implements SimpleVolumeMount
      * Protected constructor used by our factory.
      *
      */
-    public SimpleVolumeMountEntityImpl(
+    public SimpleVolumeMountEntity(
         final AbstractComputeResourceEntity computeResource,
-        final AbstractStorageResourceEntityImpl storageResource,
+        final AbstractStorageResourceEntity storageResource,
         final SimpleVolumeMountValidator.Result result
         ){
         super(

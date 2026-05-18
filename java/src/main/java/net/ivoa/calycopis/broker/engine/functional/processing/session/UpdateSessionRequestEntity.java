@@ -62,17 +62,17 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public class UpdateSessionRequestEntityImpl
-extends SessionProcessingRequestEntityImpl
+public class UpdateSessionRequestEntity
+extends SessionProcessingRequestEntity
 implements SessionProcessingRequest
     {
 
-    protected UpdateSessionRequestEntityImpl()
+    protected UpdateSessionRequestEntity()
         {
         super();
         }
 
-    protected UpdateSessionRequestEntityImpl(final SimpleExecutionSessionEntity session)
+    protected UpdateSessionRequestEntity(final SimpleExecutionSessionEntity session)
         {
         super(
             SessionProcessingRequest.KIND,
@@ -133,8 +133,8 @@ implements SessionProcessingRequest
                                 "Component [{}][{}] in session [{}][{}] has unexpected phase [{}]",
                                 component.getUuid(),
                                 component.getClass().getSimpleName(),
-                                UpdateSessionRequestEntityImpl.this.session.getUuid(),
-                                UpdateSessionRequestEntityImpl.this.session.getClass().getSimpleName(),
+                                UpdateSessionRequestEntity.this.session.getUuid(),
+                                UpdateSessionRequestEntity.this.session.getClass().getSimpleName(),
                                 component.getPhase()
                                 );
                         }

@@ -53,7 +53,7 @@ import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponent;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinkerBean;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory;
@@ -91,7 +91,7 @@ implements DockerHttpResource
      */
     protected DockerHttpResourceEntity(
         final SimpleExecutionSessionEntity session,
-        final AbstractStorageResourceEntityImpl storage,
+        final AbstractStorageResourceEntity storage,
         final DockerHttpResourceValidator.Result result
         ){
         super(
@@ -156,7 +156,7 @@ implements DockerHttpResource
             }
 
         final DockerStorageLinkerBean volumeLinker = new DockerStorageLinkerBean("/data", AccessMode.rw);
-        ((AbstractStorageResourceEntityImpl) storage).link(volumeLinker);
+        ((AbstractStorageResourceEntity) storage).link(volumeLinker);
         final String volumeName = volumeLinker.getSourcePath();
         if (volumeName == null || volumeName.isEmpty())
             {

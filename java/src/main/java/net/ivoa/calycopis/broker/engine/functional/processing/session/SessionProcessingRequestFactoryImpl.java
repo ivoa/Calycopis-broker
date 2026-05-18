@@ -52,55 +52,55 @@ implements SessionProcessingRequestFactory
         }
 
     @Override
-    public PrepareSessionRequestEntityImpl createPrepareSessionRequest(final SimpleExecutionSessionEntity session)
+    public PrepareSessionRequestEntity createPrepareSessionRequest(final SimpleExecutionSessionEntity session)
         {
         log.debug("Creating PrepareSessionRequest for session [{}]", session.getUuid());
         return repository.save(
-            new PrepareSessionRequestEntityImpl(
+            new PrepareSessionRequestEntity(
                 session
                 )
             );
         }
 
     @Override
-    public UpdateSessionRequestEntityImpl createUpdateSessionRequest(final SimpleExecutionSessionEntity session)
+    public UpdateSessionRequestEntity createUpdateSessionRequest(final SimpleExecutionSessionEntity session)
         {
         log.debug("Creating MonitorSessionRequest for session [{}]", session.getUuid());
         return repository.save(
-            new UpdateSessionRequestEntityImpl(
+            new UpdateSessionRequestEntity(
                 session
                 )
             );
         }
 
     @Override
-    public ReleaseSessionRequestEntityImpl createReleaseSessionRequest(final SimpleExecutionSessionEntity session)
+    public ReleaseSessionRequestEntity createReleaseSessionRequest(final SimpleExecutionSessionEntity session)
         {
         log.debug("Creating ReleaseSessionRequest for session [{}]", session.getUuid());
         return repository.save(
-            new ReleaseSessionRequestEntityImpl(
+            new ReleaseSessionRequestEntity(
                 session
                 )
             );
         }
     
     @Override
-    public CancelSessionRequestEntityImpl createCancelSessionRequest(final SimpleExecutionSessionEntity session)
+    public CancelSessionRequestEntity createCancelSessionRequest(final SimpleExecutionSessionEntity session)
         {
         log.debug("Creating CancelSessionRequest for session [{}]", session.getUuid());
         return repository.save(
-            new CancelSessionRequestEntityImpl(
+            new CancelSessionRequestEntity(
                 session
                 )
             );
         }
 
     @Override
-    public FailSessionRequestEntityImpl createFailSessionRequest(final SimpleExecutionSessionEntity session)
+    public FailSessionRequestEntity createFailSessionRequest(final SimpleExecutionSessionEntity session)
         {
         log.debug("Creating FailSessionRequest for session [{}]", session.getUuid());
         return repository.save(
-            new FailSessionRequestEntityImpl(
+            new FailSessionRequestEntity(
                 session
                 )
             );

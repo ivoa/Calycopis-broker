@@ -40,7 +40,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaS3DataResource;
 
@@ -78,7 +78,7 @@ implements AmazonS3DataResource
      */
     protected AmazonS3DataResourceEntityImpl(
         final SimpleExecutionSessionEntity session,
-        final AbstractStorageResourceEntityImpl storage,
+        final AbstractStorageResourceEntity storage,
         final AmazonS3DataResourceValidator.Result result
         ){
         super(

@@ -49,7 +49,7 @@ implements AbstractVolumeMountEntityFactory
         }
 
     @Override
-    public Optional<AbstractVolumeMountEntityImpl> select(UUID uuid)
+    public Optional<AbstractVolumeMountEntity> select(UUID uuid)
         {
         return repository.findById(uuid);
         }

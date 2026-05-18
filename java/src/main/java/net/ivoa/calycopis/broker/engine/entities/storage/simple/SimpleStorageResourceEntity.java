@@ -39,7 +39,7 @@ import java.net.URI;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
@@ -53,8 +53,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleStorageResource;
 @Table(
     name = "simplestorageresources"
     )
-public abstract class SimpleStorageResourceEntityImpl
-extends AbstractStorageResourceEntityImpl
+public abstract class SimpleStorageResourceEntity
+extends AbstractStorageResourceEntity
 implements SimpleStorageResource
     {
     
@@ -68,7 +68,7 @@ implements SimpleStorageResource
      * Protected constructor for JPA entities.
      *
      */
-    protected SimpleStorageResourceEntityImpl()
+    protected SimpleStorageResourceEntity()
         {
         super();
         }
@@ -77,7 +77,7 @@ implements SimpleStorageResource
      * Protected constructor used by our Factories.
      *
      */
-    protected SimpleStorageResourceEntityImpl(
+    protected SimpleStorageResourceEntity(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result
         ){

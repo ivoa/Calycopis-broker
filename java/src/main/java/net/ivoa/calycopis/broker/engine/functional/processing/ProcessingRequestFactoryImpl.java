@@ -59,10 +59,10 @@ implements ProcessingRequestFactory
     public void delete(final ProcessingRequest request)
         {
         log.debug("Deleting ProcessingRequest [{}]", request.getUuid());
-        if (request instanceof ProcessingRequestEntityImpl)
+        if (request instanceof ProcessingRequestEntity)
             {
             processingRequestRepository.delete(
-                (ProcessingRequestEntityImpl)request
+                (ProcessingRequestEntity)request
                 );  
             }
         else {

@@ -44,7 +44,7 @@ import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
@@ -213,7 +213,7 @@ public abstract class SimpleComputeResourceEntity
         memorybean.setMax(maxofferedcores);
         bean.setMemory(memorybean);
 
-        for (AbstractVolumeMountEntityImpl volume : this.getVolumeMountEntities())
+        for (AbstractVolumeMountEntity volume : this.getVolumeMountEntities())
             {
             bean.addVolumesItem(
                 volume.makeBean(uribuilder)

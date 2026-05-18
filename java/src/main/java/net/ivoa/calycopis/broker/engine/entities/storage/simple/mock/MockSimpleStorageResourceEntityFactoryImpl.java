@@ -44,12 +44,12 @@ implements MockSimpleStorageResourceEntityFactory
         }
 
     @Override
-    public MockSimpleStorageResourceEntityImpl create(
+    public MockSimpleStorageResourceEntity create(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result
         ){
-        MockSimpleStorageResourceEntityImpl entity = this.repository.save(
-            new MockSimpleStorageResourceEntityImpl(
+        MockSimpleStorageResourceEntity entity = this.repository.save(
+            new MockSimpleStorageResourceEntity(
                 session,
                 result
                 )

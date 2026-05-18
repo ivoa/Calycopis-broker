@@ -23,15 +23,30 @@
  */
 package net.ivoa.calycopis.broker.engine.entities.component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
+import net.ivoa.calycopis.broker.engine.entities.volume.simple.docker.DockerSimpleVolumeMountEntity;
 
 /**
  * JpaRepository for ComponentEntities.
  *
  */
-public interface ComponentEntityRepository<EntityType extends ComponentEntity>
-extends JpaRepository<EntityType, UUID>
+public interface ComponentEntityRepository<EntityBase extends ComponentEntity>
+extends JpaRepository<EntityBase , UUID>
     {
+
+    /**
+     * 
+     */
+    public Optional<EntityBase> findById(final UUID uuid);
+
+    /**
+     * 
+     */
+    public <EntityType extends EntityBase> EntityType save(EntityType entity);
+
     }

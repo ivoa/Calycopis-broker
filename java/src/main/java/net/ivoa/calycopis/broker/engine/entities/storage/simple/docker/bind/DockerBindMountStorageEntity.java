@@ -45,7 +45,7 @@ import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponent;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.storage.simple.SimpleStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.simple.SimpleStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinker;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
@@ -64,15 +64,15 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 @DiscriminatorValue(
     value="uri:docker-bind-storage"
     )
-public class DockerBindMountStorageEntityImpl
-extends SimpleStorageResourceEntityImpl
+public class DockerBindMountStorageEntity
+extends SimpleStorageResourceEntity
 implements DockerBindMountStorage
     {
 
     /**
      * 
      */
-    public DockerBindMountStorageEntityImpl()
+    public DockerBindMountStorageEntity()
         {
         super();
         }
@@ -80,7 +80,7 @@ implements DockerBindMountStorage
     /**
      * 
      */
-    public DockerBindMountStorageEntityImpl(
+    public DockerBindMountStorageEntity(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result,
         final String hostPath

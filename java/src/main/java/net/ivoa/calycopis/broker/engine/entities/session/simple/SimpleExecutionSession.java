@@ -46,7 +46,7 @@ import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResource
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSession;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
@@ -103,7 +103,7 @@ extends AbstractExecutionSession
      * Get a list of the StorageResources.
      *
      */
-    public List<AbstractStorageResourceEntityImpl> getStorageResources();
+    public List<AbstractStorageResourceEntity> getStorageResources();
 
     /**
      * Get a list of the connectors.

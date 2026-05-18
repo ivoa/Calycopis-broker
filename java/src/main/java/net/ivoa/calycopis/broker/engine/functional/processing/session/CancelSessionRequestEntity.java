@@ -30,7 +30,7 @@ import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
@@ -47,17 +47,17 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
     strategy = InheritanceType.JOINED
     )
 @Deprecated
-public class CancelSessionRequestEntityImpl
-extends SessionProcessingRequestEntityImpl
+public class CancelSessionRequestEntity
+extends SessionProcessingRequestEntity
 implements SessionProcessingRequest
     {
 
-    protected CancelSessionRequestEntityImpl()
+    protected CancelSessionRequestEntity()
         {
         super();
         }
 
-    protected CancelSessionRequestEntityImpl(final SimpleExecutionSessionEntity session)
+    protected CancelSessionRequestEntity(final SimpleExecutionSessionEntity session)
         {
         super(
             SessionProcessingRequest.KIND,
@@ -139,7 +139,7 @@ implements SessionProcessingRequest
                 dataResource
                 );
             }
-        for (AbstractStorageResourceEntityImpl storageResource : this.session.getStorageResources())
+        for (AbstractStorageResourceEntity storageResource : this.session.getStorageResources())
             {
             scheduleCancelIfActive(
                 platform,

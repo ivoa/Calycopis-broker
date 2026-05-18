@@ -39,7 +39,7 @@ import jakarta.persistence.Table;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMount;
-import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
@@ -122,9 +122,9 @@ implements AbstractComputeResource
         cascade = CascadeType.ALL,
         orphanRemoval = true
         )
-    List<AbstractVolumeMountEntityImpl> volumeMounts = new ArrayList<AbstractVolumeMountEntityImpl>();
+    List<AbstractVolumeMountEntity> volumeMounts = new ArrayList<AbstractVolumeMountEntity>();
     
-    public Iterable<AbstractVolumeMountEntityImpl> getVolumeMountEntities()
+    public Iterable<AbstractVolumeMountEntity> getVolumeMountEntities()
         {
         return volumeMounts;
         }
@@ -132,17 +132,17 @@ implements AbstractComputeResource
     @Override
     public Iterable<AbstractVolumeMount> getVolumeMounts()
         {
-        return new ListWrapper<AbstractVolumeMount, AbstractVolumeMountEntityImpl>(
+        return new ListWrapper<AbstractVolumeMount, AbstractVolumeMountEntity>(
             this.volumeMounts
             ){
-            public AbstractVolumeMount wrap(final AbstractVolumeMountEntityImpl inner)
+            public AbstractVolumeMount wrap(final AbstractVolumeMountEntity inner)
                 {
                 return inner;
                 }
             };
         }
     
-    public void addVolumeMount(final AbstractVolumeMountEntityImpl volume)
+    public void addVolumeMount(final AbstractVolumeMountEntity volume)
         {
         volumeMounts.add(
             volume
