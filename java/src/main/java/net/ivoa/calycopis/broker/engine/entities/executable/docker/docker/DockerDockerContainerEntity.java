@@ -38,8 +38,8 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponent;
-import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerPlatform;
@@ -63,8 +63,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public class DockerDockerContainerEntityImpl
-extends DockerContainerEntityImpl
+public class DockerDockerContainerEntity
+extends DockerContainerEntity
 implements DockerDockerContainer
     {
 
@@ -72,7 +72,7 @@ implements DockerDockerContainer
      * Protected constructor for JPA entities.
      * 
      */
-    protected DockerDockerContainerEntityImpl()
+    protected DockerDockerContainerEntity()
         {
         super();
         }
@@ -81,8 +81,8 @@ implements DockerDockerContainer
      * Protected constructor used by our factory.
      *
      */
-    protected DockerDockerContainerEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected DockerDockerContainerEntity(
+        final SimpleExecutionSessionEntity session,
         final DockerDockerContainerValidator.Result result
         ){
         super(
@@ -331,10 +331,10 @@ implements DockerDockerContainer
                     component.getClass().getSimpleName(),
                     this.nextPhase
                     );
-                if (component instanceof DockerDockerContainerEntityImpl)
+                if (component instanceof DockerDockerContainerEntity)
                     {
                     this.postProcess(
-                        (DockerDockerContainerEntityImpl) component
+                        (DockerDockerContainerEntity) component
                         );
                     }
                 else {
@@ -354,7 +354,7 @@ implements DockerDockerContainer
                     }
                 }
 
-            public void postProcess(final DockerDockerContainerEntityImpl component)
+            public void postProcess(final DockerDockerContainerEntity component)
                 {
                 component.imageDownloadMillis = this.downloadTimeMillis;
                 component.setPhase(

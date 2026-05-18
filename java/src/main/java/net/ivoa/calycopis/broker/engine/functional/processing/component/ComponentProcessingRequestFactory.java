@@ -23,7 +23,7 @@
 
 package net.ivoa.calycopis.broker.engine.functional.processing.component;
 
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 
 /**
@@ -33,14 +33,14 @@ public interface ComponentProcessingRequestFactory
 extends FactoryBase
     {
 
-    public ComponentProcessingRequestEntityImpl createPrepareComponentRequest(final LifecycleComponentEntityImpl component);
+    public ComponentProcessingRequestEntityImpl createPrepareComponentRequest(final LifecycleComponentEntity component);
 
-    public ComponentProcessingRequestEntityImpl createMonitorComponentRequest(final LifecycleComponentEntityImpl component);
+    public ComponentProcessingRequestEntityImpl createMonitorComponentRequest(final LifecycleComponentEntity component);
 
-    public ComponentProcessingRequestEntityImpl createReleaseComponentRequest(final LifecycleComponentEntityImpl component);
+    public ComponentProcessingRequestEntityImpl createReleaseComponentRequest(final LifecycleComponentEntity component);
 
-    public ComponentProcessingRequestEntityImpl createCancelComponentRequest(final LifecycleComponentEntityImpl component);
+    public ComponentProcessingRequestEntityImpl createCancelComponentRequest(final LifecycleComponentEntity component);
 
-    public ComponentProcessingRequestEntityImpl createFailComponentRequest(final LifecycleComponentEntityImpl component);
+    public ComponentProcessingRequestEntityImpl createFailComponentRequest(final LifecycleComponentEntity component);
     
     }

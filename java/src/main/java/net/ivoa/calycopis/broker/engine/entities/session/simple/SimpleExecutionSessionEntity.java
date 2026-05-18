@@ -56,14 +56,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.message.Message;
-import net.ivoa.calycopis.broker.engine.entities.message.MessageEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.message.MessageEntity;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.functional.booking.ResourceOffer;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
@@ -88,8 +88,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleSessionConnector;
 @DiscriminatorValue(
     value = "uri:simple-execution-session"
     )
-public class SimpleExecutionSessionEntityImpl
-extends AbstractExecutionSessionEntityImpl
+public class SimpleExecutionSessionEntity
+extends AbstractExecutionSessionEntity
 implements SimpleExecutionSession
     {
     
@@ -103,7 +103,7 @@ implements SimpleExecutionSession
      * Protected constructor
      *
      */
-    public SimpleExecutionSessionEntityImpl()
+    public SimpleExecutionSessionEntity()
         {
         super();
         }
@@ -122,8 +122,8 @@ implements SimpleExecutionSession
      * Protected constructor with parent.
      *
      */
-    public SimpleExecutionSessionEntityImpl(
-        final OfferSetEntityImpl offerset,
+    public SimpleExecutionSessionEntity(
+        final OfferSetEntity offerset,
         final OfferSetRequestParserContext context,
         final ResourceOffer offerblock
         ){
@@ -164,13 +164,13 @@ implements SimpleExecutionSession
         cascade = CascadeType.ALL,
         orphanRemoval = true
         )
-    private AbstractExecutableEntityImpl executable;
+    private AbstractExecutableEntity executable;
     @Override
-    public AbstractExecutableEntityImpl getExecutable()
+    public AbstractExecutableEntity getExecutable()
         {
         return this.executable;
         }
-    public void setExecutable(final AbstractExecutableEntityImpl executable)
+    public void setExecutable(final AbstractExecutableEntity executable)
         {
         this.executable = executable;
         }
@@ -181,14 +181,14 @@ implements SimpleExecutionSession
         cascade = CascadeType.ALL,
         orphanRemoval = true
         )
-    private AbstractComputeResourceEntityImpl computer;
+    private AbstractComputeResourceEntity computer;
 
     @Override
-    public AbstractComputeResourceEntityImpl getComputeResource()
+    public AbstractComputeResourceEntity getComputeResource()
         {
         return computer;
         }
-    public void setComputeResource(final AbstractComputeResourceEntityImpl computer)
+    public void setComputeResource(final AbstractComputeResourceEntity computer)
         {
         this.computer = computer;
         }
@@ -199,15 +199,15 @@ implements SimpleExecutionSession
         cascade = CascadeType.ALL,
         orphanRemoval = true
         )
-    List<AbstractDataResourceEntityImpl> dataresources = new ArrayList<AbstractDataResourceEntityImpl>();
+    List<AbstractDataResourceEntity> dataresources = new ArrayList<AbstractDataResourceEntity>();
 
     @Override
-    public List<AbstractDataResourceEntityImpl> getDataResources()
+    public List<AbstractDataResourceEntity> getDataResources()
         {
         return dataresources;
         }
 
-    public void addDataResource(final AbstractDataResourceEntityImpl resource)
+    public void addDataResource(final AbstractDataResourceEntity resource)
         {
         dataresources.add(
             resource
@@ -610,7 +610,7 @@ implements SimpleExecutionSession
                 )
             );
 
-        for (AbstractDataResourceEntityImpl resource : this.getDataResources())
+        for (AbstractDataResourceEntity resource : this.getDataResources())
             {
             bean.addDataItem(
                 resource.makeBean(
@@ -650,13 +650,13 @@ implements SimpleExecutionSession
         {
         for (Message message : messages)
             {
-            if (message instanceof MessageEntityImpl)
+            if (message instanceof MessageEntity)
                 {
-                ((MessageEntityImpl) message).setParent(
+                ((MessageEntity) message).setParent(
                     this
                     );
                 this.messages.add(
-                    ((MessageEntityImpl) message)
+                    ((MessageEntity) message)
                     );
                 }
             else {

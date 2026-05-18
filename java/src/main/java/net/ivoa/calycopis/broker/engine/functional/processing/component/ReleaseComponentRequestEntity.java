@@ -30,7 +30,7 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
@@ -59,7 +59,7 @@ implements ComponentProcessingRequest
         super();
         }
 
-    protected ReleaseComponentRequestEntity(final LifecycleComponentEntityImpl component)
+    protected ReleaseComponentRequestEntity(final LifecycleComponentEntity component)
         {
         super(component);
         }
@@ -67,7 +67,7 @@ implements ComponentProcessingRequest
     @Override
     public ProcessingAction preProcess(final Platform platform)
         {
-        LifecycleComponentEntityImpl component = this.getComponent(
+        LifecycleComponentEntity component = this.getComponent(
             platform
             );
         log.debug(
@@ -128,7 +128,7 @@ implements ComponentProcessingRequest
 
     protected void postProcess(final Platform platform, final ComponentProcessingAction action)
         {
-        LifecycleComponentEntityImpl component = this.getComponent(
+        LifecycleComponentEntity component = this.getComponent(
             platform
             );
         log.debug(

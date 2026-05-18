@@ -31,7 +31,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * JpaRepository for ComponentEntities.
  *
  */
-public interface ComponentEntityRepository<EntityType extends ComponentEntityImpl>
+public interface ComponentEntityRepository<EntityType extends ComponentEntity>
 extends JpaRepository<EntityType, UUID>
     {
     }

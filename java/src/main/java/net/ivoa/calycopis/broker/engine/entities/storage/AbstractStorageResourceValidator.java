@@ -41,7 +41,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
 
@@ -86,7 +86,7 @@ extends Validator<IvoaAbstractStorageResource, AbstractStorageResourceEntityImpl
          * Build an entity based on our validation result.
          * 
          */
-        public AbstractStorageResourceEntityImpl build(final SimpleExecutionSessionEntityImpl session);
+        public AbstractStorageResourceEntityImpl build(final SimpleExecutionSessionEntity session);
 
         }
 

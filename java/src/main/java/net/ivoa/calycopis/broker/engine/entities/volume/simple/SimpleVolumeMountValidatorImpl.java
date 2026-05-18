@@ -47,7 +47,7 @@ package net.ivoa.calycopis.broker.engine.entities.volume.simple;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
@@ -236,7 +236,7 @@ implements SimpleVolumeMountValidator
                     ){
                     @Override
                     public SimpleVolumeMountEntityImpl build(
-                        final AbstractComputeResourceEntityImpl computeResource
+                        final AbstractComputeResourceEntity computeResource
                         ){
                         return volumeMountFactory.create(
                             computeResource,
@@ -277,7 +277,7 @@ implements SimpleVolumeMountValidator
                     ){
                     @Override
                     public AbstractVolumeMountEntityImpl build(
-                        final AbstractComputeResourceEntityImpl computeResource
+                        final AbstractComputeResourceEntity computeResource
                         ){
                         this.entity = SimpleVolumeMountValidatorImpl.this.volumeMountFactory.create(
                             computeResource,

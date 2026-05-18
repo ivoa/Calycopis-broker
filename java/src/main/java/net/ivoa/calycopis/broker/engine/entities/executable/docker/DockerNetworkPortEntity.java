@@ -66,7 +66,7 @@ implements DockerNetworkPort
         }
     
     protected DockerNetworkPortEntity(
-        final DockerContainerEntityImpl parent,
+        final DockerContainerEntity parent,
         final IvoaDockerNetworkPort template
         ){
         super();
@@ -92,8 +92,8 @@ implements DockerNetworkPort
 
     @JoinColumn(name = "parent", referencedColumnName = "uuid", nullable = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private DockerContainerEntityImpl parent ;
-    public DockerContainerEntityImpl getParent()
+    private DockerContainerEntity parent ;
+    public DockerContainerEntity getParent()
         {
         return this.parent;
         }

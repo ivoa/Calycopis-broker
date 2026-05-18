@@ -46,8 +46,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
@@ -67,8 +67,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSkaoReplicaItem;
 @Table(
     name = "skaodataresources"
     )
-public abstract class SkaoDataResourceEntityImpl
-extends IvoaDataResourceEntityImpl
+public abstract class SkaoDataResourceEntity
+extends IvoaDataResourceEntity
 implements SkaoDataResource
     {
 
@@ -82,7 +82,7 @@ implements SkaoDataResource
      * Protected constructor for JPA entities.
      *
      */
-    protected SkaoDataResourceEntityImpl()
+    protected SkaoDataResourceEntity()
         {
         super();
         }
@@ -91,8 +91,8 @@ implements SkaoDataResource
      * Protected constructor used by our Factories.
      *
      */
-    protected SkaoDataResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected SkaoDataResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final AbstractDataResourceValidator.Result result
         ){
@@ -109,8 +109,8 @@ implements SkaoDataResource
      * TODO validated can be replaced by Result.getObject()
      *
      */
-    public SkaoDataResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    public SkaoDataResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final AbstractDataResourceValidator.Result result,
         final IvoaSkaoDataResource validated

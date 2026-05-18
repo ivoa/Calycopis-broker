@@ -31,8 +31,8 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
@@ -61,7 +61,7 @@ implements SessionProcessingRequest
         super();
         }
 
-    protected PrepareSessionRequestEntityImpl(final SimpleExecutionSessionEntityImpl session)
+    protected PrepareSessionRequestEntityImpl(final SimpleExecutionSessionEntity session)
         {
         super(
             SessionProcessingRequest.KIND,
@@ -195,7 +195,7 @@ implements SessionProcessingRequest
                 );
             }
 
-        for(AbstractDataResourceEntityImpl dataResource : this.session.getDataResources())
+        for(AbstractDataResourceEntity dataResource : this.session.getDataResources())
             {
             log.debug(
                 "Scheduling [PREPARE] request for data resource [{}][{}]",

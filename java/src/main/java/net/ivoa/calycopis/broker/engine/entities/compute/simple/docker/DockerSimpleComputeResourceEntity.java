@@ -58,12 +58,12 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponent;
-import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainer;
-import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinkerBean;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
@@ -90,8 +90,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleVolumeMount.ModeEnum;
 @DiscriminatorValue(
     value = "uri:docker-simple-compute-resources"
     )
-public class DockerSimpleComputeResourceEntityImpl
-extends SimpleComputeResourceEntityImpl
+public class DockerSimpleComputeResourceEntity
+extends SimpleComputeResourceEntity
 implements DockerSimpleComputeResource
     {
 
@@ -99,7 +99,7 @@ implements DockerSimpleComputeResource
      * Protected constructor for JPA entities.
      *
      */
-    protected DockerSimpleComputeResourceEntityImpl()
+    protected DockerSimpleComputeResourceEntity()
         {
         super();
         }
@@ -108,8 +108,8 @@ implements DockerSimpleComputeResource
      * Protected constructor used by our factory.
      *
      */
-    protected DockerSimpleComputeResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected DockerSimpleComputeResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final DockerSimpleComputeResourceValidator.Result result,
         final ComputeResourceOffer offer
         ){
@@ -244,7 +244,7 @@ implements DockerSimpleComputeResource
             if (volumeMount instanceof SimpleVolumeMountEntityImpl)
                 {
                 SimpleVolumeMountEntityImpl simpleMount = (SimpleVolumeMountEntityImpl) volumeMount;
-                AbstractDataResourceEntityImpl dataResource = simpleMount.getDataResource();
+                AbstractDataResourceEntity dataResource = simpleMount.getDataResource();
                 log.debug(
                     "SimpleVolumeMount [{}] dataResource [{}]",
                     simpleMount.getUuid(),
@@ -304,14 +304,14 @@ implements DockerSimpleComputeResource
             resourceUuid
             );
 
-        final AbstractExecutableEntityImpl executable = this.session.getExecutable();
+        final AbstractExecutableEntity executable = this.session.getExecutable();
         final String imageName;
         final List<String> variablesList = new ArrayList<String>();
         final List<String> commandList = new ArrayList<String>();
 
-        if (executable instanceof DockerContainerEntityImpl)
+        if (executable instanceof DockerContainerEntity)
             {
-            DockerContainerEntityImpl dockerExecutable = (DockerContainerEntityImpl) executable;
+            DockerContainerEntity dockerExecutable = (DockerContainerEntity) executable;
             DockerContainer.DockerContainerImage image = dockerExecutable.getImage();
             // TODO We should iterate the list rather than just taking the first one.
             if (image != null && image.getLocations() != null && !image.getLocations().isEmpty())
@@ -510,10 +510,10 @@ implements DockerSimpleComputeResource
                     component.getUuid(),
                     component.getClass().getSimpleName()
                     );
-                if (component instanceof DockerSimpleComputeResourceEntityImpl)
+                if (component instanceof DockerSimpleComputeResourceEntity)
                     {
                     postProcess(
-                        (DockerSimpleComputeResourceEntityImpl) component
+                        (DockerSimpleComputeResourceEntity) component
                         );
                     }
                 else {
@@ -528,7 +528,7 @@ implements DockerSimpleComputeResource
                     }
                 }
                 
-            public void postProcess(final DockerSimpleComputeResourceEntityImpl component)
+            public void postProcess(final DockerSimpleComputeResourceEntity component)
                 {
                 log.debug(
                     "Post processing Docker compute resource [{}][{}] with container [{}]",
@@ -774,10 +774,10 @@ implements DockerSimpleComputeResource
                     this.nextPhase,
                     this.exitCode
                     );
-                if (component instanceof DockerSimpleComputeResourceEntityImpl)
+                if (component instanceof DockerSimpleComputeResourceEntity)
                     {
                     postProcess(
-                        (DockerSimpleComputeResourceEntityImpl) component
+                        (DockerSimpleComputeResourceEntity) component
                         );
                     }
                 else {
@@ -794,7 +794,7 @@ implements DockerSimpleComputeResource
                     }
                 }
 
-            public void postProcess(final DockerSimpleComputeResourceEntityImpl component)
+            public void postProcess(final DockerSimpleComputeResourceEntity component)
                 {
                 component.dockerContainerExitCode = this.exitCode;
                 component.containerStdout = this.capturedStdout;

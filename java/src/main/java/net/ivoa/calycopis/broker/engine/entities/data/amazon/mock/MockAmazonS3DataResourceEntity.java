@@ -32,13 +32,13 @@
  *
  */
 
-package net.ivoa.calycopis.broker.engine.entities.data.simple.mock;
+package net.ivoa.calycopis.broker.engine.entities.data.amazon.mock;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
@@ -54,28 +54,28 @@ import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockReleaseAc
  */
 @Entity
 @Table(
-    name = "mocksimpledataresources"
+    name = "mockamazons3dataresources"
     )
-public class MockSimpleDataResourceEntityImpl
-extends SimpleDataResourceEntityImpl
-implements MockSimpleDataResource
+public class MockAmazonS3DataResourceEntity
+extends AmazonS3DataResourceEntityImpl
+implements MockAmazonS3DataResource
     {
 
     /**
      * Protected constructor for JPA entities.
      * 
      */
-    protected MockSimpleDataResourceEntityImpl()
+    protected MockAmazonS3DataResourceEntity()
         {
         super();
         }
 
     /**
-     * Protected constructor used by our Factories.
+     * Protected constructor used by our factory.
      *
      */
-    protected  MockSimpleDataResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected MockAmazonS3DataResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final AbstractDataResourceValidator.Result result
         ){

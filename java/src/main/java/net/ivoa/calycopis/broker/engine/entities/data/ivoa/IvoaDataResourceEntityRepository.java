@@ -31,6 +31,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  */
 public interface IvoaDataResourceEntityRepository
-extends JpaRepository<IvoaDataResourceEntityImpl, UUID>
+extends JpaRepository<IvoaDataResourceEntity, UUID>
     {
     }

@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
@@ -39,7 +39,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
  * Base class for validator factories.
  * 
  */
-public abstract class ValidatorFactoryImpl<ObjectType, EntityType extends ComponentEntityImpl>
+public abstract class ValidatorFactoryImpl<ObjectType, EntityType extends ComponentEntity>
     extends FactoryBaseImpl
     implements ValidatorFactory<ObjectType, EntityType>
     {

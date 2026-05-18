@@ -24,21 +24,21 @@
 package net.ivoa.calycopis.broker.engine.entities.data;
 
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityFactory;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 
 /**
  *
  */
 public interface AbstractDataResourceEntityFactory
-extends LifecycleComponentEntityFactory<AbstractDataResourceEntityImpl>
+extends LifecycleComponentEntityFactory<AbstractDataResourceEntity>
     {
     /**
      * Create a new DataResourceEntity based on a Validator Result.
      *
      */
-    public AbstractDataResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+    public AbstractDataResourceEntity create(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final AbstractDataResourceValidator.Result result
         );

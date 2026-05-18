@@ -30,7 +30,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
  *   
  */
 public class AbstractExecutableValidatorFactoryImpl
-extends ValidatorFactoryImpl<IvoaAbstractExecutable, AbstractExecutableEntityImpl>
+extends ValidatorFactoryImpl<IvoaAbstractExecutable, AbstractExecutableEntity>
 implements AbstractExecutableValidatorFactory
     {
 

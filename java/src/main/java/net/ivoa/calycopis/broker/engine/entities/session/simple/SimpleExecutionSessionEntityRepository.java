@@ -36,10 +36,10 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
  */
 @Repository
 public interface SimpleExecutionSessionEntityRepository
-    extends JpaRepository<SimpleExecutionSessionEntityImpl, UUID>
+    extends JpaRepository<SimpleExecutionSessionEntity, UUID>
     {
     
-    List<SimpleExecutionSessionEntityImpl> findByPhase(final IvoaSimpleExecutionSessionPhase phase);
+    List<SimpleExecutionSessionEntity> findByPhase(final IvoaSimpleExecutionSessionPhase phase);
     
     }
 

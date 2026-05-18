@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidator;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 
 /**
  *
@@ -29,12 +29,12 @@ implements MockDockerContainerEntityFactory
         }
 
     @Override
-    public MockDockerContainerEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+    public MockDockerContainerEntity create(
+        final SimpleExecutionSessionEntity session,
         final AbstractExecutableValidator.Result result
         ){
-        MockDockerContainerEntityImpl entity = this.repository.save(
-            new MockDockerContainerEntityImpl(
+        MockDockerContainerEntity entity = this.repository.save(
+            new MockDockerContainerEntity(
                 session,
                 result
                 )

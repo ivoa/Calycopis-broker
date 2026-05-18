@@ -50,8 +50,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponent;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinkerBean;
@@ -71,8 +71,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 @Table(
     name = "dockerhttpdataresources"
     )
-public class DockerHttpResourceEntityImpl
-extends SimpleDataResourceEntityImpl
+public class DockerHttpResourceEntity
+extends SimpleDataResourceEntity
 implements DockerHttpResource
     {
     
@@ -80,7 +80,7 @@ implements DockerHttpResource
      * Protected constructor for JPA entities.
      * 
      */
-    protected DockerHttpResourceEntityImpl()
+    protected DockerHttpResourceEntity()
         {
         super();
         }
@@ -89,8 +89,8 @@ implements DockerHttpResource
      * Protected constructor used by our factory.
      * 
      */
-    protected DockerHttpResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected DockerHttpResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final DockerHttpResourceValidator.Result result
         ){

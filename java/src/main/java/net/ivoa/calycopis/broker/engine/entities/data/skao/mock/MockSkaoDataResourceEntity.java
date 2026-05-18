@@ -32,13 +32,13 @@
  *
  */
 
-package net.ivoa.calycopis.broker.engine.entities.data.ivoa.mock;
+package net.ivoa.calycopis.broker.engine.entities.data.skao.mock;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.skao.SkaoDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
@@ -54,18 +54,18 @@ import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockReleaseAc
  */
 @Entity
 @Table(
-    name = "mockivoadataresources"
+    name = "mockskaodataresources"
     )
-public class MockIvoaDataResourceEntityImpl
-extends IvoaDataResourceEntityImpl
-implements MockIvoaDataResource
+public class MockSkaoDataResourceEntity
+extends SkaoDataResourceEntity
+implements MockSkaoDataResource
     {
-    
+
     /**
      * Protected constructor for JPA entities.
      * 
      */
-    public MockIvoaDataResourceEntityImpl()
+    protected MockSkaoDataResourceEntity()
         {
         super();
         }
@@ -74,8 +74,8 @@ implements MockIvoaDataResource
      * Protected constructor used by our Factories.
      *
      */
-    public MockIvoaDataResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected MockSkaoDataResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final AbstractDataResourceValidator.Result result
         ){

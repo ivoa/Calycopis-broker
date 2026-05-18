@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidator;
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.JupyterNotebookEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 
 /**
  *
@@ -29,12 +29,12 @@ implements MockJupyterNotebookEntityFactory
         }
 
     @Override
-    public MockJupyterNotebookEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+    public MockJupyterNotebookEntity create(
+        final SimpleExecutionSessionEntity session,
         final AbstractExecutableValidator.Result result
         ){
-        MockJupyterNotebookEntityImpl entity = this.repository.save(
-            new MockJupyterNotebookEntityImpl(
+        MockJupyterNotebookEntity entity = this.repository.save(
+            new MockJupyterNotebookEntity(
                 session,
                 result
                 )

@@ -23,7 +23,7 @@
 
 package net.ivoa.calycopis.broker.engine.functional.processing.session;
 
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 
 /**
@@ -33,14 +33,14 @@ public interface SessionProcessingRequestFactory
 extends FactoryBase
     {
 
-    public SessionProcessingRequest  createPrepareSessionRequest(final SimpleExecutionSessionEntityImpl session);
+    public SessionProcessingRequest  createPrepareSessionRequest(final SimpleExecutionSessionEntity session);
 
-    public SessionProcessingRequest  createUpdateSessionRequest(final SimpleExecutionSessionEntityImpl session);
+    public SessionProcessingRequest  createUpdateSessionRequest(final SimpleExecutionSessionEntity session);
 
-    public SessionProcessingRequest  createReleaseSessionRequest(final SimpleExecutionSessionEntityImpl session);
+    public SessionProcessingRequest  createReleaseSessionRequest(final SimpleExecutionSessionEntity session);
 
-    public SessionProcessingRequest  createCancelSessionRequest(final SimpleExecutionSessionEntityImpl session);
+    public SessionProcessingRequest  createCancelSessionRequest(final SimpleExecutionSessionEntity session);
 
-    public SessionProcessingRequest  createFailSessionRequest(final SimpleExecutionSessionEntityImpl session);
+    public SessionProcessingRequest  createFailSessionRequest(final SimpleExecutionSessionEntity session);
 
     }

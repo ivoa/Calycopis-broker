@@ -32,7 +32,7 @@ import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
@@ -70,7 +70,7 @@ public class OfferSetFactoryImpl
         }
 
     @Override
-    public Optional<OfferSetEntityImpl> select(final UUID uuid)
+    public Optional<OfferSetEntity> select(final UUID uuid)
 		{
 		return this.offersetRepository.findById(
             uuid
@@ -78,7 +78,7 @@ public class OfferSetFactoryImpl
 		}
 
     @Override
-    public OfferSetEntityImpl create(final IvoaExecutionRequest offersetRequest)
+    public OfferSetEntity create(final IvoaExecutionRequest offersetRequest)
     	{
         //
         // Validate the request. 
@@ -95,7 +95,7 @@ public class OfferSetFactoryImpl
     	}
 
     @Override
-    public SimpleExecutionSessionEntityImpl direct(final IvoaExecutionRequest executionRequest)
+    public SimpleExecutionSessionEntity direct(final IvoaExecutionRequest executionRequest)
         {
         //
         // Validate the request.
@@ -108,21 +108,21 @@ public class OfferSetFactoryImpl
         // If the request is valid, create a new OfferSetEntity and return the first offer.
         if (offersetContext.valid())
             {
-            OfferSetEntityImpl offerSetEntityImpl = this.create(
+            OfferSetEntity offerSetEntity = this.create(
                 offersetContext,
                 1
                 );
             //
             // If the OfferSetEntity is valid.
-            if (offerSetEntityImpl.getResult() == ResultEnum.YES)
+            if (offerSetEntity.getResult() == ResultEnum.YES)
                 {
                 //
                 // If the OfferSetEntity has at least one offer.
-                Iterator<AbstractExecutionSessionEntity> offers = offerSetEntityImpl.getOfferEntities().iterator();
+                Iterator<AbstractExecutionSessionEntity> offers = offerSetEntity.getOfferEntities().iterator();
                 if (offers.hasNext())
                     {
                     // TODO Get rid of the nasty class casts.
-                    SimpleExecutionSessionEntityImpl offer = (SimpleExecutionSessionEntityImpl) offers.next();
+                    SimpleExecutionSessionEntity offer = (SimpleExecutionSessionEntity) offers.next();
                     //
                     // Set the phase to ACCEPTED and schedule a PrepareSessionRequest for the offer.
                     offer.setPhase(
@@ -137,7 +137,7 @@ public class OfferSetFactoryImpl
             }
         //
         // If the request is not valid, return a FAILED ExecutionSessionEntity. 
-        SimpleExecutionSessionEntityImpl failed = new SimpleExecutionSessionEntityImpl();
+        SimpleExecutionSessionEntity failed = new SimpleExecutionSessionEntity();
         failed.setPhase(
             IvoaSimpleExecutionSessionPhase.FAILED
             );
@@ -147,11 +147,11 @@ public class OfferSetFactoryImpl
         return failed;
         }
 
-    protected OfferSetEntityImpl create(final OfferSetRequestParserContext offersetContext, int offerCount)
+    protected OfferSetEntity create(final OfferSetRequestParserContext offersetContext, int offerCount)
         {
         //
         // Create a new OfferSetEntity.
-        OfferSetEntityImpl offersetEntity = new OfferSetEntityImpl(
+        OfferSetEntity offersetEntity = new OfferSetEntity(
             // tempfix    
             // offersetRequest.getName(),
             // offersetRequest.getDescription(),

@@ -42,7 +42,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.message.Message;
-import net.ivoa.calycopis.broker.engine.entities.message.MessageEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.message.MessageEntity;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageItemBean;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
@@ -61,7 +61,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaMessageItem.LevelEnum;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public abstract class ComponentEntityImpl
+public abstract class ComponentEntity
 implements Component
     {
 
@@ -69,7 +69,7 @@ implements Component
      * Protected constructor for JPA entities.
      *
      */
-    protected ComponentEntityImpl()
+    protected ComponentEntity()
         {
         super();
         }
@@ -78,7 +78,7 @@ implements Component
      * Protected constructor used by our Factories.
      *
      */
-    protected ComponentEntityImpl(final String name)
+    protected ComponentEntity(final String name)
         {
         this(
             name,
@@ -91,7 +91,7 @@ implements Component
      * Protected constructor.
      *
      */
-    protected ComponentEntityImpl(final IvoaComponentMetadata meta)
+    protected ComponentEntity(final IvoaComponentMetadata meta)
         {
         this(
             meta.getName(),
@@ -104,7 +104,7 @@ implements Component
      * Protected constructor.
      *
      */
-    protected ComponentEntityImpl(final String name, final String description, final Instant created)
+    protected ComponentEntity(final String name, final String description, final Instant created)
         {
         this.name = name;
         this.created = created;
@@ -158,9 +158,9 @@ implements Component
         cascade = CascadeType.ALL,
         orphanRemoval = true
         )
-    protected List<MessageEntityImpl> messages = new ArrayList<MessageEntityImpl>();
+    protected List<MessageEntity> messages = new ArrayList<MessageEntity>();
 
-    public Iterable<MessageEntityImpl> getMessageEntities()
+    public Iterable<MessageEntity> getMessageEntities()
         {
         return this.messages;
         }
@@ -168,10 +168,10 @@ implements Component
     @Override
     public Iterable<Message> getMessages()
         {
-        return new ListWrapper<Message, MessageEntityImpl>(
+        return new ListWrapper<Message, MessageEntity>(
             this.messages
             ){
-            public Message wrap(final MessageEntityImpl inner)
+            public Message wrap(final MessageEntity inner)
                 {
                 return inner;
                 }
@@ -181,7 +181,7 @@ implements Component
     @Override
     public void addMessage(final LevelEnum level, final String type, final String template, final Map<String, Object> values)
         {
-        MessageEntityImpl message = new MessageEntityImpl(
+        MessageEntity message = new MessageEntity(
             this,
             level,
             type,
@@ -207,7 +207,7 @@ implements Component
                 if (this.uuid != null)
                     {
                     return this.uuid.equals(
-                        ((ComponentEntityImpl) object).getUuid()
+                        ((ComponentEntity) object).getUuid()
                         );
                     }
                 }
@@ -221,10 +221,10 @@ implements Component
      */
     public List<IvoaMessageItem> getMessageBeans()
         {
-        return new ListWrapper<IvoaMessageItem, MessageEntityImpl>(
+        return new ListWrapper<IvoaMessageItem, MessageEntity>(
             this.messages
             ){
-            public IvoaMessageItem wrap(final MessageEntityImpl inner)
+            public IvoaMessageItem wrap(final MessageEntity inner)
                 {
                 return new MessageItemBean(
                     inner

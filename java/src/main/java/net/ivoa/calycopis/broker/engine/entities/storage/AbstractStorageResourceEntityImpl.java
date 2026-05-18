@@ -49,9 +49,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
@@ -69,7 +69,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
     strategy = InheritanceType.JOINED
     )
 public abstract class AbstractStorageResourceEntityImpl
-extends LifecycleComponentEntityImpl
+extends LifecycleComponentEntity
 implements AbstractStorageResource
     {
     
@@ -87,7 +87,7 @@ implements AbstractStorageResource
      * 
      */
     protected AbstractStorageResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result
         ){
         super(
@@ -121,9 +121,9 @@ implements AbstractStorageResource
 
     @JoinColumn(name = "session", referencedColumnName = "uuid", nullable = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private SimpleExecutionSessionEntityImpl session;
+    private SimpleExecutionSessionEntity session;
     @Override
-    public SimpleExecutionSessionEntityImpl getSession()
+    public SimpleExecutionSessionEntity getSession()
         {
         return this.session;
         }
@@ -134,15 +134,15 @@ implements AbstractStorageResource
         cascade = CascadeType.ALL,
         orphanRemoval = true
         )
-    List<AbstractDataResourceEntityImpl> dataresources = new ArrayList<AbstractDataResourceEntityImpl>();
+    List<AbstractDataResourceEntity> dataresources = new ArrayList<AbstractDataResourceEntity>();
 
     @Override
-    public List<AbstractDataResourceEntityImpl> getDataResources()
+    public List<AbstractDataResourceEntity> getDataResources()
         {
         return dataresources;
         }
 
-    public void addDataResource(final AbstractDataResourceEntityImpl dataResource)
+    public void addDataResource(final AbstractDataResourceEntity dataResource)
         {
         dataResource.setStorage(
             this
@@ -190,10 +190,10 @@ implements AbstractStorageResource
             this.makeScheduleBean()
             );
         bean.setData(
-            new ListWrapper<String, AbstractDataResourceEntityImpl>(
+            new ListWrapper<String, AbstractDataResourceEntity>(
                 dataresources
                 ){
-                public String wrap(final AbstractDataResourceEntityImpl inner)
+                public String wrap(final AbstractDataResourceEntity inner)
                     {
                     return inner.getUuid().toString();
                     }

@@ -27,9 +27,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 
 /**
@@ -55,7 +55,7 @@ implements MockSimpleComputeResourceEntityFactory
         }
 
     @Override
-    public Optional<AbstractComputeResourceEntityImpl> select(UUID uuid)
+    public Optional<AbstractComputeResourceEntity> select(UUID uuid)
         {
         return Optional.of(
             this.repository.findById(uuid).get()
@@ -63,13 +63,13 @@ implements MockSimpleComputeResourceEntityFactory
         }
 
     @Override
-    public MockSimpleComputeResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+    public MockSimpleComputeResourceEntity create(
+        final SimpleExecutionSessionEntity session,
         final MockSimpleComputeResourceValidator.Result result,
         final ComputeResourceOffer offer
         ){
         return this.repository.save(
-            new MockSimpleComputeResourceEntityImpl(
+            new MockSimpleComputeResourceEntity(
                 session,
                 result,
                 offer

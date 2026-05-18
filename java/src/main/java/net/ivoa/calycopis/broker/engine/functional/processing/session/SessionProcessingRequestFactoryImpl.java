@@ -26,7 +26,7 @@ package net.ivoa.calycopis.broker.engine.functional.processing.session;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
 /**
@@ -52,7 +52,7 @@ implements SessionProcessingRequestFactory
         }
 
     @Override
-    public PrepareSessionRequestEntityImpl createPrepareSessionRequest(final SimpleExecutionSessionEntityImpl session)
+    public PrepareSessionRequestEntityImpl createPrepareSessionRequest(final SimpleExecutionSessionEntity session)
         {
         log.debug("Creating PrepareSessionRequest for session [{}]", session.getUuid());
         return repository.save(
@@ -63,7 +63,7 @@ implements SessionProcessingRequestFactory
         }
 
     @Override
-    public UpdateSessionRequestEntityImpl createUpdateSessionRequest(final SimpleExecutionSessionEntityImpl session)
+    public UpdateSessionRequestEntityImpl createUpdateSessionRequest(final SimpleExecutionSessionEntity session)
         {
         log.debug("Creating MonitorSessionRequest for session [{}]", session.getUuid());
         return repository.save(
@@ -74,7 +74,7 @@ implements SessionProcessingRequestFactory
         }
 
     @Override
-    public ReleaseSessionRequestEntityImpl createReleaseSessionRequest(final SimpleExecutionSessionEntityImpl session)
+    public ReleaseSessionRequestEntityImpl createReleaseSessionRequest(final SimpleExecutionSessionEntity session)
         {
         log.debug("Creating ReleaseSessionRequest for session [{}]", session.getUuid());
         return repository.save(
@@ -85,7 +85,7 @@ implements SessionProcessingRequestFactory
         }
     
     @Override
-    public CancelSessionRequestEntityImpl createCancelSessionRequest(final SimpleExecutionSessionEntityImpl session)
+    public CancelSessionRequestEntityImpl createCancelSessionRequest(final SimpleExecutionSessionEntity session)
         {
         log.debug("Creating CancelSessionRequest for session [{}]", session.getUuid());
         return repository.save(
@@ -96,7 +96,7 @@ implements SessionProcessingRequestFactory
         }
 
     @Override
-    public FailSessionRequestEntityImpl createFailSessionRequest(final SimpleExecutionSessionEntityImpl session)
+    public FailSessionRequestEntityImpl createFailSessionRequest(final SimpleExecutionSessionEntity session)
         {
         log.debug("Creating FailSessionRequest for session [{}]", session.getUuid());
         return repository.save(

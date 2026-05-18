@@ -37,11 +37,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 
 /**
@@ -67,7 +67,7 @@ implements MockIvoaDataResourceEntityFactory
         }
 
     @Override
-    public Optional<AbstractDataResourceEntityImpl> select(final UUID uuid)
+    public Optional<AbstractDataResourceEntity> select(final UUID uuid)
         {
         return Optional.of(
             this.dataResourceEntityRepository.findById(uuid).get()
@@ -75,13 +75,13 @@ implements MockIvoaDataResourceEntityFactory
         }
 
     @Override
-    public IvoaDataResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+    public IvoaDataResourceEntity create(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final AbstractDataResourceValidator.Result result
         ){
         return this.dataResourceEntityRepository.save(
-            new MockIvoaDataResourceEntityImpl(
+            new MockIvoaDataResourceEntity(
                 session,
                 storage,
                 result

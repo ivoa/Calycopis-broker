@@ -38,7 +38,7 @@ import java.net.URI;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
@@ -78,7 +78,7 @@ implements SimpleStorageResource
      *
      */
     protected SimpleStorageResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result
         ){
         super(

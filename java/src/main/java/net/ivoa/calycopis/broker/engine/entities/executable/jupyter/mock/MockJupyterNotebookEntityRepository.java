@@ -11,6 +11,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  */
 public interface MockJupyterNotebookEntityRepository
-extends JpaRepository<MockJupyterNotebookEntityImpl, UUID>
+extends JpaRepository<MockJupyterNotebookEntity, UUID>
     {
     }

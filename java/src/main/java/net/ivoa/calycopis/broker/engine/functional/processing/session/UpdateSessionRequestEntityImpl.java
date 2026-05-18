@@ -44,8 +44,8 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
@@ -72,7 +72,7 @@ implements SessionProcessingRequest
         super();
         }
 
-    protected UpdateSessionRequestEntityImpl(final SimpleExecutionSessionEntityImpl session)
+    protected UpdateSessionRequestEntityImpl(final SimpleExecutionSessionEntity session)
         {
         super(
             SessionProcessingRequest.KIND,
@@ -90,18 +90,18 @@ implements SessionProcessingRequest
             this.session.getPhase()
             );
 
-        final List<LifecycleComponentEntityImpl> preparingList = new ArrayList<LifecycleComponentEntityImpl>();
-        final List<LifecycleComponentEntityImpl> availableList = new ArrayList<LifecycleComponentEntityImpl>();
-        final List<LifecycleComponentEntityImpl> releasingList = new ArrayList<LifecycleComponentEntityImpl>();
-        final List<LifecycleComponentEntityImpl> completedList = new ArrayList<LifecycleComponentEntityImpl>();
-        final List<LifecycleComponentEntityImpl> cancelledList = new ArrayList<LifecycleComponentEntityImpl>();
-        final List<LifecycleComponentEntityImpl> failedList = new ArrayList<LifecycleComponentEntityImpl>();
+        final List<LifecycleComponentEntity> preparingList = new ArrayList<LifecycleComponentEntity>();
+        final List<LifecycleComponentEntity> availableList = new ArrayList<LifecycleComponentEntity>();
+        final List<LifecycleComponentEntity> releasingList = new ArrayList<LifecycleComponentEntity>();
+        final List<LifecycleComponentEntity> completedList = new ArrayList<LifecycleComponentEntity>();
+        final List<LifecycleComponentEntity> cancelledList = new ArrayList<LifecycleComponentEntity>();
+        final List<LifecycleComponentEntity> failedList = new ArrayList<LifecycleComponentEntity>();
 
         final AtomicInteger count = new AtomicInteger(0);
         
         class ComponentFilter
             {
-            void count(LifecycleComponentEntityImpl component)
+            void count(LifecycleComponentEntity component)
                 {
                 if (component != null)
                     {
@@ -150,13 +150,13 @@ implements SessionProcessingRequest
         filter.count(
             session.getComputeResource()
             );
-        for (LifecycleComponentEntityImpl data: session.getDataResources())
+        for (LifecycleComponentEntity data: session.getDataResources())
             {
             filter.count(
                 data
                 );
             }
-        for (LifecycleComponentEntityImpl storage: session.getStorageResources())
+        for (LifecycleComponentEntity storage: session.getStorageResources())
             {
             filter.count(
                 storage

@@ -24,7 +24,7 @@
 package net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.volume;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerSimpleStorageResourceEntityFactoryImpl;
 
@@ -48,7 +48,7 @@ implements DockerVolumeMountStorageEntityFactory
         }
 
     public DockerVolumeMountStorageEntity create(
-        final SimpleExecutionSessionEntityImpl session,
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result
         ){
         log.debug(

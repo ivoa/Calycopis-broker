@@ -30,6 +30,6 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
  * 
  */
 public interface AbstractComputeResourceValidatorFactory
-extends AbstractComputeResourceValidator, ValidatorFactory<IvoaAbstractComputeResource, AbstractComputeResourceEntityImpl>
+extends AbstractComputeResourceValidator, ValidatorFactory<IvoaAbstractComputeResource, AbstractComputeResourceEntity>
     {
     }

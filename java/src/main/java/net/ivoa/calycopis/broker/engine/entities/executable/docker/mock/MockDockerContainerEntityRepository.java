@@ -11,6 +11,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  */
 public interface MockDockerContainerEntityRepository
-extends JpaRepository<MockDockerContainerEntityImpl, UUID>
+extends JpaRepository<MockDockerContainerEntity, UUID>
     {
     }

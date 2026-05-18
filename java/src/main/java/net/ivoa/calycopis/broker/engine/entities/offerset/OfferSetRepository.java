@@ -34,7 +34,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  */
 public interface OfferSetRepository
-extends JpaRepository<OfferSetEntityImpl, UUID>
+extends JpaRepository<OfferSetEntity, UUID>
     {
     }
 

@@ -27,7 +27,7 @@ import java.net.URI;
 import java.util.List;
 
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponent;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
 
 /**
@@ -48,7 +48,7 @@ extends LifecycleComponent
      * TODO make this more abstract.
      *
      */
-    public List<AbstractDataResourceEntityImpl> getDataResources();
+    public List<AbstractDataResourceEntity> getDataResources();
 
     /**
      * Get the list of volume mounts this resource is attached to.

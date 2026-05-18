@@ -23,7 +23,7 @@
 
 package net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.bind;
 
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator.Result;
@@ -49,7 +49,7 @@ implements DockerBindMountStorageEntityFactory
 
     @Override
     public DockerBindMountStorageEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result,
         final String path
         ){
@@ -65,7 +65,7 @@ implements DockerBindMountStorageEntityFactory
 
     @Override
     public AbstractStorageResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+        final SimpleExecutionSessionEntity session,
         final Result result
         ){
         throw new UnsupportedOperationException(

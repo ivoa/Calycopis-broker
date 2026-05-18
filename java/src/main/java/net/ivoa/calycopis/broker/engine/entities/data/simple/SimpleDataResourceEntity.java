@@ -38,9 +38,9 @@ import java.net.URI;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
@@ -54,8 +54,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleDataResource;
 @Table(
     name = "simpledataresources"
     )
-public abstract class SimpleDataResourceEntityImpl
-extends AbstractDataResourceEntityImpl
+public abstract class SimpleDataResourceEntity
+extends AbstractDataResourceEntity
 implements SimpleDataResource
     {
 
@@ -69,7 +69,7 @@ implements SimpleDataResource
      * Protected constructor for JPA entities.
      *
      */
-    protected SimpleDataResourceEntityImpl()
+    protected SimpleDataResourceEntity()
         {
         super();
         }
@@ -78,8 +78,8 @@ implements SimpleDataResource
      * Protected constructor used by our Factories.
      *
      */
-    protected SimpleDataResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected SimpleDataResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final AbstractDataResourceValidator.Result result
         ){
@@ -97,8 +97,8 @@ implements SimpleDataResource
      * TODO No need to pass validated.getMeta() separately.
      *
      */
-    protected SimpleDataResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected SimpleDataResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final AbstractDataResourceValidator.Result result,
         final IvoaSimpleDataResource validated

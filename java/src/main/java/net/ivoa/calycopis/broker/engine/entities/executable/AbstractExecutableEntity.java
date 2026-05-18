@@ -13,8 +13,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
 
@@ -29,8 +29,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public abstract class AbstractExecutableEntityImpl
-extends LifecycleComponentEntityImpl
+public abstract class AbstractExecutableEntity
+extends LifecycleComponentEntity
 implements AbstractExecutable
     {
     
@@ -38,7 +38,7 @@ implements AbstractExecutable
      * Protected constructor for JPA entities.
      * 
      */
-    protected AbstractExecutableEntityImpl()
+    protected AbstractExecutableEntity()
         {
         super();
         }
@@ -47,8 +47,8 @@ implements AbstractExecutable
      * Protected constructor used by derived classes.
      * 
      */
-    protected AbstractExecutableEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected AbstractExecutableEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractExecutableValidator.Result result
         ){
         super(
@@ -81,9 +81,9 @@ implements AbstractExecutable
     
     @JoinColumn(name = "session", referencedColumnName = "uuid", nullable = false)
     @OneToOne(optional = false, fetch = FetchType.LAZY)
-    private SimpleExecutionSessionEntityImpl session;
+    private SimpleExecutionSessionEntity session;
     @Override
-    public SimpleExecutionSessionEntityImpl getSession()
+    public SimpleExecutionSessionEntity getSession()
         {
         return this.session;
         }

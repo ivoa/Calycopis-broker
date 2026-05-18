@@ -30,14 +30,14 @@ import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessio
  *
  */
 public interface SimpleExecutionSessionEntityFactory
-    extends AbstractExecutionSessionEntityFactory<SimpleExecutionSessionEntityImpl>
+    extends AbstractExecutionSessionEntityFactory<SimpleExecutionSessionEntity>
     {
 
     /**
      * Save an ExecutionSessionEntity.
      *
      */
-    public SimpleExecutionSessionEntityImpl save(final SimpleExecutionSessionEntityImpl entity);
+    public SimpleExecutionSessionEntity save(final SimpleExecutionSessionEntity entity);
     
     }
 

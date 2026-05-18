@@ -31,6 +31,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  */
 public interface SkaoDataResourceEntityRepository
-extends JpaRepository<SkaoDataResourceEntityImpl, UUID>
+extends JpaRepository<SkaoDataResourceEntity, UUID>
     {
     }

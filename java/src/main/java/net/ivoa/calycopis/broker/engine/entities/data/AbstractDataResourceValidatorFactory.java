@@ -42,6 +42,6 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
  * 
  */
 public interface AbstractDataResourceValidatorFactory
-extends AbstractDataResourceValidator, ValidatorFactory<IvoaAbstractDataResource, AbstractDataResourceEntityImpl>
+extends AbstractDataResourceValidator, ValidatorFactory<IvoaAbstractDataResource, AbstractDataResourceEntity>
     {
     }

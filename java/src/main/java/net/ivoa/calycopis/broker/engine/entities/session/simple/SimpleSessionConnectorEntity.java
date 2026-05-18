@@ -59,7 +59,7 @@ implements SimpleSessionConnector
         super();
         }
 
-    public SimpleSessionConnectorEntity(final SimpleExecutionSessionEntityImpl session, final String type, final String protocol, final String location)
+    public SimpleSessionConnectorEntity(final SimpleExecutionSessionEntity session, final String type, final String protocol, final String location)
         {
         super();
         this.session = session;
@@ -73,8 +73,8 @@ implements SimpleSessionConnector
     
     @JoinColumn(name = "session", referencedColumnName = "uuid", nullable = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private SimpleExecutionSessionEntityImpl session ;
-    public SimpleExecutionSessionEntityImpl getSession()
+    private SimpleExecutionSessionEntity session ;
+    public SimpleExecutionSessionEntity getSession()
         {
         return this.session;
         }

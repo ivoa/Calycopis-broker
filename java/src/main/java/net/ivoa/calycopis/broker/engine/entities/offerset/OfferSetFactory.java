@@ -28,7 +28,7 @@ package net.ivoa.calycopis.broker.engine.entities.offerset;
 import java.util.Optional;
 import java.util.UUID;
 
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
 
@@ -49,19 +49,19 @@ public interface OfferSetFactory
      * Select an OfferSet based on its identifier.
      *
      */
-    public Optional<OfferSetEntityImpl> select(final UUID uuid);
+    public Optional<OfferSetEntity> select(final UUID uuid);
 
     /**
      * Create a new OfferSet based on an ExecutionRequest.
      *
      */
-    public OfferSetEntityImpl create(final IvoaExecutionRequest request);
+    public OfferSetEntity create(final IvoaExecutionRequest request);
 
     /**
      * Create a new ExecutionSessionEntity based on a direct ExecutionRequest.
      *
      */
-    public SimpleExecutionSessionEntityImpl direct(final IvoaExecutionRequest request);
+    public SimpleExecutionSessionEntity direct(final IvoaExecutionRequest request);
     
     }
 

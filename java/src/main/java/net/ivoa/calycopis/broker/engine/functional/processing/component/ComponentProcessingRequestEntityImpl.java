@@ -31,7 +31,7 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestEntityImpl;
@@ -83,7 +83,7 @@ implements ComponentProcessingRequest
         super();
         }
 
-    protected ComponentProcessingRequestEntityImpl(final LifecycleComponentEntityImpl component)
+    protected ComponentProcessingRequestEntityImpl(final LifecycleComponentEntity component)
         {
         this(
             ComponentProcessingRequest.KIND,
@@ -91,7 +91,7 @@ implements ComponentProcessingRequest
             );
         }
 
-    protected ComponentProcessingRequestEntityImpl(final URI kind, final LifecycleComponentEntityImpl component)
+    protected ComponentProcessingRequestEntityImpl(final URI kind, final LifecycleComponentEntity component)
         {
         super(kind);
         this.componentKind = component.getKind();
@@ -103,9 +103,9 @@ implements ComponentProcessingRequest
     protected IvoaLifecyclePhase prevPhase ;
     protected IvoaLifecyclePhase nextPhase ;
     
-    protected LifecycleComponentEntityImpl getComponent(final Platform platform)
+    protected LifecycleComponentEntity getComponent(final Platform platform)
         {
-        LifecycleComponentEntityImpl component = platform.select(
+        LifecycleComponentEntity component = platform.select(
             this.componentKind,
             this.componentUuid
             );
@@ -152,7 +152,7 @@ implements ComponentProcessingRequest
             );
         }
 
-    protected void fail(final Platform platform, final LifecycleComponentEntityImpl component)
+    protected void fail(final Platform platform, final LifecycleComponentEntity component)
         {
         log.debug(
             "ProcessingRequest [{}][{}] failed",
@@ -172,7 +172,7 @@ implements ComponentProcessingRequest
         this.done(platform);
         }
     
-    protected void updateSession(final Platform platform, final LifecycleComponentEntityImpl component)
+    protected void updateSession(final Platform platform, final LifecycleComponentEntity component)
         {
         platform.getProcessingRequestFactory().getSessionProcessingRequestFactory().createUpdateSessionRequest(
             component.getSession()

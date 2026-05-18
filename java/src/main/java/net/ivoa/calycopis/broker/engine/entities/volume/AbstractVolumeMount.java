@@ -38,7 +38,7 @@ package net.ivoa.calycopis.broker.engine.entities.volume;
 import java.net.URI;
 
 import net.ivoa.calycopis.broker.engine.entities.component.Component;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResource;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource;
 
@@ -59,7 +59,7 @@ extends Component
      * Get the parent ComputeResource.
      *
      */
-    public AbstractComputeResourceEntityImpl getComputeResource();
+    public AbstractComputeResourceEntity getComputeResource();
 
     /**
      * Reference to the DataResource mounted in this volume.

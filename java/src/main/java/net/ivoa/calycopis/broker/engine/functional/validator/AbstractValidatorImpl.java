@@ -25,7 +25,7 @@ package net.ivoa.calycopis.broker.engine.functional.validator;
 import java.time.Duration;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
 import net.ivoa.calycopis.schema.spring.model.IvoaLifecycleSchedule;
 import net.ivoa.calycopis.schema.spring.model.IvoaLifecycleStartDurationInstant;
 
@@ -35,7 +35,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecycleStartDurationInstant;
  *  
  */
 @Slf4j
-public abstract class AbstractValidatorImpl<ObjectType, EntityType extends ComponentEntityImpl>
+public abstract class AbstractValidatorImpl<ObjectType, EntityType extends ComponentEntity>
 extends ValidatorBase
 implements Validator<ObjectType, EntityType>
     {

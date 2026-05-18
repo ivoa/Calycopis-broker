@@ -28,7 +28,7 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 
@@ -53,7 +53,7 @@ implements ComponentProcessingRequest
         super();
         }
 
-    protected FailComponentRequestEntity(final LifecycleComponentEntityImpl component)
+    protected FailComponentRequestEntity(final LifecycleComponentEntity component)
         {
         super(component);
         }

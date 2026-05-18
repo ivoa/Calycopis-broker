@@ -40,7 +40,7 @@ extends FactoryBase
      * Apply an Update request to an ExecutionSession.
      *
      */
-    public Optional<SimpleExecutionSessionEntityImpl> update(final UUID uuid, final IvoaAbstractUpdate request);
+    public Optional<SimpleExecutionSessionEntity> update(final UUID uuid, final IvoaAbstractUpdate request);
     
     
     }

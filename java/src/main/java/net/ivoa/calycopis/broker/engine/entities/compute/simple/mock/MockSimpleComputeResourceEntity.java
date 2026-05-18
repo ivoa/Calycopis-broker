@@ -39,8 +39,8 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
@@ -63,8 +63,8 @@ import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockReleaseAc
 @DiscriminatorValue(
     value = "uri:mock-simple-compute-resources"
     )
-public class MockSimpleComputeResourceEntityImpl
-extends SimpleComputeResourceEntityImpl
+public class MockSimpleComputeResourceEntity
+extends SimpleComputeResourceEntity
 implements MockSimpleComputeResource
     {
 
@@ -72,7 +72,7 @@ implements MockSimpleComputeResource
      * Protected constructor for JPA entities.
      *
      */
-    protected MockSimpleComputeResourceEntityImpl()
+    protected MockSimpleComputeResourceEntity()
         {
         super();
         }
@@ -81,8 +81,8 @@ implements MockSimpleComputeResource
      * Protected constructor used by our factory.
      *
      */
-    protected MockSimpleComputeResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected MockSimpleComputeResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final MockSimpleComputeResourceValidator.Result result,
         final ComputeResourceOffer offer
         ){

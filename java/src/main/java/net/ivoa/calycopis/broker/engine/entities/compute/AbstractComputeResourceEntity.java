@@ -36,8 +36,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMount;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
@@ -55,8 +55,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public abstract class AbstractComputeResourceEntityImpl
-extends LifecycleComponentEntityImpl
+public abstract class AbstractComputeResourceEntity
+extends LifecycleComponentEntity
 implements AbstractComputeResource
     {
 
@@ -64,7 +64,7 @@ implements AbstractComputeResource
      * Protected constructor for JPA entities.
      * 
      */
-    protected AbstractComputeResourceEntityImpl()
+    protected AbstractComputeResourceEntity()
         {
         super();
         }
@@ -73,8 +73,8 @@ implements AbstractComputeResource
      * Protected constructor used by derived classes.
      * 
      */
-    protected AbstractComputeResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected AbstractComputeResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractComputeResourceValidator.Result result,
         final ComputeResourceOffer offer
         ){
@@ -109,9 +109,9 @@ implements AbstractComputeResource
 
     @JoinColumn(name = "session", referencedColumnName = "uuid", nullable = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    protected SimpleExecutionSessionEntityImpl session;
+    protected SimpleExecutionSessionEntity session;
     @Override
-    public SimpleExecutionSessionEntityImpl getSession()
+    public SimpleExecutionSessionEntity getSession()
         {
         return this.session;
         }

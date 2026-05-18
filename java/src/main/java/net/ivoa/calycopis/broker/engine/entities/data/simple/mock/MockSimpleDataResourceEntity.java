@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2026 University of Manchester.
+ *     Copyright (C) 2025 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -20,12 +20,11 @@
  *
  * AIMetrics: [
  *     {
- *     "timestamp": "2026-04-14T17:00:00",
  *     "name": "Cursor CLI",
  *     "version": "2026.02.13-41ac335",
  *     "model": "Claude 4.6 Opus (Thinking)",
  *     "contribution": {
- *       "value": 10,
+ *       "value": 100,
  *       "units": "%"
  *       }
  *     }
@@ -33,15 +32,14 @@
  *
  */
 
-package net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock;
+package net.ivoa.calycopis.broker.engine.entities.data.simple.mock;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.JupyterNotebookEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
@@ -54,38 +52,36 @@ import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockReleaseAc
 /**
  * 
  */
-@Slf4j
 @Entity
 @Table(
-    name = "mockjupyternotebooks"
+    name = "mocksimpledataresources"
     )
-@Inheritance(
-    strategy = InheritanceType.JOINED
-    )
-public class MockJupyterNotebookEntityImpl
-extends JupyterNotebookEntityImpl
-implements MockJupyterNotebook
+public class MockSimpleDataResourceEntity
+extends SimpleDataResourceEntity
+implements MockSimpleDataResource
     {
 
     /**
      * Protected constructor for JPA entities.
      * 
      */
-    protected MockJupyterNotebookEntityImpl()
+    protected MockSimpleDataResourceEntity()
         {
         super();
         }
 
     /**
-     * Protected constructor used by our factory.
+     * Protected constructor used by our Factories.
      *
      */
-    protected MockJupyterNotebookEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
-        final MockJupyterNotebookValidator.Result result
+    protected  MockSimpleDataResourceEntity(
+        final SimpleExecutionSessionEntity session,
+        final AbstractStorageResourceEntityImpl storage,
+        final AbstractDataResourceValidator.Result result
         ){
         super(
             session,
+            storage,
             result
             );
         }

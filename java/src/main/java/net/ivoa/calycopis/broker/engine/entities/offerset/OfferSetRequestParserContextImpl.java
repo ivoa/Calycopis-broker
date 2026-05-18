@@ -49,7 +49,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValida
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidator;
 import net.ivoa.calycopis.broker.engine.entities.message.Message;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageEntity;
-import net.ivoa.calycopis.broker.engine.entities.message.MessageEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.message.MessageEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidator;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
@@ -897,15 +897,15 @@ extends ValidatorBase
         return this.totalPrepareTime ;
         }
 
-    private List<MessageEntityImpl> messages = new ArrayList<MessageEntityImpl>();
+    private List<MessageEntity> messages = new ArrayList<MessageEntity>();
     
     @Override
     public Iterable<Message> getMessages()
         {
-        return new ListWrapper<Message, MessageEntityImpl>(
+        return new ListWrapper<Message, MessageEntity>(
             this.messages
             ){
-            public Message wrap(final MessageEntityImpl inner)
+            public Message wrap(final MessageEntity inner)
                 {
                 return inner;
                 }
@@ -914,10 +914,10 @@ extends ValidatorBase
 
     public Iterable<MessageEntity> getMessageEntities()
         {
-        return new ListWrapper<MessageEntity, MessageEntityImpl>(
+        return new ListWrapper<MessageEntity, MessageEntity>(
             this.messages
             ){
-            public MessageEntity wrap(final MessageEntityImpl inner)
+            public MessageEntity wrap(final MessageEntity inner)
                 {
                 return inner;
                 }
@@ -928,7 +928,7 @@ extends ValidatorBase
     public void addMessage(LevelEnum level, String type, String template, Map<String, Object> values)
         {
         this.messages.add(
-            new MessageEntityImpl(
+            new MessageEntity(
                 null,
                 level,
                 type,

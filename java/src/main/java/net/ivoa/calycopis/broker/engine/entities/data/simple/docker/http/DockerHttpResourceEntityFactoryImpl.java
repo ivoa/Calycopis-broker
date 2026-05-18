@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.DockerSimpleDataResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 
 /**
@@ -54,13 +54,13 @@ implements DockerHttpResourceEntityFactory
         }
 
     @Override
-    public DockerHttpResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+    public DockerHttpResourceEntity create(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final AbstractDataResourceValidator.Result result
         ){
         return this.repository.save(
-            new DockerHttpResourceEntityImpl(
+            new DockerHttpResourceEntity(
                 session,
                 storage,
                 result

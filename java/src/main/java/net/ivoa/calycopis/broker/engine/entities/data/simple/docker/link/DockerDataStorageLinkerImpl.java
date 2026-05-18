@@ -28,7 +28,7 @@ import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator.Result;
@@ -203,7 +203,7 @@ implements DockerDataStorageLinker
             template
             ){
             @Override
-            public AbstractStorageResourceEntityImpl build(final SimpleExecutionSessionEntityImpl session)
+            public AbstractStorageResourceEntityImpl build(final SimpleExecutionSessionEntity session)
                 {
                 this.entity = DockerDataStorageLinkerImpl.this.bindMountFactory.create(
                     session,
@@ -259,7 +259,7 @@ implements DockerDataStorageLinker
             template
             ){
             @Override
-            public AbstractStorageResourceEntityImpl build(final SimpleExecutionSessionEntityImpl session)
+            public AbstractStorageResourceEntityImpl build(final SimpleExecutionSessionEntity session)
                 {
                 log.debug(
                     "Building storage resource [{}]",

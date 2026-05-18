@@ -44,9 +44,9 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
@@ -63,7 +63,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
     strategy = InheritanceType.JOINED
     )
 public abstract class AbstractVolumeMountEntityImpl
-extends ComponentEntityImpl
+extends ComponentEntity
 implements AbstractVolumeMount
     {
     
@@ -81,8 +81,8 @@ implements AbstractVolumeMount
      *
      */
     protected AbstractVolumeMountEntityImpl(
-        final AbstractComputeResourceEntityImpl computeResource,
-        final AbstractDataResourceEntityImpl dataResource,
+        final AbstractComputeResourceEntity computeResource,
+        final AbstractDataResourceEntity dataResource,
         final IvoaComponentMetadata meta
         ){
         super(meta);
@@ -101,7 +101,7 @@ implements AbstractVolumeMount
      *
      */
     protected AbstractVolumeMountEntityImpl(
-        final AbstractComputeResourceEntityImpl computeResource,
+        final AbstractComputeResourceEntity computeResource,
         final AbstractStorageResourceEntityImpl storageResource,
         final IvoaComponentMetadata meta
         ){
@@ -118,28 +118,28 @@ implements AbstractVolumeMount
     
     @JoinColumn(name = "computeresource", referencedColumnName = "uuid", nullable = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private AbstractComputeResourceEntityImpl computeResource;
+    private AbstractComputeResourceEntity computeResource;
 
     @Override
-    public AbstractComputeResourceEntityImpl getComputeResource()
+    public AbstractComputeResourceEntity getComputeResource()
         {
         return this.computeResource;
         }
-    public void setComputeResource(final AbstractComputeResourceEntityImpl computeResource)
+    public void setComputeResource(final AbstractComputeResourceEntity computeResource)
         {
         this.computeResource = computeResource;
         }
 
     @JoinColumn(name = "dataresource", referencedColumnName = "uuid", nullable = true)
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
-    private AbstractDataResourceEntityImpl dataResource;
+    private AbstractDataResourceEntity dataResource;
 
     @Override
-    public AbstractDataResourceEntityImpl getDataResource()
+    public AbstractDataResourceEntity getDataResource()
         {
         return this.dataResource;
         }
-    public void setDataResource(final AbstractDataResourceEntityImpl dataResource)
+    public void setDataResource(final AbstractDataResourceEntity dataResource)
         {
         this.dataResource = dataResource;
         }

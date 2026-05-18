@@ -39,8 +39,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponent;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
@@ -56,8 +56,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 @Table(
     name = "dockerfiledataresources"
     )
-public class DockerFileResourceEntityImpl
-extends SimpleDataResourceEntityImpl
+public class DockerFileResourceEntity
+extends SimpleDataResourceEntity
 implements DockerFileResource
     {
 
@@ -65,7 +65,7 @@ implements DockerFileResource
      * Protected constructor for JPA entities.
      * 
      */
-    protected DockerFileResourceEntityImpl()
+    protected DockerFileResourceEntity()
         {
         super();
         }
@@ -74,8 +74,8 @@ implements DockerFileResource
      * Protected constructor used by our factory.
      * 
      */
-    protected DockerFileResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected DockerFileResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntityImpl storage,
         final DockerFileResourceValidator.Result result
         ){

@@ -42,6 +42,6 @@ extends FactoryBase
      * Populate an OfferSetEntity based on the contents of a ParserContext.
      *
      */
-    public OfferSetEntityImpl stageTwo(final Platform platform, final OfferSetEntityImpl offersetEntity, final OfferSetRequestParserContext offersetContext, int offerCount);
+    public OfferSetEntity stageTwo(final Platform platform, final OfferSetEntity offersetEntity, final OfferSetRequestParserContext offersetContext, int offerCount);
     
     }

@@ -58,7 +58,7 @@ implements AbstractExecutableEntityFactory
         }
 
     @Override
-    public Optional<AbstractExecutableEntityImpl> select(UUID uuid)
+    public Optional<AbstractExecutableEntity> select(UUID uuid)
         {
         return repository.findById(uuid);
         }

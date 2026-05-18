@@ -31,8 +31,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * JpaRepository for LifecycleComponentEntities.
  *
  */
-public interface LifecycleComponentEntityRepository<EntityType extends LifecycleComponentEntityImpl>
+public interface LifecycleComponentEntityRepository<EntityType extends LifecycleComponentEntity>
 extends JpaRepository<EntityType, UUID>
     {
-
     }

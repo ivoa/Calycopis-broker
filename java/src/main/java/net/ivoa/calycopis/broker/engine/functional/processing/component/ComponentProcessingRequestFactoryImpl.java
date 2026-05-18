@@ -23,7 +23,7 @@
 
 package net.ivoa.calycopis.broker.engine.functional.processing.component;
 
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
 /**
@@ -46,7 +46,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createPrepareComponentRequest(LifecycleComponentEntityImpl component)
+    public ComponentProcessingRequestEntityImpl createPrepareComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new PrepareComponentRequestEntity(
@@ -56,7 +56,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createMonitorComponentRequest(LifecycleComponentEntityImpl component)
+    public ComponentProcessingRequestEntityImpl createMonitorComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new MonitorComponentRequestEntity(
@@ -66,7 +66,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createReleaseComponentRequest(LifecycleComponentEntityImpl component)
+    public ComponentProcessingRequestEntityImpl createReleaseComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new ReleaseComponentRequestEntity(
@@ -76,7 +76,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createCancelComponentRequest(LifecycleComponentEntityImpl component)
+    public ComponentProcessingRequestEntityImpl createCancelComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new CancelComponentRequestEntity(
@@ -86,7 +86,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createFailComponentRequest(LifecycleComponentEntityImpl component)
+    public ComponentProcessingRequestEntityImpl createFailComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new FailComponentRequestEntity(

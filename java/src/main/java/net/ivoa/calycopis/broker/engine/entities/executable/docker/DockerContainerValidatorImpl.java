@@ -48,10 +48,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
 import net.ivoa.calycopis.schema.spring.model.IvoaDockerContainer;
@@ -185,7 +185,7 @@ implements DockerContainerValidator
                     validated
                     ) {
                     @Override
-                    public AbstractExecutableEntityImpl build(final SimpleExecutionSessionEntityImpl session)
+                    public AbstractExecutableEntity build(final SimpleExecutionSessionEntity session)
                         {
                         this.entity = DockerContainerValidatorImpl.this.entityFactory.create(
                             session,

@@ -42,6 +42,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  */
 public interface MockAmazonS3DataResourceEntityRepository
-extends JpaRepository<MockAmazonS3DataResourceEntityImpl, UUID>
+extends JpaRepository<MockAmazonS3DataResourceEntity, UUID>
     {
     }

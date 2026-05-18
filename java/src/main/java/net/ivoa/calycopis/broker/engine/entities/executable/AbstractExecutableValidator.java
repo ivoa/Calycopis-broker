@@ -36,7 +36,7 @@
 package net.ivoa.calycopis.broker.engine.entities.executable;
 
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
 
@@ -45,7 +45,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
  * 
  */
 public interface AbstractExecutableValidator
-extends Validator<IvoaAbstractExecutable, AbstractExecutableEntityImpl>
+extends Validator<IvoaAbstractExecutable, AbstractExecutableEntity>
     {
     /**
      * Validate a component.
@@ -61,13 +61,13 @@ extends Validator<IvoaAbstractExecutable, AbstractExecutableEntityImpl>
      * 
      */
     public static interface Result
-    extends Validator.Result<IvoaAbstractExecutable, AbstractExecutableEntityImpl> 
+    extends Validator.Result<IvoaAbstractExecutable, AbstractExecutableEntity> 
         {
         /**
          * Build a ExecutableEntity based on the validation result. 
          *
          */
-        public AbstractExecutableEntityImpl build(final SimpleExecutionSessionEntityImpl session);
+        public AbstractExecutableEntity build(final SimpleExecutionSessionEntity session);
         }
 
     /**
@@ -75,7 +75,7 @@ extends Validator<IvoaAbstractExecutable, AbstractExecutableEntityImpl>
      * 
      */
     public static abstract class ResultBean
-    extends Validator.ResultBean<IvoaAbstractExecutable, AbstractExecutableEntityImpl>
+    extends Validator.ResultBean<IvoaAbstractExecutable, AbstractExecutableEntity>
     implements AbstractExecutableValidator.Result
         {
         /**

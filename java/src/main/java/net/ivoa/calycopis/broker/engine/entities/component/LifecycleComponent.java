@@ -28,7 +28,6 @@ import java.time.Instant;
 
 import org.threeten.extra.Interval;
 
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
@@ -50,12 +49,6 @@ extends Component
      *
      */
     public void setPhase(final IvoaLifecyclePhase phase);
-
-    /**
-     * Get the parent Session.  
-     *
-     */
-    public SimpleExecutionSessionEntityImpl getSession();
 
    /**
     *
@@ -134,30 +127,35 @@ extends Component
 
    /**
     * Return a ProcessingAction to prepare this Component.
+    * TODO Move this to the entity class.
     * 
     */
    public ProcessingAction getPrepareAction(final Platform platform, final ComponentProcessingRequest request);
    
    /**
     * Return a ProcessingAction to monitor this Component.
+    * TODO Move this to the entity class.
     * 
     */
    public ProcessingAction getMonitorAction(final Platform platform, final ComponentProcessingRequest request);
 
    /**
     * Return a ProcessingAction to release this Component.
+    * TODO Move this to the entity class.
     * 
     */
    public ProcessingAction getReleaseAction(final Platform platform, final ComponentProcessingRequest request);
    
    /**
     * Return a ProcessingAction to cancel this Component.
+    * TODO Move this to the entity class.
     * 
     */
    public ProcessingAction getCancelAction(final Platform platform, final ComponentProcessingRequest request);
 
    /**
     * Return a ProcessingAction to fail this Component.
+    * TODO Move this to the entity class.
     * 
     */
    public ProcessingAction getFailAction(final Platform platform, final ComponentProcessingRequest request);

@@ -31,6 +31,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  */
 public interface SimpleDataResourceEntityRepository
-extends JpaRepository<SimpleDataResourceEntityImpl, UUID>
+extends JpaRepository<SimpleDataResourceEntity, UUID>
     {
     }

@@ -45,11 +45,11 @@
 package net.ivoa.calycopis.broker.engine.entities.executable.jupyter;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidator;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
 import net.ivoa.calycopis.schema.spring.model.IvoaJupyterNotebook;
@@ -137,7 +137,7 @@ implements JupyterNotebookValidator
                     validated
                     ){
                     @Override
-                    public AbstractExecutableEntityImpl build(final SimpleExecutionSessionEntityImpl session)
+                    public AbstractExecutableEntity build(final SimpleExecutionSessionEntity session)
                         {
                         this.entity = JupyterNotebookValidatorImpl.this.entityFactory.create(
                             session,

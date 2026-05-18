@@ -26,7 +26,7 @@ package net.ivoa.calycopis.broker.engine.functional.platfom;
 import java.net.URI;
 import java.util.UUID;
 
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataStorageLinker;
@@ -60,7 +60,7 @@ extends FactoryBase
      * Get a LifecycleComponentEntity using the appropriate factory for the kind.
      *  
      */
-    public LifecycleComponentEntityImpl select(final URI kind, final UUID uuid);
+    public LifecycleComponentEntity select(final URI kind, final UUID uuid);
     
     /**
      * Get the ExecutionSessionEntityFactory for this platform.

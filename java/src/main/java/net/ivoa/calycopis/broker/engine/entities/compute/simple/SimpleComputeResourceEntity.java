@@ -42,8 +42,8 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityImpl;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
@@ -66,8 +66,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleComputeResource;
 @DiscriminatorValue(
     value = "uri:simple-compute-resources"
     )
-public abstract class SimpleComputeResourceEntityImpl
-    extends AbstractComputeResourceEntityImpl
+public abstract class SimpleComputeResourceEntity
+    extends AbstractComputeResourceEntity
     implements SimpleComputeResource
     {
 
@@ -81,7 +81,7 @@ public abstract class SimpleComputeResourceEntityImpl
      * Protected constructor for JPA entities.
      *
      */
-    protected SimpleComputeResourceEntityImpl()
+    protected SimpleComputeResourceEntity()
         {
         super();
         }
@@ -90,8 +90,8 @@ public abstract class SimpleComputeResourceEntityImpl
      * Protected constructor used by derived classes.
      *
      */
-    protected SimpleComputeResourceEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected SimpleComputeResourceEntity(
+        final SimpleExecutionSessionEntity session,
         final SimpleComputeResourceValidator.Result result,
         final ComputeResourceOffer offer
         ){

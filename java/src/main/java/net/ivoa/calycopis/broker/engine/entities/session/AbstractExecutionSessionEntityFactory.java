@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
@@ -36,7 +36,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 /**
  * 
  */
-public interface AbstractExecutionSessionEntityFactory<EntityType extends AbstractExecutionSessionEntityImpl>
+public interface AbstractExecutionSessionEntityFactory<EntityType extends AbstractExecutionSessionEntity>
 extends FactoryBase
     {
 
@@ -56,6 +56,6 @@ extends FactoryBase
      * Create a new ExecutionSessionEntity from a parser context and compute resource offer. 
      *
      */
-    public EntityType create(final OfferSetEntityImpl parent, final OfferSetRequestParserContext context, final ComputeResourceOffer offer);
+    public EntityType create(final OfferSetEntity parent, final OfferSetRequestParserContext context, final ComputeResourceOffer offer);
 
     }

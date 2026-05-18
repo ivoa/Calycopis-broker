@@ -29,9 +29,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidator;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaJupyterNotebook;
 
@@ -45,8 +45,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaJupyterNotebook;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public abstract class JupyterNotebookEntityImpl
-extends AbstractExecutableEntityImpl
+public abstract class JupyterNotebookEntity
+extends AbstractExecutableEntity
 implements JupyterNotebook
     {
     @Override
@@ -59,7 +59,7 @@ implements JupyterNotebook
      * Protected constructor for JPA entities.
      * 
      */
-    protected JupyterNotebookEntityImpl()
+    protected JupyterNotebookEntity()
         {
         super();
         }
@@ -68,8 +68,8 @@ implements JupyterNotebook
      * Protected constructor used by our factory.
      *
      */
-    protected JupyterNotebookEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected JupyterNotebookEntity(
+        final SimpleExecutionSessionEntity session,
         final AbstractExecutableValidator.Result result
         ){
         super(

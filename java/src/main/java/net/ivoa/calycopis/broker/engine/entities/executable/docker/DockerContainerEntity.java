@@ -44,8 +44,8 @@ import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
@@ -69,8 +69,8 @@ import net.ivoa.calycopis.schema.spring.model.IvoaDockerPlatformSpec;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public abstract class DockerContainerEntityImpl
-extends AbstractExecutableEntityImpl
+public abstract class DockerContainerEntity
+extends AbstractExecutableEntity
 implements DockerContainer
     {
     
@@ -84,7 +84,7 @@ implements DockerContainer
      * Protected constructor for JPA entities.
      * 
      */
-    protected DockerContainerEntityImpl()
+    protected DockerContainerEntity()
         {
         super();
         }
@@ -93,8 +93,8 @@ implements DockerContainer
      * Protected constructor used by derived classes.
      * 
      */
-    protected DockerContainerEntityImpl(
-        final SimpleExecutionSessionEntityImpl session,
+    protected DockerContainerEntity(
+        final SimpleExecutionSessionEntity session,
         final DockerContainerValidator.Result result
         ){
         super(

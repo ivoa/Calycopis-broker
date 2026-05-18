@@ -37,8 +37,8 @@ package net.ivoa.calycopis.broker.engine.entities.volume.simple.mock;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntityImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountValidator;
@@ -69,8 +69,8 @@ implements MockSimpleVolumeMount
      *
      */
     protected MockSimpleVolumeMountEntityImpl(
-        final AbstractComputeResourceEntityImpl computeResource,
-        final AbstractDataResourceEntityImpl    dataResource,
+        final AbstractComputeResourceEntity computeResource,
+        final AbstractDataResourceEntity    dataResource,
         final SimpleVolumeMountValidator.Result result
         ){
         super(
@@ -85,7 +85,7 @@ implements MockSimpleVolumeMount
      *
      */
     public MockSimpleVolumeMountEntityImpl(
-        final AbstractComputeResourceEntityImpl computeResource,
+        final AbstractComputeResourceEntity computeResource,
         final AbstractStorageResourceEntityImpl storageResource,
         final SimpleVolumeMountValidator.Result result
         ){
