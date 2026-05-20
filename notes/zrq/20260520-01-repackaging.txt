@@ -1,0 +1,891 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Re-packaging the project to separate business logic from Spring framework.
+
+    Result:
+
+        Work in progress ...
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run an instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# Create out database config.
+#[root@calycopis-dev]
+
+    mkdir /etc/calycopis
+
+    cat > /etc/calycopis/database.yaml << EOF
+spring:
+    datasource:
+        url: jdbc:postgresql://postgresql:5432/calycopis
+        username: $(pwgen 32 1)
+        password: $(pwgen 32 1)
+        driverClassName: org.postgresql.Driver
+        initialize: true
+EOF
+
+
+# -----------------------------------------------------
+# Start our PostgreSQL database.
+#[root@calycopis-dev]
+
+    podman run \
+        --rm \
+        --detach \
+        --replace \
+        --name postgresql \
+        --pod calycopis-pod \
+        --expose 5432 \
+        --env "POSTGRES_DB=calycopis" \
+        --env "POSTGRES_USER=$(yq '.spring.datasource.username' /etc/calycopis/database.yaml)" \
+        --env "POSTGRES_PASSWORD=$(yq '.spring.datasource.password' /etc/calycopis/database.yaml)" \
+        docker.io/library/postgres:latest
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# Build and launch our service with the mock platform.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd java
+
+            ./mvnw clean spring-boot:run -D calycopis-platform=mock
+
+        popd
+    popd
+
+--START--
+....
+....
+2026-05-20 10:30:20 WARN main AnnotationConfigServletWebServerApplicationContext refresh()
+    Exception encountered during context initialization - cancelling refresh attempt:
+        org.springframework.beans.factory.UnsatisfiedDependencyException:
+            Error creating bean with name 'dockerPlatformImpl':
+                Unsatisfied dependency expressed through field 'springAbstractComputeResourceEntityRepository':
+                    Error creating bean with name 'springAbstractEntityRepository'
+                        defined in net.ivoa.calycopis.broker.spring.SpringAbstractEntityRepository
+                        defined in @EnableJpaRepositories declared on AmbleckApplication:
+                            Not a managed type: class java.lang.Object
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Start another terminal to run Cursor.
+#[user@desktop]
+
+    podman exec \
+        --tty \
+        --interactive \
+            calycopis-dev \
+                bash
+
+        curl https://cursor.com/install -fsS | bash
+
+        agent
+
+
+# -----------------------------------------------------
+# Ask Cursor to identify the cause of a problem with Spring beans.
+#[root@calycopis-dev]
+
+==START==
+Regarding the project at `/calycopis/Calycopis-broker/github-zrq`.
+Recent changes to this project have been working towards separating out the Spring specific
+parts of the code from the core business logic.
+Gradually moving the Spring specific parts into the `net.ivoa.calycopis.broker.spring` package,
+leaving the framework neutral business logic in the `net.ivoa.calycopis.broker.engine` package.
+Part of this work has been to wrap the Spring specific JpaRepository references using
+the `SpringAbstractEntityRepository` repository interface and `SpringAbstractEntityRepositoryWrapper`
+which implements a framework neutral `AbstractEntityRepository` interface that can be used in
+the rest of the business logic.
+
+Can you identify what is causing the following runtime error:
+```
+2026-05-20 10:15:59 WARN main AnnotationConfigServletWebServerApplicationContext refresh()
+    Exception encountered during context initialization - cancelling refresh attempt:
+    org.springframework.beans.factory.UnsatisfiedDependencyException:
+    Error creating bean with name 'dockerPlatformImpl':
+    Unsatisfied dependency expressed through field 'springAbstractComputeResourceEntityRepository':
+        Error creating bean with name 'springAbstractEntityRepository' defined in net.ivoa.calycopis.broker.spring.SpringAbstractEntityRepository
+            defined in @EnableJpaRepositories declared on AmbleckApplication:
+                Not a managed type: class java.lang.Object
+```
+==END==
+
+--START--
+....
+....
+  The problem is in SpringAbstractEntityRepository. It's a generic interface annotated with @Repository that extends JpaRepository<EntityType, UUID>:
+
+   /calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/spring/SpringAbstractEntityRepository.java lines 35-38
+
+  @Repository
+  public interface SpringAbstractEntityRepository<EntityType>
+  extends JpaRepository<EntityType, UUID>
+      {
+
+  Because AmbleckApplication has @EnableJpaRepositories("net.ivoa.calycopis"), Spring Data JPA scans the package and finds SpringAbstractEntityRepository. It tries to create a repository
+   proxy bean for it directly. Due to Java type erasure, the unbound type parameter EntityType resolves to Object at runtime. Spring then checks whether Object is a JPA managed entity —
+  it isn't — and you get the error: "Not a managed type: class java.lang.Object".
+
+  The concrete subinterface SpringSessionEntityRepository works fine because it binds the type parameter to a real entity class:
+
+   /calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/spring/SpringSessionEntityRepository.java lines 35-37
+
+  @Repository
+  public interface SpringSessionEntityRepository
+  extends SpringAbstractEntityRepository<SimpleExecutionSessionEntity>
+
+  The fix: Add @NoRepositoryBean to SpringAbstractEntityRepository to tell Spring Data JPA it's a base interface and should not be instantiated directly:
+
+  import org.springframework.data.repository.NoRepositoryBean;
+  @NoRepositoryBean
+  public interface SpringAbstractEntityRepository<EntityType>
+  extends JpaRepository<EntityType, UUID>
+
+  However, this alone won't fully solve the problem. In DockerPlatformImpl, you're @Autowired-injecting generic parameterizations of SpringAbstractEntityRepository directly (e.g.
+  SpringAbstractEntityRepository<AbstractComputeResourceEntity>). With @NoRepositoryBean, Spring won't create proxies for the generic base, so those injections will have no bean to
+  satisfy them.
+
+  You'll need to create concrete sub-interfaces for each entity type, following the same pattern as SpringSessionEntityRepository. For example:
+
+  @Repository
+  public interface SpringComputeResourceEntityRepository
+  extends SpringAbstractEntityRepository<AbstractComputeResourceEntity> {}
+  @Repository
+  public interface SpringDataResourceEntityRepository
+  extends SpringAbstractEntityRepository<AbstractDataResourceEntity> {}
+  @Repository
+  public interface SpringExecutableEntityRepository
+  extends SpringAbstractEntityRepository<AbstractExecutableEntity> {}
+  @Repository
+  public interface SpringStorageResourceEntityRepository
+  extends SpringAbstractEntityRepository<AbstractStorageResourceEntity> {}
+  @Repository
+  public interface SpringVolumeMountEntityRepository
+  extends SpringAbstractEntityRepository<AbstractVolumeMountEntity> {}
+
+  Then update the @Autowired fields in DockerPlatformImpl (and MockPlatformImpl) to reference these concrete types instead of the generic SpringAbstractEntityRepository<...>.
+--END--
+
+
+==START==
+Please make the following changes:
+* Remove the @EnableJpaRepositories annotation from AmbleckApplication.
+* Add the @NoRepositoryBean to the SpringAbstractEntityRepository interface.
+* Create the concrete sub-interfaces for each entity type and place them in the `net.ivoa.calycopis.broker.spring` package.
+* Update the @Autowired fields in DockerPlatformImpl and MockPlatformImpl to reference these concrete types.
+==END==
+
+--START--
+....
+....
+  No remaining references to the generic SpringAbstractEntityRepository<...> in the engine package. All changes are complete. Here's a summary:
+
+  Files modified:
+
+  1. AmbleckApplication.java — Removed @EnableJpaRepositories annotation and its import.
+
+  2. SpringAbstractEntityRepository.java — Replaced @Repository with @NoRepositoryBean so Spring Data JPA won't try to instantiate this generic base interface directly.
+
+  3. DockerPlatformImpl.java — Changed all five @Autowired fields from SpringAbstractEntityRepository<...> to the concrete repository types, and updated imports.
+
+  4. MockPlatformImpl.java — Same changes as DockerPlatformImpl for its five @Autowired fields.
+
+  Files created (in net.ivoa.calycopis.broker.spring):
+
+  • SpringComputeResourceEntityRepository — extends SpringAbstractEntityRepository<AbstractComputeResourceEntity>
+  • SpringDataResourceEntityRepository — extends SpringAbstractEntityRepository<AbstractDataResourceEntity>
+  • SpringExecutableEntityRepository — extends SpringAbstractEntityRepository<AbstractExecutableEntity>
+  • SpringStorageResourceEntityRepository — extends SpringAbstractEntityRepository<AbstractStorageResourceEntity>
+  • SpringVolumeMountEntityRepository — extends SpringAbstractEntityRepository<AbstractVolumeMountEntity>
+
+  One thing to note: With @EnableJpaRepositories removed from AmbleckApplication, Spring Boot's auto-configuration will take over JPA repository scanning. It will scan from the package
+  of the @SpringBootApplication class (net.ivoa.calycopis.broker.engine.webapp). Since the new concrete repository interfaces are in net.ivoa.calycopis.broker.spring — which is not a
+  sub-package of that — you may need to either add @EnableJpaRepositories("net.ivoa.calycopis.broker.spring") somewhere (e.g. on a configuration class in the spring package), or ensure
+  the auto-configuration base packages cover both locations.
+--END--
+
+
+==START==
+Please restore the @EnableJpaRepositories annotation to AmbleckApplication, but restrict the scope to the net.ivoa.calycopis.broker.spring package.
+==END==
+
+--START--
+....
+....
+Done. @EnableJpaRepositories is restored and now scoped to "net.ivoa.calycopis.broker.spring", so only the concrete repository interfaces in that package will be picked up by Spring Data JPA.
+--END--
+
+
+# -----------------------------------------------------
+# Ask Cursor to apply the same pattern to the processing entities.
+#[root@calycopis-dev]
+
+==START==
+Can you create a plan for applying the same pattern using SpringAbstractEntityRepository,
+SpringAbstractEntityRepositoryWrapper and AbstractEntityRepository to the following classes
+and interfaces:
+* ProcessingRequestFactoryImpl and ProcessingRequestRepository
+* ComponentProcessingRequestFactoryImpl and ComponentProcessingRequestRepository
+* SessionProcessingRequestFactoryImpl and SessionProcessingRequestRepository
+==END==
+
+--START--
+....
+....
+ ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Suggested Plan                                                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ Wrap Processing Repositories with Framework-Neutral Interfaces                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ Current State                                                                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ Three Spring Data JPA repositories live in the engine package and are directly consumed by factory implementations:                                                                      │
+ │ • ComponentProcessingRequestRepository (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/component/ComponentProcessingRequestRepository.java) -- factory        │
+ │   only uses save()                                                                                                                                                                       │
+ │ • SessionProcessingRequestRepository (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/session/SessionProcessingRequestRepository.java) -- factory only         │
+ │   uses save()                                                                                                                                                                            │
+ │ • ProcessingRequestRepository (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/ProcessingRequestRepository.java) -- factory uses delete();                     │
+ │   ProcessingServiceImpl.TransactionalInner uses findById(), selectNextRequest(), and updateNextRequest()                                                                                 │
+ │                                                                                                                                                                                          │
+ │ Approach                                                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ Follow the existing pattern established by SpringSessionEntityRepository / SpringSessionEntityRepositoryWrapper / SimpleExecutionSessionEntityRepository.                                │
+ │                                                                                                                                                                                          │
+ │ ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐                                                                            │
+ │ │                                         spring (Spring-specific)                                          │                                                                            │
+ │ │                                                                                                           │                                                                            │
+ │ │                                                                                                           │                                                                            │
+ │ │ ┌─────────────────────────────────────────┐            ┌────────────────────────────────────────────────┐ │                                                                            │
+ │ │ │                                         │            │                                                │ │                                                                            │
+ │ │ │                                         │            │     DockerPlatformImpl / MockPlatformImpl      │ │                                                                            │
+ │ │ │ SpringAbstractEntityRepository&lt;T&gt; │      ┌─────┤           @Autowired concrete repos            ├─┼───────────────┐                                                            │
+ │ │ │            @NoRepositoryBean            │      │     │    constructs wrappers, passes to factories    │ │               │                                                            │
+ │ │ │                                         │      │     │                                                │ │               │                                                            │
+ │ │ └─────────────────────────────────────────┘      │     └────────────────────────┬───────────────────────┘ │               │                                                            │
+ │ │                      ▲                           │                              │                         │               │                                                            │
+ │ │                      │                           │                              │                         │               │                                                            │
+ │ │                      ├───────────────────────────┘                              │                         │               │                                                            │
+ │ │                      │                                                          │                         │               │                                                            │
+ │ │                      ▼                                                          ▼                         │               ▼                                                            │
+ │ │ ┌────────────────────┴────────────────────┐            ┌────────────────────────────────────────────────┐ │ ┌──────────────────────────┐                                               │
+ │ │ │                                         │            │                                                │ │ │                          │                                               │
+ │ │ │                                         │            │                                                │ │ │                          │                                               │
+ │ │ │           SpringXxxRepository           │◄───────────┤ SpringAbstractEntityRepositoryWrapper&lt;T&gt; │ │ │      Factory Impls       │                                               │
+ │ │ │               @Repository               │            │      implements AbstractEntityRepository       │ │ │ (take neutral interface) │                                               │
+ │ │ │                                         │            │                                                │ │ │                          │                                               │
+ │ │ └─────────────────────────────────────────┘            └────────────────────────┬───────────────────────┘ │ └─────────────┬────────────┘                                               │
+ │ │                                                                                 ┆                         │               │                                                            │
+ │ └─┬─────────────────────────────────────────┬─────────────────────────────────────┆─────────────────────────┘               │                                                            │
+ │   │                                         │                                     ┆                                         │                                                            │
+ │ ┌─┼─────────────────────────────────────────┼─────────────────────────────────────┆─────────────────────────────────────────┼──────────────┐                                             │
+ │ │ │    AbstractEntityRepository&lt;T&gt;    │◄┄┄┄┄┄┄┄┄┄┄enimple(entsework-neutral)┴─────────────────────────────────────────┘              │                                             │
+ │ │ │             findById / save             │                                                                                              │                                             │
+ │ │ │                                         │                                                                                              │                                             │
+ │ │ └─────────────────────────────────────────┘                                                                                              │                                             │
+ │ │                                                                                                                                          │                                             │
+ │ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘                                             │
+ │ ctrl+o to show source                                                                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ 1. Component and Session (simple -- only use save())                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ │ These can reuse the existing AbstractEntityRepository<T> and SpringAbstractEntityRepositoryWrapper<T> directly.                                                                          │
+ │                                                                                                                                                                                          │
+ │ New Spring repository interfaces in net.ivoa.calycopis.broker.spring                                                                                                                     │
+ │                                                                                                                                                                                          │
+ │ • SpringComponentProcessingRequestRepository -- extends SpringAbstractEntityRepository<ComponentProcessingRequestEntityImpl>                                                             │
+ │ • SpringSessionProcessingRequestRepository -- extends SpringAbstractEntityRepository<SessionProcessingRequestEntity>                                                                     │
+ │                                                                                                                                                                                          │
+ │ Changes to factory impls                                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ • ComponentProcessingRequestFactoryImpl -- change constructor to take AbstractEntityRepository<ComponentProcessingRequestEntityImpl> instead of ComponentProcessingRequestRepository     │
+ │ • SessionProcessingRequestFactoryImpl -- change constructor to take AbstractEntityRepository<SessionProcessingRequestEntity> instead of SessionProcessingRequestRepository; also         │
+ │   remove @Component since it is constructed manually by the platform impls                                                                                                               │
+ │                                                                                                                                                                                          │
+ │ Changes to platform impls (DockerPlatformImpl, MockPlatformImpl)                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ • Replace @Autowired ComponentProcessingRequestRepository with @Autowired SpringComponentProcessingRequestRepository                                                                     │
+ │ • Replace @Autowired SessionProcessingRequestRepository with @Autowired SpringSessionProcessingRequestRepository                                                                         │
+ │ • Wrap each in new SpringAbstractEntityRepositoryWrapper<>(...) when passing to factory constructors                                                                                     │
+ │                                                                                                                                                                                          │
+ │ Delete old repository interfaces                                                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ • Delete ComponentProcessingRequestRepository.java from engine/functional/processing/component/                                                                                          │
+ │ • Delete SessionProcessingRequestRepository.java from engine/functional/processing/session/                                                                                              │
+ │                                                                                                                                                                                          │
+ │ 2. ProcessingRequest (complex -- uses delete() and custom queries)                                                                                                                       │
+ │                                                                                                                                                                                          │
+ │ This is more involved because:                                                                                                                                                           │
+ │ • ProcessingRequestFactoryImpl calls delete(), which is not in AbstractEntityRepository                                                                                                  │
+ │ • ProcessingServiceImpl.TransactionalInner (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/ProcessingServiceImpl.java) (lines 97-183) uses findById(),        │
+ │   selectNextRequest(), and updateNextRequest() -- these are custom @Query methods                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ New framework-neutral interface in engine/functional/processing/                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ Create ProcessingRequestRepositoryBase extending AbstractEntityRepository<ProcessingRequestEntity> with additional methods:                                                              │
+ │                                                                                                                                                                                          │
+ │ public interface ProcessingRequestRepositoryBase                                                                                                                                         │
+ │ extends AbstractEntityRepository<ProcessingRequestEntity>                                                                                                                                │
+ │     {                                                                                                                                                                                    │
+ │     public void delete(ProcessingRequestEntity entity);                                                                                                                                  │
+ │     public UUID findByUuid(UUID uuid);                                                                                                                                                   │
+ │     public void deleteByUuid(UUID uuid);                                                                                                                                                 │
+ │     public UUID selectNextRequest(UUID service, Iterable<URI> kinds);                                                                                                                    │
+ │     public int updateNextRequest(UUID service, Iterable<URI> kinds);                                                                                                                     │
+ │     }                                                                                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ New Spring repository interface in net.ivoa.calycopis.broker.spring                                                                                                                      │
+ │                                                                                                                                                                                          │
+ │ • SpringProcessingRequestRepository -- extends SpringAbstractEntityRepository<ProcessingRequestEntity> with the custom @Query methods (moved from the old                                │
+ │   ProcessingRequestRepository)                                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ New wrapper in net.ivoa.calycopis.broker.spring                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │ • SpringProcessingRequestRepositoryWrapper -- implements ProcessingRequestRepositoryBase, delegates to SpringProcessingRequestRepository                                                 │
+ │                                                                                                                                                                                          │
+ │ Changes to consumers                                                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ │ • ProcessingRequestFactoryImpl -- change to take ProcessingRequestRepositoryBase instead of ProcessingRequestRepository                                                                  │
+ │ • ProcessingServiceImpl.TransactionalInner -- change @Autowired field to ProcessingRequestRepositoryBase instead of ProcessingRequestRepository                                          │
+ │                                                                                                                                                                                          │
+ │ Changes to platform impls                                                                                                                                                                │
+ │                                                                                                                                                                                          │
+ │ • Replace @Autowired ProcessingRequestRepository with @Autowired SpringProcessingRequestRepository                                                                                       │
+ │ • Wrap in new SpringProcessingRequestRepositoryWrapper(...) when passing to factory constructor                                                                                          │
+ │                                                                                                                                                                                          │
+ │ Delete old repository interface                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │ • Delete ProcessingRequestRepository.java from engine/functional/processing/                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ Important consideration                                                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ ProcessingServiceImpl.TransactionalInner is a @Service class in the engine package that currently @Autowired-injects the repository. After this change, it would need to receive a       │
+ │ ProcessingRequestRepositoryBase (the neutral interface). Since it's in the engine package but uses @Autowired, we have two options:                                                      │
+ │ • (A) Keep it in the engine package with @Autowired ProcessingRequestRepositoryBase -- the wrapper bean would need to be registered as a Spring component (it already extends            │
+ │   FactoryBaseImpl). This keeps the current structure.                                                                                                                                    │
+ │ • (B) Move ProcessingServiceImpl to the spring package -- cleaner separation but larger scope change.                                                                                    │
+ │                                                                                                                                                                                          │
+ │ This plan assumes option (A) to keep the scope focused.                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │  Saved to root/.cursor/plans/Wrap processing repositories-b39c4460.plan.md                                                                                                               │
+ │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+ │                                                                                                                                                                                          │
+ │ Ready to build?                                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │  → 1. Yes, build locally (b)                                                                                                                                                             │
+ │    2. No, propose changes (p or Esc)                                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+
+==START==
+Please apply the changes for Component and Session and then we will come back to ProcessingRequest afterwards.
+==END==
+
+--START--
+....
+....
+  All clean -- the only references to ComponentProcessingRequestRepository and SessionProcessingRequestRepository are now to the new Spring-prefixed versions in the spring package.
+
+  Here's a summary of what was done:
+
+  Created (in net.ivoa.calycopis.broker.spring):
+  • SpringComponentProcessingRequestRepository -- extends SpringAbstractEntityRepository<ComponentProcessingRequestEntityImpl>
+  • SpringSessionProcessingRequestRepository -- extends SpringAbstractEntityRepository<SessionProcessingRequestEntity>
+
+  Modified:
+  • ComponentProcessingRequestFactoryImpl -- constructor now takes AbstractEntityRepository<ComponentProcessingRequestEntityImpl> instead of the Spring JPA repository
+  • SessionProcessingRequestFactoryImpl -- constructor now takes AbstractEntityRepository<SessionProcessingRequestEntity>, removed @Component annotation (since it's constructed manually
+    by the platform impls)
+  • DockerPlatformImpl -- autowires the new Spring repositories, wraps them with SpringAbstractEntityRepositoryWrapper<> when passing to factory constructors
+  • MockPlatformImpl -- same changes as DockerPlatformImpl
+
+  Deleted (from engine package):
+  • ComponentProcessingRequestRepository.java
+  • SessionProcessingRequestRepository.java
+--END--
+
+
+# -----------------------------------------------------
+# Prompt Cursor to apply the rules for file headers.
+#[root@calycopis-dev]
+
+==START==
+Please read and apply the AGENTS.md file for the project at `/calycopis/Calycopis-broker/github-zrq/AGENTS.md`
+with reference to the section on Coding conventions and the rules for handling file headers defined
+in the `agents/` directory.
+==END==
+
+--START--
+....
+....
+All done. Here's a summary of what was applied:
+
+  7 new files -- replaced the incorrect licence header with the canonical format from licence-header.mdc (using Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/) and along
+  with this software.), and added AIMetrics entries with contribution: 100.
+
+  2 modified files -- updated copyright year to 2026:
+  • AmbleckApplication.java (was 2024)
+  • SessionProcessingRequestFactoryImpl.java (was 2025)
+
+  4 modified files with no AIMetrics block -- added new AIMetrics block with contribution: 5:
+  • AmbleckApplication.java
+  • SpringAbstractEntityRepository.java
+  • ComponentProcessingRequestFactoryImpl.java
+  • SessionProcessingRequestFactoryImpl.java
+
+  2 modified files with existing AIMetrics -- appended new entry with contribution: 5:
+  • DockerPlatformImpl.java
+  • MockPlatformImpl.java
+--END--
+
+
+==START==
+Can you update the templates in `licence-header.mdc` to replace
+"Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)"
+to include the full name of the university
+"Copyright (c) 2026, University of Manchester (http://www.manchester.ac.uk/)"
+and apply this to the project files.
+==END==
+
+--START--
+....
+....
+ ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Suggested Plan                                                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ Update Copyright Holder Name                                                                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ Change                                                                                                                                                                                   │
+ │                                                                                                                                                                                          │
+ │ Replace all occurrences of:                                                                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ with:                                                                                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ Copyright (c) 2026, University of Manchester (http://www.manchester.ac.uk/)                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ Scope                                                                                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ There are 96 occurrences across 91 files in the project:                                                                                                                                 │
+ │ • 1 template file -- agents/licence-header.mdc (agents/licence-header.mdc) (3 occurrences: Python, Java, XML templates)                                                                  │
+ │ • 7 Java source files -- the Spring repository interfaces in java/src/main/java/.../broker/spring/                                                                                       │
+ │ • 1 resource file -- java/src/main/resources/application.yaml                                                                                                                            │
+ │ • 7 Python test files -- in tests/python/                                                                                                                                                │
+ │ • 1 config file -- config/database.yaml                                                                                                                                                  │
+ │ • 1 Docker Compose file -- docker/compose/calycopis-compose.yml                                                                                                                          │
+ │ • 73 notes files -- in notes/zrq/ (some with multiple occurrences)                                                                                                                       │
+ │                                                                                                                                                                                          │
+ │ Approach                                                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ Use a single sed command to perform the replacement across all files, since this is a simple literal string substitution with no risk of false positives. The copyright-year.mdc rule    │
+ │ says not to change the copyright holder name when updating years, but here we are intentionally changing the template itself and all existing instances to match.                        │
+ │ No AIMetrics updates are needed because the change is a mechanical string replacement to the copyright holder name, not a functional code modification.                                  │
+ │                                                                                                                                                                                          │
+ │  Saved to root/.cursor/plans/Update copyright holder name-b39c4460.plan.md                                                                                                               │
+ │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+ │                                                                                                                                                                                          │
+ │ Ready to build?                                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │  → 1. Yes, build locally (b)                                                                                                                                                             │
+ │    2. No, propose changes (p or Esc)                                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+
+==START==
+Can you exclude the notes directory from this.
+==END==
+
+--START--
+....
+....
+  Updated the plan to exclude the notes/ directory. The scope is now 18 files (1 template + 17 project files) instead of 91.
+--END--
+
+
+==START==
+Go ahead and apply the changes.
+==END==
+
+--START--
+....
+....
+  Done. All 18 files updated (1 template with 3 occurrences + 17 project files), with the notes/ directory excluded. No remaining instances of the old copyright holder text outside
+  notes/.
+--END--
+
+
+==START==
+Can you also update the templates in `~/.cursor/rules/licence-header.mdc`.
+==END==
+
+--START--
+....
+....
+  Done. All 3 template occurrences in ~/.cursor/rules/licence-header.mdc have been updated.
+--END--
+
+
+# -----------------------------------------------------
+# Back to working on the processing code.
+#[root@calycopis-dev]
+
+==START==
+/plan
+Is it possible to split ProcessingServiceImpl and TransactionalInner into separate classes ?
+* ProcessingServiceImpl modified to be framework neutral, removing any Spring specific references.
+* TransactionalInner separated into to a framework neutral ProcessingTransactionHandler interface
+  and a Spring specific SpringProcessingTransactionHandlerImpl implementation class.
+* ProcessingServiceImpl receives a framework neutral ProcessingTransactionHandler in it's constructor.
+* The MockPlatform and DockerPlatform create Autowired instances of SpringProcessingTransactionHandlerImpl
+  and pass them into new instances of ProcessingServiceImpl.
+==END==
+
+--START--
+....
+....
+ ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Suggested Plan                                                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ Split ProcessingServiceImpl and TransactionalInner                                                                                                                                       │
+ │                                                                                                                                                                                          │
+ │ Current Structure                                                                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ ProcessingServiceImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/ProcessingServiceImpl.java) currently contains:                                    │
+ │ • An abstract class with the loop() orchestration method                                                                                                                                 │
+ │ • @Autowired private TransactionalInner inner (Spring dependency)                                                                                                                        │
+ │ • preProcess() and postProcess() callback methods                                                                                                                                        │
+ │ • A static inner @Service class TransactionalInner with @Transactional methods and @Autowired ProcessingRequestRepository                                                                │
+ │                                                                                                                                                                                          │
+ │ The sole concrete subclass is TestProcessingSerivceImpl (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/test/TestProcessingSerivceImpl.java), a @Service      │
+ │ that receives Platform via @Autowired constructor.                                                                                                                                       │
+ │                                                                                                                                                                                          │
+ │ Design Detail: Callback Pattern                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │ TransactionalInner.preProcess() and postProcess() call back into ProcessingServiceImpl (passed as a parameter) to invoke the outer preProcess(request) / postProcess(request, action)    │
+ │ methods. This callback pattern must be preserved in the new interface. Since ProcessingServiceImpl will remain in the engine package and become framework-neutral, passing it as a       │
+ │ parameter to the handler methods is acceptable.                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │ Changes                                                                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ 1. Create ProcessingTransactionHandler interface (engine package)                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ New file: engine/functional/processing/ProcessingTransactionHandler.java                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ public interface ProcessingTransactionHandler                                                                                                                                            │
+ │     {                                                                                                                                                                                    │
+ │     public UUID getNext(ProcessingService service);                                                                                                                                      │
+ │     public ProcessingAction preProcess(ProcessingServiceImpl outer, UUID requestId);                                                                                                     │
+ │     public void postProcess(ProcessingServiceImpl outer, UUID requestId, ProcessingAction action);                                                                                       │
+ │     }                                                                                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ 2. Create SpringProcessingTransactionHandlerImpl (spring package)                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ New file: spring/SpringProcessingTransactionHandlerImpl.java                                                                                                                             │
+ │ Extract the body of the current TransactionalInner into this class. It will be a @Service with @Transactional methods and @Autowired ProcessingRequestRepository -- all the              │
+ │ Spring-specific parts move here.                                                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ @Slf4j                                                                                                                                                                                   │
+ │ @Service                                                                                                                                                                                 │
+ │ public class SpringProcessingTransactionHandlerImpl                                                                                                                                      │
+ │ implements ProcessingTransactionHandler                                                                                                                                                  │
+ │     {                                                                                                                                                                                    │
+ │     @Autowired                                                                                                                                                                           │
+ │     private ProcessingRequestRepository requestRepository;                                                                                                                               │
+ │     // ... getNext(), preProcess(), postProcess() methods unchanged                                                                                                                      │
+ │     }                                                                                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ Note: this class still depends on ProcessingRequestRepository which is itself a Spring JPA interface. This is acceptable since it's in the spring package. (The                          │
+ │ ProcessingRequestRepository wrapping is deferred as planned earlier.)                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ 3. Update ProcessingServiceImpl (engine package)                                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ • Remove the static inner TransactionalInner class                                                                                                                                       │
+ │ • Remove all Spring imports (@Autowired, @Service, @Transactional)                                                                                                                       │
+ │ • Add ProcessingTransactionHandler as a constructor parameter                                                                                                                            │
+ │ • Replace @Autowired private TransactionalInner inner with private final ProcessingTransactionHandler transactionHandler                                                                 │
+ │                                                                                                                                                                                          │
+ │ 4. Update TestProcessingSerivceImpl                                                                                                                                                      │
+ │                                                                                                                                                                                          │
+ │ This @Service currently receives only Platform via its @Autowired constructor. Update it to also receive ProcessingTransactionHandler:                                                   │
+ │                                                                                                                                                                                          │
+ │ @Autowired                                                                                                                                                                               │
+ │ public TestProcessingSerivceImpl(                                                                                                                                                        │
+ │     final Platform platform,                                                                                                                                                             │
+ │     final ProcessingTransactionHandler transactionHandler                                                                                                                                │
+ │     ){                                                                                                                                                                                   │
+ │     super(platform, transactionHandler);                                                                                                                                                 │
+ │     }                                                                                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ Spring will inject the SpringProcessingTransactionHandlerImpl bean automatically. No changes needed in MockPlatformImpl or DockerPlatformImpl since neither creates                      │
+ │ ProcessingServiceImpl instances -- TestProcessingSerivceImpl is managed directly by Spring's @Service annotation.                                                                        │
+ │                                                                                                                                                                                          │
+ │ 5. File header conventions                                                                                                                                                               │
+ │                                                                                                                                                                                          │
+ │ • New files: canonical licence header with AIMetrics 100%                                                                                                                                │
+ │ • Modified files: update copyright year to 2026, add/append AIMetrics entry                                                                                                              │
+ │                                                                                                                                                                                          │
+ │  Saved to root/.cursor/plans/Split ProcessingServiceImpl-b39c4460.plan.md                                                                                                                │
+ │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+ │                                                                                                                                                                                          │
+ │ Ready to build?                                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │  → 1. Yes, build locally (b)                                                                                                                                                             │
+ │    2. No, propose changes (p or Esc)                                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+
+==START==
+Before we implment this, can you analyse what happens to the database connections and transactions during an iteration of the loop() method.
+==END==
+
+--START--
+  Good question. Let me trace through the transaction and connection lifecycle for a single iteration of loop().
+
+  The loop() method itself has no @Transactional annotation, and is invoked by @Scheduled(fixedDelay = 1000) on TestProcessingSerivceImpl, which also doesn't start a transaction. So there
+  is no ambient transaction wrapping the loop.
+
+  Each iteration goes through four distinct phases:
+
+  ────────────────────────────────────────
+
+  Phase 1: inner.getNext(this) -- @Transactional(propagation = Propagation.REQUIRES_NEW)
+
+  • Spring acquires a database connection from the pool and opens a new transaction.
+  • Executes selectNextRequest() -- a JPQL query looking for a request already claimed by this service.
+  • If none found, executes updateNextRequest() -- a @Modifying JPQL UPDATE that atomically claims the next unclaimed request by setting its service column to this service's UUID.
+  • If a row was claimed, executes selectNextRequest() again to retrieve the claimed request's UUID.
+  • Transaction commits, connection returned to the pool.
+  • Returns the UUID (or null if no work available).
+
+  ────────────────────────────────────────
+
+  Phase 2: inner.preProcess(this, requestId) -- @Transactional(propagation = Propagation.REQUIRES_NEW)
+
+  • Spring acquires a connection and opens a new, independent transaction.
+  • requestRepository.findById(requestId).orElseThrow() -- loads a fresh ProcessingRequestEntity from the database. This entity is managed within this transaction's persistence context.
+  • Calls back to outer.preProcess(request), which calls request.preProcess(platform). This is where the business logic determines what action to take. Any lazy-loaded associations on
+    the entity are fetched within this transaction.
+  • Returns a ProcessingAction object (a plain Java object, not an entity).
+  • Transaction commits, connection returned to pool. The ProcessingRequestEntity becomes detached.
+
+  ────────────────────────────────────────
+
+  Phase 3: action.process() -- No transaction, no connection
+
+  • Runs entirely outside any database transaction. No connection is held.
+  • This is the potentially long-running external work (e.g., Docker container operations, HTTP calls).
+  • This is intentional by design -- the ProcessingAction javadoc says: "An external action that is performed outside of any database transactions. This means that the action may take a
+    non-trivial amount of time without locking up the database."
+
+  ────────────────────────────────────────
+
+  Phase 4: inner.postProcess(this, requestId, action) -- @Transactional(propagation = Propagation.REQUIRES_NEW)
+
+  • Spring acquires a connection and opens a new, independent transaction.
+  • requestRepository.findById(requestId).orElseThrow() -- reloads the entity fresh from the database (not reusing the detached instance from Phase 2).
+  • Calls back to outer.postProcess(request, action), which calls request.postProcess(platform, action) -- updates entity state based on the action result.
+  • request.setService(null) -- releases ownership of the request so it won't be picked up by selectNextRequest again for this service.
+  • Transaction commits (dirty-checking flushes the entity changes), connection returned to pool.
+
+  ────────────────────────────────────────
+
+  Key observations:
+
+  1. Three independent transactions per iteration -- each using REQUIRES_NEW, so they are completely isolated from each other. A failure in Phase 4 does not roll back Phase 2's commit.
+
+  2. No connection held across the loop iteration -- connections are acquired and released within each transactional method. During action.process() (Phase 3), no database connection is
+     held at all.
+
+  3. Entity is reloaded fresh in each transaction -- Phase 2 and Phase 4 both do findById(), avoiding detached entity problems. The entity from Phase 2 is not carried into Phase 4.
+
+  4. Single-threaded -- the loop is sequential, so at most one connection is held at any time.
+
+  5. Claim-then-load pattern in getNext() -- the updateNextRequest() uses a subquery with LIMIT 1 to atomically claim a request, avoiding race conditions between concurrent service
+     instances.
+
+  6. Regarding the planned refactoring -- the transaction boundaries are entirely defined by the @Transactional(propagation = Propagation.REQUIRES_NEW) annotations on the inner class
+     methods. When these move to SpringProcessingTransactionHandlerImpl, the transaction behavior will be preserved identically, since the new class will be a @Service bean and Spring's
+     transaction proxy will apply the same way.
+--END--
+
+
+==START==
+Please go ahead and implement the proposed changes.
+==END==
+
+--START--
+....
+....
+  All done. Here's a summary:
+
+  Created:
+  • ProcessingTransactionHandler.java (engine package) -- framework-neutral interface with getNext(), preProcess(), postProcess() methods
+  • SpringProcessingTransactionHandlerImpl.java (spring package) -- @Service implementation with @Transactional(REQUIRES_NEW) on each method and @Autowired ProcessingRequestRepository
+
+  Modified:
+  • ProcessingServiceImpl.java -- removed the static inner TransactionalInner class and all Spring imports (@Autowired, @Service, @Transactional). Now receives
+    ProcessingTransactionHandler via constructor. Fully framework-neutral.
+  • TestProcessingSerivceImpl.java -- constructor updated to receive and pass ProcessingTransactionHandler to super. Spring will auto-inject the SpringProcessingTransactionHandlerImpl
+    bean.
+
+  No references to TransactionalInner remain in the codebase. The transaction boundaries (three independent REQUIRES_NEW transactions per loop iteration) are preserved identically in the
+   new structure.
+--END--
+
+
+==START==
+Can we move ProcessingTransactionHandler into the Platforms, accesed via a getProcessingTransactionHandler() method.
+==END==
+
+--START--
+....
+....
+  Done. Here's what changed:
+
+  • Platform.java -- added getProcessingTransactionHandler() method to the interface
+  • DockerPlatformImpl.java -- @Autowired ProcessingTransactionHandler field with getter
+  • MockPlatformImpl.java -- same as Docker
+  • TestProcessingSerivceImpl.java -- constructor reverted to taking only Platform, and gets the handler via platform.getProcessingTransactionHandler()
+--END--
+
+
+==START==
+There are still some issues with bean creation and initialization.
+Running the service produces the following error:
+```
+Field requestRepository in net.ivoa.calycopis.broker.spring.SpringProcessingTransactionHandlerImpl required a bean of type 'net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestRepository' that could not be found.
+```
+Please try running the service and diagnose the problem with bean initialization.
+The AGENTS.md file will explain how to run and test the service.
+==END==
+
+--START--
+....
+....
+Now let me rebuild and run again.
+
+  $ cd /calycopis/Calycopis-broker/github-zrq/java && SPRING_PROFILES_ACTIVE=mock ./mvnw clean spring-boot:run 2>&1 28s (background)
+
+    Waited for shell regex: /Started AmbleckApplication|APPLICATION FAILED TO START|Error creating bean/
+
+  The service started successfully. Let me verify it's healthy.
+
+  $ grep "Started AmbleckApplication" /root/.cursor/projects/terminals/220037.txt 304ms
+    Found MappingJackson2HttpMessageConverter [org.springframework.http.converter.json.MappingJackson2HttpMessageConverter]Fou​nd MappingJackson2HttpMessageConverter
+    [org.springframework.http.converter.json.MappingJackson2HttpMessageConverter]202​6-05-20 15:42:13 INFO main AmbleckApplication logStarted() Started AmbleckApplication in 11.073 seconds
+    (process running for 12.152)
+
+  Let me stop the service now.
+
+  $ kill 9294 2>/dev/null; sleep 1; echo "stopped" 1.2s
+    stopped
+
+  The service starts successfully now. There were two issues:
+
+  1. @EnableJpaRepositories scope too narrow -- It was restricted to net.ivoa.calycopis.broker.spring, but three JPA repositories (ProcessingRequestRepository, OfferSetRepository,
+     MessageEntityRepository) still live in the engine package. Fixed by expanding the scan to include both net.ivoa.calycopis.broker.spring and net.ivoa.calycopis.broker.engine.
+
+  2. @Component on SpringAbstractEntityRepositoryWrapper -- Spring tried to auto-create this generic wrapper as a bean, but found 8 matching SpringAbstractEntityRepository sub-interfaces
+     and couldn't pick one. Since this class is always instantiated manually (via new SpringAbstractEntityRepositoryWrapper<>(repo)), the @Component and @Autowired annotations were
+     removed.
+--END--
+
+
+==START==
+  The service is still running, can you send the kill message again.
+==END==
+
+--START--
+  $ pkill -f "spring-boot:run" 2>/dev/null; pkill -f "AmbleckApplication" 2>/dev/null; sleep 1; echo "done" 461ms
+
+  $ pgrep -f "spring-boot\|AmbleckApplication" || echo "No processes found" 161ms
+    No processes found
+
+  All Spring Boot processes have been stopped.
+--END--
+
+
+
+
+

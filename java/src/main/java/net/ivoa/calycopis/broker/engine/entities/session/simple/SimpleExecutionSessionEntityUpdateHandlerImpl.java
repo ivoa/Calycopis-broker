@@ -40,7 +40,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 @Slf4j
 public class SimpleExecutionSessionEntityUpdateHandlerImpl
 extends FactoryBaseImpl
-implements SimpleExecutionSessionEntityUpdateHandler
+implements SimpleExecutionSessionEntityUpdater
     {
 
     private final Platform platform;
@@ -63,30 +63,20 @@ implements SimpleExecutionSessionEntityUpdateHandler
         log.debug("UUID   [{}]", uuid);
         log.debug("Update [{}]", update.getClass());
 
-        Optional<SimpleExecutionSessionEntity> found = this.platform.getSessionEntityFactory().select(
+        Optional<SimpleExecutionSessionEntity> optional = this.platform.getExecutionSessionEntityFactory().select(
             uuid
             );
-        if (found.isEmpty())
+        if (optional.isEmpty())
             {
             log.warn("Session not found [{}]", uuid);
-            return found ;
+            return Optional.empty();
             }
         else {
-            SimpleExecutionSessionEntity entity = this.update(
-                found.get(),
-                update
-                );  
-/*
- * 
-            // Do we need this ?
-            // The Sessions set to REJECTED are saved in the database too.
-            entity = this.sessionRepository.save(
-                entity
-                );
- * 
- */
             return Optional.of(
-                entity
+                this.update(
+                    optional.get(),
+                    update
+                    )
                 );
             }
         }
@@ -108,7 +98,7 @@ implements SimpleExecutionSessionEntityUpdateHandler
             default:
                 // We need to be able to return some error messages here.
                 // We need an ErrorResponse structure ..
-                log.warn("Unknown update class [{}]", update.getClass().getName());
+                log.warn("Unknown update type [{}]", update.getClass().getName());
                 break ;
             }
         return entity ;

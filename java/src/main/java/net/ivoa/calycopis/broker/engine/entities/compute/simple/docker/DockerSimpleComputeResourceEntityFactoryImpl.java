@@ -23,10 +23,8 @@
 
 package net.ivoa.calycopis.broker.engine.entities.compute.simple.docker;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
@@ -42,24 +40,15 @@ extends SimpleComputeResourceEntityFactoryImpl
 implements DockerSimpleComputeResourceEntityFactory
     {
 
-    private final DockerSimpleComputeResourceEntityRepository repository;
-
     /**
      * Public constructor used by our Platform.
      *
      */
     public DockerSimpleComputeResourceEntityFactoryImpl(
-        final DockerSimpleComputeResourceEntityRepository repository
+        final AbstractEntityRepository<AbstractComputeResourceEntity> repository
         ){
-        super();
-        this.repository = repository;
-        }
-
-    @Override
-    public Optional<AbstractComputeResourceEntity> select(UUID uuid)
-        {
-        return Optional.of(
-            repository.findById(uuid).get()
+        super(
+            repository
             );
         }
 
@@ -69,13 +58,12 @@ implements DockerSimpleComputeResourceEntityFactory
         final DockerSimpleComputeResourceValidator.Result result,
         final ComputeResourceOffer offer
         ){
-        DockerSimpleComputeResourceEntity entity = this.repository.save(
+        return this.repository.save(
             new DockerSimpleComputeResourceEntity(
                 session,
                 result,
                 offer
                 )
             );
-        return entity;
         }
     }

@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2025 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,18 @@
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-05-20T14:41:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  */
 
@@ -32,14 +44,14 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValida
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetFactory;
-import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdateHandler;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdater;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactory;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOfferFactory;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactory;
+import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingTransactionHandler;
 
 /**
  * Platform is basically a factory of factories.
@@ -63,17 +75,16 @@ extends FactoryBase
     public LifecycleComponentEntity select(final URI kind, final UUID uuid);
     
     /**
-     * Get the ExecutionSessionEntityFactory for this platform.
-     * TODO Do we need the <?> generic wildcard here?
-     *
-     */
-    public AbstractExecutionSessionEntityFactory<?> getAbstractSessionFactory();
-
-    /**
      * Get the ProcessingRequestFactory for this platform.
      *
      */
     public ProcessingRequestFactory getProcessingRequestFactory();
+
+    /**
+     * Get the ProcessingTransactionHandler for this platform.
+     *
+     */
+    public ProcessingTransactionHandler getProcessingTransactionHandler();
     
     /**
      * Get the ComputeResourceOfferFactory for this platform.
@@ -127,13 +138,13 @@ extends FactoryBase
      * Get the ExecutionSessionEntityFactory for this platform.
      * 
      */
-    public SimpleExecutionSessionEntityFactory getSessionEntityFactory();
+    public SimpleExecutionSessionEntityFactory getExecutionSessionEntityFactory();
 
     /**
      * Get the ExecutionSessionEntityUpdateHandler for this platform.
      * 
      */
-    public SimpleExecutionSessionEntityUpdateHandler getSessionUpdateHandler();
+    public SimpleExecutionSessionEntityUpdater getExecutionSessionEntityUpdater();
     
     
     }

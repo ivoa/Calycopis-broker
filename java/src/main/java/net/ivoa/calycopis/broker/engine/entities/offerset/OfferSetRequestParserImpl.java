@@ -375,7 +375,7 @@ implements OfferSetRequestParser
                 // Needed because the platform returns an AbstractExecutionSessionEntityFactory, which creates an AbstractExecutionSessionEntity.
                 // To make this work we need to go down the rabbit hole and change all the things that use SimpleExecutionSessionEntity to use AbstractExecutionSessionEntity.
                 // TODO Later ...
-                SimpleExecutionSessionEntity executionSessionEntity = (SimpleExecutionSessionEntity) platform.getAbstractSessionFactory().create(
+                SimpleExecutionSessionEntity executionSessionEntity = platform.getExecutionSessionEntityFactory().create(
                     offersetEntity,
                     offersetContext,
                     computeOffer

@@ -28,6 +28,7 @@ import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEnt
  * JpaRepository for AbstractDataResourceEntity.
  *
  */
+@Deprecated
 public interface AbstractDataResourceEntityRepository
 extends LifecycleComponentEntityRepository<AbstractDataResourceEntity>
     {

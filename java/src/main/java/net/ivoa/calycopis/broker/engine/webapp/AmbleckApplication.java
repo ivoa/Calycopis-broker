@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2024 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,19 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *   </meta:licence>
  * </meta:header>
+ *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-05-20T14:00:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  * Using the @SpringBootApplication Annotation
  * https://docs.spring.io/spring-boot/docs/2.0.x/reference/html/using-boot-using-springbootapplication-annotation.html
@@ -42,8 +55,8 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -64,9 +77,10 @@ import net.ivoa.calycopis.broker.engine.util.YamlConverter;
 @ComponentScan(
     "net.ivoa.calycopis"
     )
-@EnableJpaRepositories(
-    "net.ivoa.calycopis"
-    )
+@EnableJpaRepositories({
+    "net.ivoa.calycopis.broker.spring",
+    "net.ivoa.calycopis.broker.engine"
+    })
 @Import(
     { YamlConverter.class }
     )

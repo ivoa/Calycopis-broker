@@ -8,6 +8,7 @@ import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEnt
 /**
  *
  */
+@Deprecated
 public interface AbstractExecutableEntityRepository
 extends LifecycleComponentEntityRepository<AbstractExecutableEntity>
     {

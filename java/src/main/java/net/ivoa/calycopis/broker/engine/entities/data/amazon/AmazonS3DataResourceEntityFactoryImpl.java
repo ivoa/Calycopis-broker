@@ -37,6 +37,8 @@ package net.ivoa.calycopis.broker.engine.entities.data.amazon;
 import java.net.URI;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceFactoryImpl;
 
 /**
@@ -48,6 +50,19 @@ public abstract class AmazonS3DataResourceEntityFactoryImpl
 extends AbstractDataResourceFactoryImpl
 implements AmazonS3DataResourceEntityFactory
     {
+    
+    /**
+     * Protected constructor.
+     * 
+     */
+    protected AmazonS3DataResourceEntityFactoryImpl(
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
+        ){
+        super(
+            repository
+            );
+        }
+
     @Override
     public URI getKind()
         {

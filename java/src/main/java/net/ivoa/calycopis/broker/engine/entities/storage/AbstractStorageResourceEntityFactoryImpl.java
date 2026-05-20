@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
 /**
@@ -49,14 +50,15 @@ extends FactoryBaseImpl
 implements AbstractStorageResourceEntityFactory
     {
 
-    protected AbstractStorageResourceEntityRepository repository;
+    protected AbstractEntityRepository<AbstractStorageResourceEntity> repository;
 
     /**
      * Protected constructor.
      *
      */
-    protected AbstractStorageResourceEntityFactoryImpl(final AbstractStorageResourceEntityRepository repository)
-        {
+    protected AbstractStorageResourceEntityFactoryImpl(
+        final AbstractEntityRepository<AbstractStorageResourceEntity> repository
+        ){
         super();
         this.repository = repository;
         }

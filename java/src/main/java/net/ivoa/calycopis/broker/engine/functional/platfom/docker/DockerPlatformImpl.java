@@ -38,6 +38,26 @@
  *       "value": 5,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-20T14:00:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-20T14:41:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 2,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -55,30 +75,29 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.docker.DockerSimpleComputeResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.docker.DockerSimpleComputeResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.compute.simple.docker.DockerSimpleComputeResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.docker.DockerSimpleComputeResourceValidatorImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerHttpResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerHttpResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerHttpResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerHttpResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.link.DockerDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.link.DockerDataStorageLinkerImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.stop.DockerStopResourceValidatorImpl;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerEntityFactory;
@@ -91,38 +110,44 @@ import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRepository;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParser;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityRepository;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdateHandler;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdateHandlerImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdater;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.bind.DockerBindMountStorageEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.bind.DockerBindMountStorageEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.bind.DockerBindMountStorageEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.volume.DockerVolumeMountStorageEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.volume.DockerVolumeMountStorageEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.volume.DockerVolumeMountStorageEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.docker.DockerSimpleVolumeMountEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.docker.DockerSimpleVolumeMountEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.volume.simple.docker.DockerSimpleVolumeMountEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.docker.DockerSimpleVolumeMountValidatorImpl;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOfferFactory;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactory;
+import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingTransactionHandler;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactoryImpl;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestRepository;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequestFactory;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequestFactoryImpl;
-import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequestRepository;
 import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestFactory;
 import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestFactoryImpl;
-import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestRepository;
+import net.ivoa.calycopis.broker.spring.SpringAbstractEntityRepositoryWrapper;
+import net.ivoa.calycopis.broker.spring.SpringComponentProcessingRequestRepository;
+import net.ivoa.calycopis.broker.spring.SpringSessionProcessingRequestRepository;
+import net.ivoa.calycopis.broker.spring.SpringComputeResourceEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringDataResourceEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringExecutableEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringStorageResourceEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringVolumeMountEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringSessionEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringSessionEntityRepositoryWrapper;
 
 /**
  * 
@@ -157,59 +182,90 @@ implements DockerPlatform
 
         //
         // We need create these here because the Autowired Repositories are not available at construction time.
+
+// Compute
         this.dockerSimpleComputeResourceEntityFactory = new DockerSimpleComputeResourceEntityFactoryImpl(
-            this.dockerSimpleComputeResourceEntityRepository
+            new SpringAbstractEntityRepositoryWrapper<AbstractComputeResourceEntity>(
+                this.springAbstractComputeResourceEntityRepository
+                )
             );
 
-        this.dockerContainerEntityFactory = new DockerDockerContainerEntityFactoryImpl(
-            this.abstractExecutableEntityRepository
-            );
-        
+// Data
         this.dockerFileResourceEntityFactory = new DockerFileResourceEntityFactoryImpl(
-            this.dockerFileResourceEntityRepository
+            new SpringAbstractEntityRepositoryWrapper<AbstractDataResourceEntity>(
+                this.springAbstractDataResourceEntityRepository
+                )
             );    
 
         this.dockerHttpResourceEntityFactory = new DockerHttpResourceEntityFactoryImpl(
-            this.dockerHttpResourceEntityRepository
+            new SpringAbstractEntityRepositoryWrapper<AbstractDataResourceEntity>(
+                this.springAbstractDataResourceEntityRepository
+                )
             );
 
-        this.bindMountStorageResourceEntityFactory = new DockerBindMountStorageEntityFactoryImpl(
-            this.bindMountStorageResourceEntityRepository
-            );        
+// Executable        
+        this.dockerDockerContainerEntityFactory = new DockerDockerContainerEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractExecutableEntity>(
+                this.springAbstractExecutableEntityRepository
+                )
+            );
         
-        this.volumeMountStorageResourceEntityFactory = new DockerVolumeMountStorageEntityFactoryImpl(   
-            this.volumeMountStorageResourceEntityRepository
-            );  
+// Storage        
+        this.dockerBindMountStorageResourceEntityFactory = new DockerBindMountStorageEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractStorageResourceEntity>(
+                this.springStorageResourceEntityRepository
+                )
+            );
+        
+        this.dockerVolumeMountStorageResourceEntityFactory = new DockerVolumeMountStorageEntityFactoryImpl(   
+            new SpringAbstractEntityRepositoryWrapper<AbstractStorageResourceEntity>(
+                this.springStorageResourceEntityRepository
+                )
+            );
 
-        this.volumeMountEntityFactory = new DockerSimpleVolumeMountEntityFactoryImpl(
-            this.volumeMountEntityRepository
+// Volumes
+        this.dockerVolumeMountEntityFactory = new DockerSimpleVolumeMountEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractVolumeMountEntity>(
+                this.springVolumeMountEntityRepository
+                )
             );
 
         this.dataStorageLinker = new DockerDataStorageLinkerImpl(
-            this.bindMountStorageResourceEntityFactory,
-            this.volumeMountStorageResourceEntityFactory
+            this.dockerBindMountStorageResourceEntityFactory,
+            this.dockerVolumeMountStorageResourceEntityFactory
             );
 
-        this.sessionEntityFactory = new SimpleExecutionSessionEntityFactoryImpl(
-            this.sessionEntityRepository
+// Session
+        this.simpleExecutionSessionEntityFactory = new SimpleExecutionSessionEntityFactoryImpl(
+            new SpringSessionEntityRepositoryWrapper(
+                this.springSessionEntityRepository
+                )
             );
 
-        this.sessionUpdateHandler = new SimpleExecutionSessionEntityUpdateHandlerImpl(
+        this.simpleExecutionSessionEntityUpdater = new SimpleExecutionSessionEntityUpdateHandlerImpl(
             this
             );
 
+// OfferSet
+        
         this.offerSetFactory = new OfferSetFactoryImpl(
             this,
             this.offerSetRepository,
             this.offerSetRequestParser
             );
 
+// Processing
+        
         this.componentProcessingRequestFactory = new ComponentProcessingRequestFactoryImpl(
-            componentProcessingRequestRepository
+            new SpringAbstractEntityRepositoryWrapper<>(
+                this.springComponentProcessingRequestRepository
+                )
             );
 
         this.sessionProcessingRequestFactory = new SessionProcessingRequestFactoryImpl(
-            sessionProcessingRequestRepository
+            new SpringAbstractEntityRepositoryWrapper<>(
+                this.springSessionProcessingRequestRepository
+                )
             );
 
         this.processingRequestFactory = new ProcessingRequestFactoryImpl(
@@ -224,7 +280,7 @@ implements DockerPlatform
         // validators in registration order.
         //
         
-        this.executableValidatorFactory.addValidator(
+        this.abstractExecutableValidatorFactory.addValidator(
             new DockerDockerContainerValidatorImpl(
                 this
                 )
@@ -233,7 +289,7 @@ implements DockerPlatform
         this.abstractComputeResourceValidatorFactory.addValidator(
             new DockerSimpleComputeResourceValidatorImpl(
                 this.dockerSimpleComputeResourceEntityFactory,
-                this.volumeMountValidatorFactory
+                this.abstractVolumeMountValidatorFactory
                 )
             );
 
@@ -255,17 +311,17 @@ implements DockerPlatform
             new DockerStopResourceValidatorImpl()
             );
 
-        this.volumeMountValidatorFactory.addValidator(
+        this.abstractVolumeMountValidatorFactory.addValidator(
             new DockerSimpleVolumeMountValidatorImpl(
-                this.volumeMountEntityFactory,
+                this.dockerVolumeMountEntityFactory,
                 (AbstractDataResourceEntityFactory) this.dockerHttpResourceEntityFactory,
-                (AbstractStorageResourceEntityFactory) this.volumeMountStorageResourceEntityFactory
+                (AbstractStorageResourceEntityFactory) this.dockerVolumeMountStorageResourceEntityFactory
                 )
             );
 
         this.registerFactory(this.dockerSimpleComputeResourceEntityFactory);
 
-        this.registerFactory(this.dockerContainerEntityFactory);
+        this.registerFactory(this.dockerDockerContainerEntityFactory);
       //this.registerFactory(this.jupyterNotebookEntityFactory);
         
         // We probably only need to register one of these, because it searches the abstract base class repository.
@@ -273,8 +329,8 @@ implements DockerPlatform
         this.registerFactory(this.dockerHttpResourceEntityFactory);
 
         // We probably only need to register one of these, because it searches the abstract base class repository.
-        this.registerFactory(this.bindMountStorageResourceEntityFactory);
-        this.registerFactory(this.volumeMountStorageResourceEntityFactory);
+        this.registerFactory(this.dockerBindMountStorageResourceEntityFactory);
+        this.registerFactory(this.dockerVolumeMountStorageResourceEntityFactory);
         
         }
 
@@ -307,7 +363,7 @@ implements DockerPlatform
         }
     
     @Autowired
-    private DockerSimpleComputeResourceEntityRepository dockerSimpleComputeResourceEntityRepository;
+    private SpringComputeResourceEntityRepository springAbstractComputeResourceEntityRepository;
     private DockerSimpleComputeResourceEntityFactory dockerSimpleComputeResourceEntityFactory;
 
     private AbstractComputeResourceValidatorFactory abstractComputeResourceValidatorFactory = new AbstractComputeResourceValidatorFactoryImpl();
@@ -320,11 +376,9 @@ implements DockerPlatform
 // Data   
     
     @Autowired
-    private DockerFileResourceEntityRepository dockerFileResourceEntityRepository;
-    private DockerFileResourceEntityFactory dockerFileResourceEntityFactory ;
+    private SpringDataResourceEntityRepository springAbstractDataResourceEntityRepository;
 
-    @Autowired
-    private DockerHttpResourceEntityRepository dockerHttpResourceEntityRepository;
+    private DockerFileResourceEntityFactory dockerFileResourceEntityFactory ;
     private DockerHttpResourceEntityFactory dockerHttpResourceEntityFactory ;
 
     private AbstractDataResourceValidatorFactory abstractDataResourceValidatorFactory = new AbstractDataResourceValidatorFactoryImpl();
@@ -337,12 +391,13 @@ implements DockerPlatform
 // Executable    
     
     @Autowired
-    private AbstractExecutableEntityRepository abstractExecutableEntityRepository ;  
-    private DockerDockerContainerEntityFactory dockerContainerEntityFactory;  
+    private SpringExecutableEntityRepository springAbstractExecutableEntityRepository;
+
+    private DockerDockerContainerEntityFactory dockerDockerContainerEntityFactory;  
     @Override
     public DockerContainerEntityFactory getDockerContainerEntityFactory()
         {
-        return this.dockerContainerEntityFactory;
+        return this.dockerDockerContainerEntityFactory;
         }
 
     // TODO 
@@ -351,28 +406,26 @@ implements DockerPlatform
         return null ;
         }
     
-    private AbstractExecutableValidatorFactory executableValidatorFactory = new AbstractExecutableValidatorFactoryImpl() ;
+    private AbstractExecutableValidatorFactory abstractExecutableValidatorFactory = new AbstractExecutableValidatorFactoryImpl() ;
     @Override
     public AbstractExecutableValidatorFactory getExecutableValidators()
         {
-        return this.executableValidatorFactory;
+        return this.abstractExecutableValidatorFactory;
         }
     
 // Storage
 
     @Autowired
-    private DockerBindMountStorageEntityRepository bindMountStorageResourceEntityRepository;
-    private DockerBindMountStorageEntityFactory bindMountStorageResourceEntityFactory;
+    private SpringStorageResourceEntityRepository springStorageResourceEntityRepository;
 
-    @Autowired
-    private DockerVolumeMountStorageEntityRepository volumeMountStorageResourceEntityRepository;
-    private DockerVolumeMountStorageEntityFactory volumeMountStorageResourceEntityFactory;
+    private DockerBindMountStorageEntityFactory   dockerBindMountStorageResourceEntityFactory;
+    private DockerVolumeMountStorageEntityFactory dockerVolumeMountStorageResourceEntityFactory;
     
-    private AbstractStorageResourceValidatorFactory storageResourceValidatorFactory = new AbstractStorageResourceValidatorFactoryImpl() ;
+    private AbstractStorageResourceValidatorFactory abstractStorageResourceValidatorFactory = new AbstractStorageResourceValidatorFactoryImpl() ;
     @Override
     public AbstractStorageResourceValidatorFactory getStorageResourceValidators()
         {
-        return this.storageResourceValidatorFactory;
+        return this.abstractStorageResourceValidatorFactory;
         }
 
     private DockerDataStorageLinker dataStorageLinker;
@@ -385,51 +438,50 @@ implements DockerPlatform
 // Volume
 
     @Autowired
-    private DockerSimpleVolumeMountEntityRepository volumeMountEntityRepository;
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
-    private DockerSimpleVolumeMountEntityFactory volumeMountEntityFactory;
+    private SpringVolumeMountEntityRepository springVolumeMountEntityRepository;
+    private DockerSimpleVolumeMountEntityFactory dockerVolumeMountEntityFactory;
     
-    private AbstractVolumeMountValidatorFactory volumeMountValidatorFactory = new AbstractVolumeMountValidatorFactoryImpl();
+    private AbstractVolumeMountValidatorFactory abstractVolumeMountValidatorFactory = new AbstractVolumeMountValidatorFactoryImpl();
     @Override
     public AbstractVolumeMountValidatorFactory getVolumeMountValidators()
         {
-        return this.volumeMountValidatorFactory;
+        return this.abstractVolumeMountValidatorFactory;
         }
 
 // Session
     
     @Autowired
-    private SimpleExecutionSessionEntityRepository sessionEntityRepository;
-
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
-    private SimpleExecutionSessionEntityFactory sessionEntityFactory;
+    private SpringSessionEntityRepository springSessionEntityRepository;
+    private SimpleExecutionSessionEntityFactory simpleExecutionSessionEntityFactory;
     @Override
-    public SimpleExecutionSessionEntityFactory getSessionEntityFactory()
+    public SimpleExecutionSessionEntityFactory getExecutionSessionEntityFactory()
         {
-        return sessionEntityFactory;
+        return simpleExecutionSessionEntityFactory;
         }
+    
+    private SimpleExecutionSessionEntityUpdater simpleExecutionSessionEntityUpdater;
     @Override
-    public AbstractExecutionSessionEntityFactory<?> getAbstractSessionFactory()
+    public SimpleExecutionSessionEntityUpdater getExecutionSessionEntityUpdater()
         {
-        return this.sessionEntityFactory;
-        }
-
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
-    private SimpleExecutionSessionEntityUpdateHandler sessionUpdateHandler;
-    @Override
-    public SimpleExecutionSessionEntityUpdateHandler getSessionUpdateHandler()
-        {
-        return sessionUpdateHandler;
+        return simpleExecutionSessionEntityUpdater;
         }
     
 // Processing
 
     @Autowired
+    private ProcessingTransactionHandler processingTransactionHandler;
+    @Override
+    public ProcessingTransactionHandler getProcessingTransactionHandler()
+        {
+        return this.processingTransactionHandler;
+        }
+
+    @Autowired
     private ProcessingRequestRepository processingRequestRepository;
     @Autowired
-    private ComponentProcessingRequestRepository componentProcessingRequestRepository;
+    private SpringComponentProcessingRequestRepository springComponentProcessingRequestRepository;
     @Autowired
-    private SessionProcessingRequestRepository sessionProcessingRequestRepository;
+    private SpringSessionProcessingRequestRepository springSessionProcessingRequestRepository;
 
     // These have to be initialized in the initialize() method because the Autowired repositories are not available at construction time.
     private ProcessingRequestFactory processingRequestFactory;

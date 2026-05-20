@@ -23,15 +23,40 @@
 
 package net.ivoa.calycopis.broker.engine.entities.data;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
 /**
  * 
  */
 @Slf4j
-public class AbstractDataResourceFactoryImpl
+public abstract class AbstractDataResourceFactoryImpl
 extends FactoryBaseImpl
-implements AbstractDataResourceFactory
+implements AbstractDataResourceEntityFactory
     {
+
+    protected final AbstractEntityRepository<AbstractDataResourceEntity> repository;
+
+    /**
+     * Protected constructor.
+     * 
+     */
+    protected AbstractDataResourceFactoryImpl(
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
+        ){
+        super();
+        this.repository = repository;
+        }
+
+    @Override
+    public Optional<AbstractDataResourceEntity> select(final UUID uuid)
+        {
+        return Optional.of(
+            this.repository.findById(uuid).get()
+            );
+        }
     }

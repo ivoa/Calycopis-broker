@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
 /**
@@ -49,18 +50,24 @@ extends FactoryBaseImpl
 implements AbstractDataResourceEntityFactory
     {
 
-    private AbstractDataResourceEntityRepository repository;
-
-    public AbstractDataResourceEntityFactoryImpl(final AbstractDataResourceEntityRepository repository)
-        {
+    protected final AbstractEntityRepository<AbstractDataResourceEntity> repository;
+    
+    /**
+     * Protected constructor.
+     *
+     */
+    protected AbstractDataResourceEntityFactoryImpl(
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
+        ){
         super();
         this.repository = repository;
         }
 
-    // TODO This is needed because of the Optional<>.
     @Override
     public Optional<AbstractDataResourceEntity> select(UUID uuid)
         {
-        return repository.findById(uuid);
+        return Optional.of(
+            repository.findById(uuid).get()
+            );
         }
     }

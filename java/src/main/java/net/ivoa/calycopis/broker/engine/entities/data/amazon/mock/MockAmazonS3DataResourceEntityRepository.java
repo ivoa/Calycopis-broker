@@ -33,15 +33,14 @@
  */
 package net.ivoa.calycopis.broker.engine.entities.data.amazon.mock;
 
-import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityRepository;
 
 /**
  * JpaRepository for MockAmazonS3DataResourceEntity.
  *
  */
+@Deprecated
 public interface MockAmazonS3DataResourceEntityRepository
-extends JpaRepository<MockAmazonS3DataResourceEntity, UUID>
+extends LifecycleComponentEntityRepository<MockAmazonS3DataResourceEntity>
     {
     }

@@ -121,10 +121,6 @@
     ** This looks like it might work.
 
 
-
-
-
-
 # -----------------------------------------------------
 # minor
 
@@ -134,8 +130,8 @@
     Get rid of Optional, just return null.
     Or make use of the NoSuchElementException that Optional throws.
 
-    Remove the XyzEntity interfaces and replace with XyzEntityImpl.
-    Evaluate - do we need XyzEntityFactory interfaces
+    Remove the XyzEntity interfaces
+    Do we need XyzEntityFactory interfaces - we aren't using Autowire any more.
 
     Decide on one pattern for entities and their interfaces:
 
@@ -145,8 +141,16 @@
         AbstractExecutable is the interface
         AbstractExecutableEntityImpl is the entity class
 
-
     Message and MessageEntityImpl should have kind rather than type.
+
+    Merge AbstractExecutionSession and SimpleExecutionSession into just ExecutionSession.
+    Remove AbstractExecutionSession et al.
+
+    Change SimpleExecutionSessionEntityUpdateHandler to SimpleExecutionSessionEntityUpdater
+    Change getSessionUpdateHandler to getSessionUpdater
+
+
+
 
 
 

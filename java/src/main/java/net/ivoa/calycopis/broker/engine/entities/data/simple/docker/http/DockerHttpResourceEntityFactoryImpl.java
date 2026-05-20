@@ -23,9 +23,9 @@
 
 package net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http;
 
-import org.springframework.stereotype.Component;
-
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.DockerSimpleDataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
@@ -35,7 +35,6 @@ import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource
  * 
  */
 @Slf4j
-@Component
 public class DockerHttpResourceEntityFactoryImpl
 extends DockerSimpleDataResourceEntityFactoryImpl
 implements DockerHttpResourceEntityFactory
@@ -46,7 +45,7 @@ implements DockerHttpResourceEntityFactory
      * 
      */
     public DockerHttpResourceEntityFactoryImpl(
-        final DockerHttpResourceEntityRepository repository
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
         ){
         super(
             repository

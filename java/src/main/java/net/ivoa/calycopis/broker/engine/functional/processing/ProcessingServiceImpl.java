@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2025 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,17 +18,24 @@
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-05-20T14:34:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 40,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  */
 
 package net.ivoa.calycopis.broker.engine.functional.processing;
 
 import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
@@ -44,26 +51,29 @@ implements ProcessingService
     {
 
     private final Platform platform;
+    private final ProcessingTransactionHandler transactionHandler;
 
-    // TODO Pass the inner component in via constructor.
-    protected ProcessingServiceImpl(final Platform platform)
-        {
+    /**
+     * 
+     */
+    protected ProcessingServiceImpl(
+        final Platform platform,
+        final ProcessingTransactionHandler transactionHandler
+        ){
         super();
         this.platform = platform;
+        this.transactionHandler = transactionHandler;
         }
-
-    @Autowired
-    private TransactionalInner inner ;
 
     public void loop()
         {
         log.info("++++++++");
         log.debug("Starting processing loop [{}]", this.getUuid());
-        UUID requestId = inner.getNext(this) ;
+        UUID requestId = transactionHandler.getNext(this) ;
         while (requestId != null)
             {
             log.debug("Pre-processing request [{}]", requestId);
-            ProcessingAction action = inner.preProcess(    
+            ProcessingAction action = transactionHandler.preProcess(    
                 this,
                 requestId
                 );
@@ -77,116 +87,24 @@ implements ProcessingService
                 }
 
             log.debug("Post-processing request [{}]", requestId);
-            inner.postProcess(    
+            transactionHandler.postProcess(    
                 this,
                 requestId,
                 action
                 );
             
-            requestId = inner.getNext(this) ;
+            requestId = transactionHandler.getNext(this) ;
             }
         log.debug("Exiting processing loop [{}]", this.getUuid());
         log.info("--------");
         }
-    
-    /**
-     * Inner class marked as @Service so that the @Transactional annotations are processed
-     * when it is loaded by the Spring framework.
-     * 
-     */
-    @Service
-    public static class TransactionalInner
-        {
-        @Autowired
-        private ProcessingRequestRepository requestRepository;
-
-        TransactionalInner()
-            {
-            super();
-            }
-        
-        /**
-         * Inner method to get the next request in a transaction.
-         * 
-         */
-        @Transactional(propagation = Propagation.REQUIRES_NEW)
-        protected UUID getNext(final ProcessingService service)
-            {
-            // Find the next request with this service ID.
-            log.debug("Finding next request for service [{}]", service.getUuid());
-            UUID found = this.requestRepository.selectNextRequest(
-                service.getUuid(),
-                service.getKinds()
-                );
-            // If we didn't find an active request, try to claim one.
-            if (found == null)
-                {
-                log.debug("No requests found for service [{}]", service.getUuid());
-                // Claim the next available request.
-                log.debug("Checking for requests for service [{}]", service.getUuid());
-                int count = this.requestRepository.updateNextRequest(
-                    service.getUuid(),
-                    service.getKinds()
-                    ) ;
-                // Load the claimed request.
-                log.debug("[{}] requests claimed for service [{}]", count, service.getUuid());
-                if (count > 0)
-                    {
-                    log.debug("Finding next request for service [{}]", service.getUuid());
-                    found = this.requestRepository.selectNextRequest(
-                        service.getUuid(),
-                        service.getKinds()
-                        ) ;
-                    }
-                }
-
-            if (found != null)
-                {
-                log.debug("Found request [{}] for service [{}]", found, service.getUuid());
-                }
-            else {
-                log.debug("No requests found for service [{}]", service.getUuid());
-                }
-            
-            return found ;
-            }
-        
-        /**
-         * Inner method to pre-process the request in a transaction.
-         * 
-         */
-        @Transactional(propagation = Propagation.REQUIRES_NEW)
-        protected ProcessingAction preProcess(final ProcessingServiceImpl outer, final UUID requestId)
-            {
-            ProcessingRequestEntity request = this.requestRepository.findById(requestId).orElseThrow();
-            log.debug("Service [{}] inner pre-processing request [{}][{}]", outer.getUuid(), request.getUuid(), request.getClass().getSimpleName());
-            return outer.preProcess(
-                request
-                );
-            }
-
-        /**
-         * Inner method to post-process the request in a transaction.
-         * 
-         */
-        @Transactional(propagation = Propagation.REQUIRES_NEW)
-        protected void postProcess(final ProcessingServiceImpl outer, final UUID requestId, final ProcessingAction action)
-            {
-            ProcessingRequestEntity request = this.requestRepository.findById(requestId).orElseThrow();
-            log.debug("Service [{}] inner post-processing request [{}][{}]", outer.getUuid(), request.getUuid(), request.getClass().getSimpleName());
-            outer.postProcess(
-                request,
-                action
-                );
-            request.setService(null);
-            }
-        }
 
     /**
-     * Outer pre-process method that can be overridden if needed.
+     * Pre-process method that can be overridden if needed.
+     * Called by the ProcessingTransactionHandler within a transaction.
      * 
      */
-    protected ProcessingAction preProcess(final ProcessingRequestEntity request)
+    public ProcessingAction preProcess(final ProcessingRequestEntity request)
         {
         log.debug("Service [{}] outer pre-processing request [{}][{}]", this.getUuid(), request.getUuid(), request.getClass().getSimpleName());
         return request.preProcess(
@@ -195,10 +113,11 @@ implements ProcessingService
         }
 
     /**
-     * Outer post-process method that can be overridden if needed.
+     * Post-process method that can be overridden if needed.
+     * Called by the ProcessingTransactionHandler within a transaction.
      * 
      */
-    protected void postProcess(final ProcessingRequestEntity request, ProcessingAction action)
+    public void postProcess(final ProcessingRequestEntity request, ProcessingAction action)
         {
         log.debug("Service [{}] outer post-processing request [{}][{}]", this.getUuid(), request.getUuid(), request.getClass().getSimpleName());
         request.postProcess(

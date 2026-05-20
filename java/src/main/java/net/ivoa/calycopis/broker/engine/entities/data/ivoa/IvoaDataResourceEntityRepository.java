@@ -22,15 +22,14 @@
  */
 package net.ivoa.calycopis.broker.engine.entities.data.ivoa;
 
-import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityRepository;
 
 /**
  * JpaRepository for IvoaDataResourceEntities.
  *
  */
+@Deprecated
 public interface IvoaDataResourceEntityRepository
-extends JpaRepository<IvoaDataResourceEntity, UUID>
+extends LifecycleComponentEntityRepository<IvoaDataResourceEntity>
     {
     }

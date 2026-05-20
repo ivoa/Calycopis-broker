@@ -37,8 +37,9 @@ package net.ivoa.calycopis.broker.engine.entities.storage.simple;
 import java.net.URI;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityRepository;
 
 /**
  *
@@ -52,9 +53,12 @@ implements SimpleStorageResourceEntityFactory
      * Protected constructor.
      * 
      */
-    protected SimpleStorageResourceEntityFactoryImpl(final AbstractStorageResourceEntityRepository abstractStorageResourceEntityRepository)
-        {
-        super(abstractStorageResourceEntityRepository);
+    protected SimpleStorageResourceEntityFactoryImpl(
+        final AbstractEntityRepository<AbstractStorageResourceEntity> repository
+        ){
+        super(
+            repository
+            );
         }
 
     @Override

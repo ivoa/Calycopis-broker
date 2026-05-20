@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
 /**
@@ -49,10 +50,15 @@ extends FactoryBaseImpl
 implements AbstractExecutableEntityFactory
     {
 
-    protected AbstractExecutableEntityRepository repository;
-
-    public AbstractExecutableEntityFactoryImpl(final AbstractExecutableEntityRepository repository)
-        {
+    protected final AbstractEntityRepository<AbstractExecutableEntity> repository;
+    
+    /**
+     * Protected constructor used by derived classes.
+     * 
+     */
+    protected AbstractExecutableEntityFactoryImpl(
+        final AbstractEntityRepository<AbstractExecutableEntity> repository
+        ){
         super();
         this.repository = repository;
         }

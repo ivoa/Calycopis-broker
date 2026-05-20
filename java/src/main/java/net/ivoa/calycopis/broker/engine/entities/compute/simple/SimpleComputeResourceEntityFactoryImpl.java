@@ -37,6 +37,8 @@ package net.ivoa.calycopis.broker.engine.entities.compute.simple;
 import java.net.URI;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityFactoryImpl;
 
 /**
@@ -48,6 +50,19 @@ public abstract class SimpleComputeResourceEntityFactoryImpl
 extends AbstractComputeResourceEntityFactoryImpl
 implements SimpleComputeResourceEntityFactory
     {
+
+    /**
+     * Protected constructor.
+     *
+     */
+    protected SimpleComputeResourceEntityFactoryImpl(
+        final AbstractEntityRepository<AbstractComputeResourceEntity> repository
+        ){
+        super(
+            repository
+            );
+        }
+    
     @Override
     public URI getKind()
         {

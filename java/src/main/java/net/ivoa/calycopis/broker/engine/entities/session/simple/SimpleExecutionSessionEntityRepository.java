@@ -22,24 +22,18 @@
  */
 package net.ivoa.calycopis.broker.engine.entities.session.simple;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
  * JpaRepository for ExecutionSessionEntity.
  *
  */
-@Repository
 public interface SimpleExecutionSessionEntityRepository
-    extends JpaRepository<SimpleExecutionSessionEntity, UUID>
+extends AbstractEntityRepository<SimpleExecutionSessionEntity>
     {
     
-    List<SimpleExecutionSessionEntity> findByPhase(final IvoaSimpleExecutionSessionPhase phase);
+    public Iterable<SimpleExecutionSessionEntity> findByPhase(final IvoaSimpleExecutionSessionPhase phase);
     
     }
 

@@ -25,9 +25,10 @@ package net.ivoa.calycopis.broker.engine.entities.compute.simple;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityRepository;
 
 /**
- * JpaRepository for SimpleComputeResourceEntity.
+ *
  *
  */
+@Deprecated
 public interface SimpleComputeResourceEntityRepository
 extends LifecycleComponentEntityRepository<SimpleComputeResourceEntity>
     {

@@ -33,10 +33,8 @@
  */
 package net.ivoa.calycopis.broker.engine.entities.data.amazon.mock;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceEntityFactoryImpl;
@@ -53,24 +51,15 @@ extends AmazonS3DataResourceEntityFactoryImpl
 implements MockAmazonS3DataResourceEntityFactory
     {
 
-    private final MockAmazonS3DataResourceEntityRepository repository;
-
     /**
      * Public constructor, used by our Platform.
      *
      */
     public MockAmazonS3DataResourceEntityFactoryImpl(
-        final MockAmazonS3DataResourceEntityRepository repository
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
         ){
-        super();
-        this.repository = repository;
-        }
-
-    @Override
-    public Optional<AbstractDataResourceEntity> select(final UUID uuid)
-        {
-        return Optional.of(
-            this.repository.findById(uuid).get()
+        super(
+            repository
             );
         }
 

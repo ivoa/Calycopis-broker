@@ -33,16 +33,12 @@
  */
 package net.ivoa.calycopis.broker.engine.entities.data.simple.mock;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.stereotype.Component;
-
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 
@@ -50,30 +46,20 @@ import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource
  *
  */
 @Slf4j
-@Component
 public class MockSimpleDataResourceEntityFactoryImpl
 extends SimpleDataResourceEntityFactoryImpl
 implements MockSimpleDataResourceEntityFactory
     {
-
-    private final MockSimpleDataResourceEntityRepository simpleDataResourceEntityRepository;
 
     /**
      * Public constructor used by our Platform.
      * 
      */
     public MockSimpleDataResourceEntityFactoryImpl(
-        final MockSimpleDataResourceEntityRepository simpleDataResourceEntityRepository
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
         ){
-        super();
-        this.simpleDataResourceEntityRepository = simpleDataResourceEntityRepository;
-        }
-
-    @Override
-    public Optional<AbstractDataResourceEntity> select(final UUID uuid)
-        {
-        return Optional.of(
-            this.simpleDataResourceEntityRepository.findById(uuid).get()
+        super(
+            repository
             );
         }
 
@@ -83,7 +69,7 @@ implements MockSimpleDataResourceEntityFactory
         final AbstractStorageResourceEntity storage,
         final AbstractDataResourceValidator.Result result
         ){
-        return this.simpleDataResourceEntityRepository.save(
+        return this.repository.save(
             new MockSimpleDataResourceEntity(
                 session,
                 storage,

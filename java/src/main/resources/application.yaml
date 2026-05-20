@@ -1,7 +1,7 @@
 #
 # <meta:header>
 #   <meta:licence>
-#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#     Copyright (c) 2026, University of Manchester (http://www.manchester.ac.uk/)
 #
 #     This information is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by

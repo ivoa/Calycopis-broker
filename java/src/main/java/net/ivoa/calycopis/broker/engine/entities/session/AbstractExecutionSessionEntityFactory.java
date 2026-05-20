@@ -23,39 +23,13 @@
 
 package net.ivoa.calycopis.broker.engine.entities.session;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
-import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
  * 
  */
-public interface AbstractExecutionSessionEntityFactory<EntityType extends AbstractExecutionSessionEntity>
+@Deprecated
+public interface AbstractExecutionSessionEntityFactory
 extends FactoryBase
     {
-
-    /**
-     * Select an ExecutionSessionEntity based on UUID.
-     *
-     */
-    public Optional<EntityType> select(final UUID uuid);
-
-    /**
-     * Select ExecutionSessionEntities based on phase.
-     *
-     */
-    public List<EntityType> select(final IvoaSimpleExecutionSessionPhase phase);
-
-    /**
-     * Create a new ExecutionSessionEntity from a parser context and compute resource offer. 
-     *
-     */
-    public EntityType create(final OfferSetEntity parent, final OfferSetRequestParserContext context, final ComputeResourceOffer offer);
-
     }

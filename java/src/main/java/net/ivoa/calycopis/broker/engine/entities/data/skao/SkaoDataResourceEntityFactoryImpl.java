@@ -37,6 +37,8 @@ package net.ivoa.calycopis.broker.engine.entities.data.skao;
 import java.net.URI;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceFactoryImpl;
 
 /**
@@ -45,9 +47,22 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceFactor
  */
 @Slf4j
 public abstract class SkaoDataResourceEntityFactoryImpl
-    extends AbstractDataResourceFactoryImpl
-    implements SkaoDataResourceEntityFactory
+extends AbstractDataResourceFactoryImpl
+implements SkaoDataResourceEntityFactory
     {
+    
+    /**
+     * Protected constructor.
+     * 
+     */
+    protected SkaoDataResourceEntityFactoryImpl(
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
+        ){
+        super(
+            repository
+            );
+        }
+    
     @Override
     public URI getKind()
         {

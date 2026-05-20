@@ -28,6 +28,7 @@ import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEnt
  * JpaRepository for DockerSimpleComputeResourceEntity.
  *
  */
+@Deprecated
 public interface DockerSimpleComputeResourceEntityRepository
 extends LifecycleComponentEntityRepository<DockerSimpleComputeResourceEntity>
     {

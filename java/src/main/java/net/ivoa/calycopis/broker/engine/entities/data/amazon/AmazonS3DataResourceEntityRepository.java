@@ -22,15 +22,13 @@
  */
 package net.ivoa.calycopis.broker.engine.entities.data.amazon;
 
-import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityRepository;
 
 /**
  * JpaRepository for AmazonS3DataResourceEntities.
  *
  */
 public interface AmazonS3DataResourceEntityRepository
-extends JpaRepository<AmazonS3DataResourceEntityImpl, UUID>
+extends LifecycleComponentEntityRepository<AmazonS3DataResourceEntityImpl>
     {
     }

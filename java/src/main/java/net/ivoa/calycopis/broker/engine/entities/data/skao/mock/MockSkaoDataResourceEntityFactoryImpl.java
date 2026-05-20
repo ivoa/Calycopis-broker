@@ -33,14 +33,12 @@
  */
 package net.ivoa.calycopis.broker.engine.entities.data.skao.mock;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.data.skao.SkaoDataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.skao.SkaoDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.data.skao.SkaoDataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 
@@ -53,24 +51,15 @@ extends SkaoDataResourceEntityFactoryImpl
 implements MockSkaoDataResourceEntityFactory
     {
 
-    private final MockSkaoDataResourceEntityRepository skaoDataResourceEntityRepository;
-
     /**
      * Public constructor used by our Platform.
      *
      */
     public MockSkaoDataResourceEntityFactoryImpl(
-        final MockSkaoDataResourceEntityRepository skaoDataResourceEntityRepository
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
         ){
-        super();
-        this.skaoDataResourceEntityRepository = skaoDataResourceEntityRepository;
-        }
-
-    @Override
-    public Optional<AbstractDataResourceEntity> select(final UUID uuid)
-        {
-        return Optional.of(
-            this.skaoDataResourceEntityRepository.findById(uuid).get()
+        super(
+            repository
             );
         }
 
@@ -80,7 +69,7 @@ implements MockSkaoDataResourceEntityFactory
         final AbstractStorageResourceEntity storage,
         final AbstractDataResourceValidator.Result result
         ){
-        return this.skaoDataResourceEntityRepository.save(
+        return this.repository.save(
             new MockSkaoDataResourceEntity(
                 session,
                 storage,

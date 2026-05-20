@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2024 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,19 +18,29 @@
  *   </meta:licence>
  * </meta:header>
  *
- *
+ * AIMetrics: []
+ * 
  */
-package net.ivoa.calycopis.broker.engine.functional.processing.component;
+package net.ivoa.calycopis.broker.engine.entities.component;
 
+import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 /**
- * A SimpleStorageResource JpaRepository.
+ * An abstract interface that acts as a placeholder for the JpaRepository methods we use.
  *
  */
-public interface ComponentProcessingRequestRepository
-extends JpaRepository<ComponentProcessingRequestEntityImpl, UUID>
+public interface AbstractEntityRepository<EntityType>
     {
+
+    /**
+     * 
+     */
+    public Optional<EntityType> findById(final UUID uuid);
+
+    /**
+     * 
+     */
+    public <ActualType extends EntityType> ActualType save(ActualType entity);
+
     }

@@ -78,6 +78,26 @@
  *       "value": 5,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-20T14:00:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-20T14:41:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 2,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -96,36 +116,33 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.mock.MockSimpleComputeResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.mock.MockSimpleComputeResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.compute.simple.mock.MockSimpleComputeResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.mock.MockSimpleComputeResourceValidatorImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.data.amazon.mock.MockAmazonS3DataResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.amazon.mock.MockAmazonS3DataResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.amazon.mock.MockAmazonS3DataResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.amazon.mock.MockAmazonS3DataResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.ivoa.mock.MockIvoaDataResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.ivoa.mock.MockIvoaDataResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.ivoa.mock.MockIvoaDataResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.ivoa.mock.MockIvoaDataResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.mock.MockDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.data.mock.MockDataStorageLinkerImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.mock.MockSimpleDataResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.mock.MockSimpleDataResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.mock.MockSimpleDataResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.mock.MockSimpleDataResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataResourceValidatorImpl;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.mock.MockDockerContainerEntityFactory;
@@ -139,38 +156,43 @@ import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRepository;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParser;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityRepository;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdateHandler;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdateHandlerImpl;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdater;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.mock.MockSimpleStorageResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.mock.MockSimpleStorageResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.storage.simple.mock.MockSimpleStorageResourceEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.mock.MockSimpleStorageResourceValidatorImpl;
-import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountValidatorImpl;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOfferFactory;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactory;
+import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingTransactionHandler;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactoryImpl;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestRepository;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequestFactory;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequestFactoryImpl;
-import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequestRepository;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockEntitySettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestFactory;
 import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestFactoryImpl;
-import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestRepository;
+import net.ivoa.calycopis.broker.spring.SpringAbstractEntityRepositoryWrapper;
+import net.ivoa.calycopis.broker.spring.SpringComponentProcessingRequestRepository;
+import net.ivoa.calycopis.broker.spring.SpringSessionProcessingRequestRepository;
+import net.ivoa.calycopis.broker.spring.SpringComputeResourceEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringDataResourceEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringExecutableEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringStorageResourceEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringVolumeMountEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringSessionEntityRepository;
+import net.ivoa.calycopis.broker.spring.SpringSessionEntityRepositoryWrapper;
 
 /**
  * 
@@ -188,6 +210,8 @@ implements MockPlatform
         super();
         }
 
+    private boolean initialized = false;
+
     @Autowired
     private MockEntitySettings mockEntitySettings;
     @Override
@@ -199,79 +223,116 @@ implements MockPlatform
     public void initialize()
         {
         log.debug("initialize()");
+
+        if (this.initialized)
+            {
+            log.warn("Platform has already been initialized, skipping.");
+            return;
+            }
+        else {
+            this.initialized = true;
+            }
+        
         //
         // We need create these here because the Autowired Repositories are not available at construction time.
-        this.simpleComputeResourceEntityFactory = new MockSimpleComputeResourceEntityFactoryImpl(
-            this.simpleComputeResourceEntityRepository
+
+// Compute        
+        this.mockSimpleComputeResourceEntityFactory = new MockSimpleComputeResourceEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractComputeResourceEntity>(
+                this.springAbstractComputeResourceEntityRepository
+                )
             );
 
-        this.simpleDataResourceEntityFactory = new MockSimpleDataResourceEntityFactoryImpl(
-            this.simpleDataResourceEntityRepository
+// Data
+        this.mockSimpleDataResourceEntityFactory = new MockSimpleDataResourceEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractDataResourceEntity>(
+                this.springAbstractDataResourceEntityRepository
+                )
             );
 
-        this.amazonS3DataResourceEntityFactory = new MockAmazonS3DataResourceEntityFactoryImpl(
-            this.amazonS3DataResourceEntityRepository
+        this.mockAmazonS3DataResourceEntityFactory = new MockAmazonS3DataResourceEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractDataResourceEntity>(
+                this.springAbstractDataResourceEntityRepository
+                )
             );
 
-        this.ivoaDataResourceEntityFactory = new MockIvoaDataResourceEntityFactoryImpl(
-            this.ivoaDataResourceEntityRepository
+        this.mockIvoaDataResourceEntityFactory = new MockIvoaDataResourceEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractDataResourceEntity>(
+                this.springAbstractDataResourceEntityRepository
+                )
             );  
         
-        this.skaoDataResourceEntityFactory = new MockSkaoDataResourceEntityFactoryImpl(
-            this.skaoDataResourceEntityRepository
+        this.mockSkaoDataResourceEntityFactory = new MockSkaoDataResourceEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractDataResourceEntity>(
+                this.springAbstractDataResourceEntityRepository
+                )
             );
 
-        this.dataStorageLinker = new MockDataStorageLinkerImpl(
-            this.storageResourceValidatorFactory
+        this.mockDataStorageLinker = new MockDataStorageLinkerImpl(
+            this.abstractStorageResourceValidatorFactory
             );
 
-        this.dockerContainerEntityFactory = new MockDockerContainerEntityFactoryImpl(
-            this.abstractExecutableEntityRepository
+// Executable        
+        this.mockDockerContainerEntityFactory = new MockDockerContainerEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractExecutableEntity>(
+                this.springAbstractExecutableEntityRepository
+                )
             );
 
-        this.jupyterNotebookEntityFactory = new MockJupyterNotebookEntityFactoryImpl(
-            this.abstractExecutableEntityRepository
+        this.mockJupyterNotebookEntityFactory = new MockJupyterNotebookEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractExecutableEntity>(
+                this.springAbstractExecutableEntityRepository
+                )
             );
 
-        this.storageResourceEntityFactory = new MockSimpleStorageResourceEntityFactoryImpl(
-            this.storageResourceEntityRepository
+// Storage        
+        this.mockStorageResourceEntityFactory = new MockSimpleStorageResourceEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractStorageResourceEntity>(
+                this.springAbstractStorageResourceEntityRepository
+                )
             ); 
-        
-        this.volumeMountEntityFactory = new MockSimpleVolumeMountEntityFactoryImpl(
-            this.volumeMountEntityRepository
+
+// Volumes        
+        this.mockVolumeMountEntityFactory = new MockSimpleVolumeMountEntityFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<AbstractVolumeMountEntity>(
+                this.springAbstractVolumeMountEntityRepository
+                )
             );
-        
-        this.sessionEntityFactory = new SimpleExecutionSessionEntityFactoryImpl(
-            this.sessionEntityRepository
+
+// Session        
+        this.simpleExecutionSessionEntityFactory = new SimpleExecutionSessionEntityFactoryImpl(
+            new SpringSessionEntityRepositoryWrapper(
+                this.springSessionEntityRepository
+                )
             );
 
-        this.sessionEntityFactory = new SimpleExecutionSessionEntityFactoryImpl(
-                this.sessionEntityRepository
-                );
+        this.sessionUpdateHandler = new SimpleExecutionSessionEntityUpdateHandlerImpl(
+            this
+            );
 
-            this.sessionUpdateHandler = new SimpleExecutionSessionEntityUpdateHandlerImpl(
-                this
-                );
+        this.offerSetFactory = new OfferSetFactoryImpl(
+            this,
+            this.offerSetRepository,
+            this.offerSetRequestParser
+            );
 
-            this.offerSetFactory = new OfferSetFactoryImpl(
-                this,
-                this.offerSetRepository,
-                this.offerSetRequestParser
-                );
+        this.componentProcessingRequestFactory = new ComponentProcessingRequestFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<>(
+                this.springComponentProcessingRequestRepository
+                )
+            );
 
-            this.componentProcessingRequestFactory = new ComponentProcessingRequestFactoryImpl(
-                componentProcessingRequestRepository
-                );
+        this.sessionProcessingRequestFactory = new SessionProcessingRequestFactoryImpl(
+            new SpringAbstractEntityRepositoryWrapper<>(
+                this.springSessionProcessingRequestRepository
+                )
+            );
 
-            this.sessionProcessingRequestFactory = new SessionProcessingRequestFactoryImpl(
-                sessionProcessingRequestRepository
-                );
-
-            this.processingRequestFactory = new ProcessingRequestFactoryImpl(
-                this.processingRequestRepository,
-                this.sessionProcessingRequestFactory,
-                this.componentProcessingRequestFactory
-                );
+        this.processingRequestFactory = new ProcessingRequestFactoryImpl(
+            this.processingRequestRepository,
+            this.sessionProcessingRequestFactory,
+            this.componentProcessingRequestFactory
+            );
         
         //
         // Register validators with the most specific types first.
@@ -279,25 +340,25 @@ implements MockPlatform
         // validators in registration order.
         //
         
-        this.executableValidatorFactory.addValidator(
+        this.abstractExecutableValidatorFactory.addValidator(
             new MockJupyterNotebookValidatorImpl(
-                this.jupyterNotebookEntityFactory
+                this.mockJupyterNotebookEntityFactory
                 )
             );
-        this.executableValidatorFactory.addValidator(
+        this.abstractExecutableValidatorFactory.addValidator(
             new MockDockerContainerValidatorImpl(
-                this.dockerContainerEntityFactory
+                this.mockDockerContainerEntityFactory
                 )
             );
         this.abstractComputeResourceValidatorFactory.addValidator(
             new MockSimpleComputeResourceValidatorImpl(
-                this.simpleComputeResourceEntityFactory,
-                this.volumeMountValidatorFactory
+                this.mockSimpleComputeResourceEntityFactory,
+                this.abstractVolumeMountValidatorFactory
                 )
             );
-        this.storageResourceValidatorFactory.addValidator(
+        this.abstractStorageResourceValidatorFactory.addValidator(
             new MockSimpleStorageResourceValidatorImpl(
-                this.storageResourceEntityFactory
+                this.mockStorageResourceEntityFactory
                 )
             );
 
@@ -315,41 +376,41 @@ implements MockPlatform
         this.abstractDataResourceValidatorFactory.addValidator(
             new MockSkaoDataResourceValidatorImpl(
                 this.jdbcTemplate,
-                this.skaoDataResourceEntityFactory,
-                this.dataStorageLinker
+                this.mockSkaoDataResourceEntityFactory,
+                this.mockDataStorageLinker
                 )
             );
         this.abstractDataResourceValidatorFactory.addValidator(
             new MockIvoaDataResourceValidatorImpl(
-                this.ivoaDataResourceEntityFactory,
-                this.dataStorageLinker
+                this.mockIvoaDataResourceEntityFactory,
+                this.mockDataStorageLinker
                 )
             );
         this.abstractDataResourceValidatorFactory.addValidator(
             new MockAmazonS3DataResourceValidatorImpl(
-                this.amazonS3DataResourceEntityFactory,
-                this.dataStorageLinker
+                this.mockAmazonS3DataResourceEntityFactory,
+                this.mockDataStorageLinker
                 )
             );
         this.abstractDataResourceValidatorFactory.addValidator(
             new MockSimpleDataResourceValidatorImpl(
-                this.simpleDataResourceEntityFactory,
-                this.dataStorageLinker
+                this.mockSimpleDataResourceEntityFactory,
+                this.mockDataStorageLinker
                 )
             );
-        this.volumeMountValidatorFactory.addValidator(
+        this.abstractVolumeMountValidatorFactory.addValidator(
             new MockSimpleVolumeMountValidatorImpl(
-                this.volumeMountEntityFactory,
-                this.simpleDataResourceEntityFactory,
-                this.storageResourceEntityFactory
+                this.mockVolumeMountEntityFactory,
+                this.mockSimpleDataResourceEntityFactory,
+                this.mockStorageResourceEntityFactory
                 )
             );
 
-        this.registerFactory(this.dockerContainerEntityFactory);
-        this.registerFactory(this.jupyterNotebookEntityFactory);
-        this.registerFactory(this.simpleComputeResourceEntityFactory);
+        this.registerFactory(this.mockDockerContainerEntityFactory);
+        this.registerFactory(this.mockJupyterNotebookEntityFactory);
+        this.registerFactory(this.mockSimpleComputeResourceEntityFactory);
         //this.registerFactory(this.dataResourceEntityFactory);
-        this.registerFactory(this.storageResourceEntityFactory);
+        this.registerFactory(this.mockStorageResourceEntityFactory);
         
         }
 
@@ -364,8 +425,8 @@ implements MockPlatform
         }
     
     @Autowired
-    private MockSimpleComputeResourceEntityRepository simpleComputeResourceEntityRepository;
-    private MockSimpleComputeResourceEntityFactory    simpleComputeResourceEntityFactory;
+    private SpringComputeResourceEntityRepository springAbstractComputeResourceEntityRepository;
+    private MockSimpleComputeResourceEntityFactory mockSimpleComputeResourceEntityFactory;
 
     private AbstractComputeResourceValidatorFactory abstractComputeResourceValidatorFactory = new AbstractComputeResourceValidatorFactoryImpl();
     @Override
@@ -380,20 +441,11 @@ implements MockPlatform
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private MockSimpleDataResourceEntityRepository simpleDataResourceEntityRepository;
-    private MockSimpleDataResourceEntityFactory    simpleDataResourceEntityFactory;
-
-    @Autowired
-    private MockAmazonS3DataResourceEntityRepository amazonS3DataResourceEntityRepository;
-    private MockAmazonS3DataResourceEntityFactory    amazonS3DataResourceEntityFactory;
-
-    @Autowired
-    private MockIvoaDataResourceEntityRepository ivoaDataResourceEntityRepository;
-    private MockIvoaDataResourceEntityFactory    ivoaDataResourceEntityFactory;
-
-    @Autowired
-    private MockSkaoDataResourceEntityRepository skaoDataResourceEntityRepository;
-    private MockSkaoDataResourceEntityFactory    skaoDataResourceEntityFactory;
+    private SpringDataResourceEntityRepository springAbstractDataResourceEntityRepository;
+    private MockSimpleDataResourceEntityFactory   mockSimpleDataResourceEntityFactory;
+    private MockAmazonS3DataResourceEntityFactory mockAmazonS3DataResourceEntityFactory;
+    private MockIvoaDataResourceEntityFactory     mockIvoaDataResourceEntityFactory;
+    private MockSkaoDataResourceEntityFactory     mockSkaoDataResourceEntityFactory;
 
     private AbstractDataResourceValidatorFactory abstractDataResourceValidatorFactory = new AbstractDataResourceValidatorFactoryImpl();
     @Override
@@ -405,71 +457,64 @@ implements MockPlatform
 // Executable    
 
     @Autowired
-    private AbstractExecutableEntityRepository abstractExecutableEntityRepository ;  
-
-    private MockDockerContainerEntityFactory dockerContainerEntityFactory;  
-    private MockJupyterNotebookEntityFactory jupyterNotebookEntityFactory;
+    private SpringExecutableEntityRepository springAbstractExecutableEntityRepository;
+    private MockDockerContainerEntityFactory mockDockerContainerEntityFactory;  
+    private MockJupyterNotebookEntityFactory mockJupyterNotebookEntityFactory;
     
-    private AbstractExecutableValidatorFactory executableValidatorFactory = new AbstractExecutableValidatorFactoryImpl();
+    private AbstractExecutableValidatorFactory abstractExecutableValidatorFactory = new AbstractExecutableValidatorFactoryImpl();
     @Override
     public AbstractExecutableValidatorFactory getExecutableValidators()
         {
-        return this.executableValidatorFactory;
+        return this.abstractExecutableValidatorFactory;
         }
     
 // Storage
 
     @Autowired
-    private MockSimpleStorageResourceEntityRepository storageResourceEntityRepository;
-    private MockSimpleStorageResourceEntityFactory    storageResourceEntityFactory; 
+    private SpringStorageResourceEntityRepository springAbstractStorageResourceEntityRepository;
+    private MockSimpleStorageResourceEntityFactory mockStorageResourceEntityFactory; 
     
-    private AbstractStorageResourceValidatorFactory storageResourceValidatorFactory = new AbstractStorageResourceValidatorFactoryImpl();
+    private AbstractStorageResourceValidatorFactory abstractStorageResourceValidatorFactory = new AbstractStorageResourceValidatorFactoryImpl();
     @Override
     public AbstractStorageResourceValidatorFactory getStorageResourceValidators()
         {
-        return this.storageResourceValidatorFactory;
+        return this.abstractStorageResourceValidatorFactory;
         }
 
-    private MockDataStorageLinker dataStorageLinker;
+    private MockDataStorageLinker mockDataStorageLinker;
     @Override
     public AbstractDataStorageLinker getDataStorageLinker()
         {
-        return this.dataStorageLinker;
+        return this.mockDataStorageLinker;
         }
     
 // Volume
     
     @Autowired
-    private MockSimpleVolumeMountEntityRepository volumeMountEntityRepository;
-    private MockSimpleVolumeMountEntityFactory    volumeMountEntityFactory;
+    private SpringVolumeMountEntityRepository springAbstractVolumeMountEntityRepository;
+    private MockSimpleVolumeMountEntityFactory mockVolumeMountEntityFactory;
 
-    private AbstractVolumeMountValidatorFactory volumeMountValidatorFactory = new AbstractVolumeMountValidatorFactoryImpl();
+    private AbstractVolumeMountValidatorFactory abstractVolumeMountValidatorFactory = new AbstractVolumeMountValidatorFactoryImpl();
     @Override
     public AbstractVolumeMountValidatorFactory getVolumeMountValidators()
         {
-        return this.volumeMountValidatorFactory;
+        return this.abstractVolumeMountValidatorFactory;
         }
 
 // Session
     
     @Autowired
-    private SimpleExecutionSessionEntityRepository sessionEntityRepository;
-    private SimpleExecutionSessionEntityFactory    sessionEntityFactory;
+    private SpringSessionEntityRepository springSessionEntityRepository;
+    private SimpleExecutionSessionEntityFactory simpleExecutionSessionEntityFactory;
     @Override
-    public SimpleExecutionSessionEntityFactory getSessionEntityFactory()
+    public SimpleExecutionSessionEntityFactory getExecutionSessionEntityFactory()
         {
-        return sessionEntityFactory;
-        }
-    @Override
-    public AbstractExecutionSessionEntityFactory<?> getAbstractSessionFactory()
-        {
-        return this.sessionEntityFactory;
+        return simpleExecutionSessionEntityFactory;
         }
 
-    // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
-    private SimpleExecutionSessionEntityUpdateHandler sessionUpdateHandler;
+    private SimpleExecutionSessionEntityUpdater sessionUpdateHandler;
     @Override
-    public SimpleExecutionSessionEntityUpdateHandler getSessionUpdateHandler()
+    public SimpleExecutionSessionEntityUpdater getExecutionSessionEntityUpdater()
         {
         return sessionUpdateHandler;
         }
@@ -477,11 +522,19 @@ implements MockPlatform
  // Processing
 
     @Autowired
+    private ProcessingTransactionHandler processingTransactionHandler;
+    @Override
+    public ProcessingTransactionHandler getProcessingTransactionHandler()
+        {
+        return this.processingTransactionHandler;
+        }
+
+    @Autowired
     private ProcessingRequestRepository processingRequestRepository;
     @Autowired
-    private ComponentProcessingRequestRepository componentProcessingRequestRepository;
+    private SpringComponentProcessingRequestRepository springComponentProcessingRequestRepository;
     @Autowired
-    private SessionProcessingRequestRepository sessionProcessingRequestRepository;
+    private SpringSessionProcessingRequestRepository springSessionProcessingRequestRepository;
 
     // These have to be initialized in the initialize() method because the Autowired repositories are not available at construction time.
     private ProcessingRequestFactory processingRequestFactory;

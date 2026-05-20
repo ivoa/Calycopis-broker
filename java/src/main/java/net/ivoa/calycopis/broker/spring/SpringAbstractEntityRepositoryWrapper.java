@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2025 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -21,26 +21,42 @@
  *
  */
 
-package net.ivoa.calycopis.broker.engine.entities.session.simple;
+package net.ivoa.calycopis.broker.spring;
 
 import java.util.Optional;
 import java.util.UUID;
 
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractUpdate;
+import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
 /**
  * 
  */
-public interface SimpleExecutionSessionEntityUpdateHandler
-extends FactoryBase
+public class SpringAbstractEntityRepositoryWrapper<EntityType>
+extends FactoryBaseImpl
+implements FactoryBase, AbstractEntityRepository<EntityType>
     {
+    
+    private final SpringAbstractEntityRepository<EntityType> inner;
 
     /**
-     * Apply an Update request to an ExecutionSession.
-     *
+     * 
      */
-    public Optional<SimpleExecutionSessionEntity> update(final UUID uuid, final IvoaAbstractUpdate request);
-    
-    
+    public SpringAbstractEntityRepositoryWrapper(final SpringAbstractEntityRepository<EntityType> inner)
+        {
+        this.inner = inner;
+        }
+
+    @Override
+    public Optional<EntityType> findById(UUID uuid)
+        {
+        return inner.findById(uuid);
+        }
+
+    @Override
+    public <ActualType extends EntityType> ActualType save(ActualType entity)
+        {
+        return inner.save(entity);
+        }
     }

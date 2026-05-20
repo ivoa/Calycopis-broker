@@ -18,11 +18,24 @@
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-05-20T14:00:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  */
 
 package net.ivoa.calycopis.broker.engine.functional.processing.component;
 
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
@@ -34,13 +47,13 @@ extends FactoryBaseImpl
 implements ComponentProcessingRequestFactory
     {
 
-    private final ComponentProcessingRequestRepository repository;
+    private final AbstractEntityRepository<ComponentProcessingRequestEntityImpl> repository;
     
     /**
      * Public constructor used by our Platform.
      * 
      */
-    public ComponentProcessingRequestFactoryImpl(final ComponentProcessingRequestRepository repository)
+    public ComponentProcessingRequestFactoryImpl(final AbstractEntityRepository<ComponentProcessingRequestEntityImpl> repository)
         {
         this.repository = repository;
         }

@@ -76,7 +76,7 @@ public class SessionsApiDelegateImpl
     public ResponseEntity<IvoaAbstractExecutionSession> executionSessionGet(
         final UUID uuid
         ){
-        final Optional<SimpleExecutionSessionEntity> found = platform.getSessionEntityFactory().select(
+        final Optional<SimpleExecutionSessionEntity> found = platform.getExecutionSessionEntityFactory().select(
             uuid
             );
         if (found.isPresent())
@@ -100,7 +100,7 @@ public class SessionsApiDelegateImpl
         final UUID uuid,
         final IvoaAbstractUpdate request
         ){
-       final Optional<SimpleExecutionSessionEntity> found = platform.getSessionUpdateHandler().update(
+       final Optional<SimpleExecutionSessionEntity> found = platform.getExecutionSessionEntityUpdater().update(
             uuid,
             request
             );

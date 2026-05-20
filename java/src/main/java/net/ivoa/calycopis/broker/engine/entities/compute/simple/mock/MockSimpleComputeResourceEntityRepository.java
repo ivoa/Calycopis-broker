@@ -28,6 +28,7 @@ import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEnt
  * JpaRepository for SimpleComputeResourceEntity.
  *
  */
+@Deprecated
 public interface MockSimpleComputeResourceEntityRepository
 extends LifecycleComponentEntityRepository<MockSimpleComputeResourceEntity>
     {

@@ -36,9 +36,11 @@
 package net.ivoa.calycopis.broker.engine.entities.volume.simple.docker;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountValidator;
 
@@ -56,9 +58,11 @@ implements DockerSimpleVolumeMountEntityFactory
      *  
      */
     public DockerSimpleVolumeMountEntityFactoryImpl(
-        final DockerSimpleVolumeMountEntityRepository repository
+        final AbstractEntityRepository<AbstractVolumeMountEntity> repository
         ){
-        super(repository);
+        super(
+            repository
+            );
         }
 
     @Override

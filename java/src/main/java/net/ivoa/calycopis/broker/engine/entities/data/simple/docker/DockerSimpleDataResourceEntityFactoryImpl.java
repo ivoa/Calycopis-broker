@@ -35,9 +35,7 @@
 
 package net.ivoa.calycopis.broker.engine.entities.data.simple.docker;
 
-import java.util.Optional;
-import java.util.UUID;
-
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntityFactoryImpl;
 
@@ -50,24 +48,15 @@ extends SimpleDataResourceEntityFactoryImpl
 implements DockerSimpleDataResourceEntityFactory
     {
 
-    protected final DockerSimpleDataResourceEntityRepository repository;
-
     /**
      * Protected constructor.
      *
      */
     protected DockerSimpleDataResourceEntityFactoryImpl(
-        final DockerSimpleDataResourceEntityRepository repository
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
         ){
-        super();
-        this.repository = repository;
-        }
-
-    @Override
-    public Optional<AbstractDataResourceEntity> select(final UUID uuid)
-        {
-        return Optional.of(
-            this.repository.findById(uuid).get()
+        super(
+            repository
             );
         }
     }

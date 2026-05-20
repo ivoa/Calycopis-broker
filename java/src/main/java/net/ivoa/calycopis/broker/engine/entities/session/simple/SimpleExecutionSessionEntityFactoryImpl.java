@@ -23,7 +23,6 @@
 
 package net.ivoa.calycopis.broker.engine.entities.session.simple;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,56 +39,49 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
  */
 @Slf4j
 public class SimpleExecutionSessionEntityFactoryImpl
-    extends FactoryBaseImpl
-    implements SimpleExecutionSessionEntityFactory
+extends FactoryBaseImpl
+implements SimpleExecutionSessionEntityFactory
     {
 
-    private final SimpleExecutionSessionEntityRepository sessionEntityRepository;
+    protected final SimpleExecutionSessionEntityRepository repository;
 
     /**
      * Public constructor used by our Platform.
      * 
      */
     public SimpleExecutionSessionEntityFactoryImpl(
-        final SimpleExecutionSessionEntityRepository sessionEntityRepository
+        final SimpleExecutionSessionEntityRepository repository
         ){
         super();
-        this.sessionEntityRepository = sessionEntityRepository;
+        this.repository = repository;
         }
 
     @Override
     public Optional<SimpleExecutionSessionEntity> select(UUID uuid)
         {
-        return this.sessionEntityRepository.findById(
-            uuid
-            );
+        return this.repository.findById(uuid);
         }
 
     @Override
-    public SimpleExecutionSessionEntity create(final OfferSetEntity parent, final OfferSetRequestParserContext context, final ComputeResourceOffer offer)
+    public Iterable<SimpleExecutionSessionEntity> select(final IvoaSimpleExecutionSessionPhase phase)
         {
-        return this.sessionEntityRepository.save(
+        return repository.findByPhase(
+            phase
+            );
+        }
+    
+    @Override
+    public SimpleExecutionSessionEntity create(
+        final OfferSetEntity parent,
+        final OfferSetRequestParserContext context,
+        final ComputeResourceOffer offer
+        ){
+        return this.repository.save(
             new SimpleExecutionSessionEntity(
                 parent,
                 context,
                 offer
                 )
-            );
-        }
-
-    @Override
-    public List<SimpleExecutionSessionEntity> select(final IvoaSimpleExecutionSessionPhase phase)
-        {
-        return sessionEntityRepository.findByPhase(
-            phase
-            );
-        }
-
-    @Override
-    public SimpleExecutionSessionEntity save(final SimpleExecutionSessionEntity entity)
-        {
-        return sessionEntityRepository.save(
-            entity
             );
         }
     }

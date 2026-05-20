@@ -39,6 +39,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceE
  * JpaRepository for MockSimpleDataResourceEntity.
  *
  */
+@Deprecated
 public interface MockSimpleDataResourceEntityRepository
 extends SimpleDataResourceEntityRepository
     {

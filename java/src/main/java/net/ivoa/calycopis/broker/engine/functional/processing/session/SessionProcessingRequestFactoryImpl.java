@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2025 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,14 +18,25 @@
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-05-20T14:00:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  */
 
 package net.ivoa.calycopis.broker.engine.functional.processing.session;
 
-import org.springframework.stereotype.Component;
-
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
@@ -33,19 +44,18 @@ import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
  * 
  */
 @Slf4j
-@Component
 public class SessionProcessingRequestFactoryImpl
 extends FactoryBaseImpl
 implements SessionProcessingRequestFactory
     {
 
-    private final SessionProcessingRequestRepository repository;
+    private final AbstractEntityRepository<SessionProcessingRequestEntity> repository;
 
     /**
      * Public constructor used by our Platform.
      * 
      */
-    public SessionProcessingRequestFactoryImpl(final SessionProcessingRequestRepository repository)
+    public SessionProcessingRequestFactoryImpl(final AbstractEntityRepository<SessionProcessingRequestEntity> repository)
         {
         super();
         this.repository = repository;

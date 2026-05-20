@@ -36,8 +36,9 @@ package net.ivoa.calycopis.broker.engine.entities.executable.jupyter;
 
 import java.net.URI;
 
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityRepository;
 
 /**
  * 
@@ -58,8 +59,10 @@ implements JupyterNotebookEntityFactory
      * 
      */
     protected JupyterNotebookEntityFactoryImpl(
-        final AbstractExecutableEntityRepository repository
+        final AbstractEntityRepository<AbstractExecutableEntity> repository
         ){
-        super(repository);
+        super(
+            repository
+            );
         }
     }

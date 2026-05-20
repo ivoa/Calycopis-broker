@@ -24,6 +24,8 @@
 package net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.DockerSimpleDataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
@@ -43,7 +45,7 @@ implements DockerFileResourceEntityFactory
      * 
      */
     public DockerFileResourceEntityFactoryImpl(
-        final DockerFileResourceEntityRepository repository
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
         ){
         super(
             repository

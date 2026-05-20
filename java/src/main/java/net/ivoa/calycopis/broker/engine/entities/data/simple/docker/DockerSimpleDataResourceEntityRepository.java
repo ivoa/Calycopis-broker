@@ -28,6 +28,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceE
 /**
  * 
  */
+@Deprecated
 public interface DockerSimpleDataResourceEntityRepository
 extends SimpleDataResourceEntityRepository
     {

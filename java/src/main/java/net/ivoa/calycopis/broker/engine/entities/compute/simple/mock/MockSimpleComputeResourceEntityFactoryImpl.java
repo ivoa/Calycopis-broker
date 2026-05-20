@@ -23,10 +23,8 @@
 
 package net.ivoa.calycopis.broker.engine.entities.compute.simple.mock;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
@@ -42,23 +40,15 @@ extends SimpleComputeResourceEntityFactoryImpl
 implements MockSimpleComputeResourceEntityFactory
     {
 
-    private final MockSimpleComputeResourceEntityRepository repository;
-
     /**
      * Public constructor used by our Platform.
      *
      */
-    public MockSimpleComputeResourceEntityFactoryImpl(final MockSimpleComputeResourceEntityRepository repository)
+    public MockSimpleComputeResourceEntityFactoryImpl(
+        final AbstractEntityRepository<AbstractComputeResourceEntity> repository)
         {
-        super();
-        this.repository = repository;
-        }
-
-    @Override
-    public Optional<AbstractComputeResourceEntity> select(UUID uuid)
-        {
-        return Optional.of(
-            this.repository.findById(uuid).get()
+        super(
+            repository
             );
         }
 

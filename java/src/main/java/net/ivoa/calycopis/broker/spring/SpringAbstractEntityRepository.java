@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2024 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,19 +18,45 @@
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-05-20T14:00:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  */
-package net.ivoa.calycopis.broker.engine.functional.processing.session;
 
+package net.ivoa.calycopis.broker.spring;
+
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
 /**
- * A SimpleStorageResource JpaRepository.
- *
+ * 
  */
-public interface SessionProcessingRequestRepository
-extends JpaRepository<SessionProcessingRequestEntity, UUID>
+@NoRepositoryBean
+public interface SpringAbstractEntityRepository<EntityType>
+extends JpaRepository<EntityType, UUID>
     {
+
+    /**
+     * 
+     */
+    public Optional<EntityType> findById(final UUID uuid);
+
+    /**
+     * 
+     */
+    public <ActualType extends EntityType> ActualType save(ActualType entity);
+    
     }
