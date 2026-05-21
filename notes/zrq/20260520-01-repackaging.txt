@@ -1303,5 +1303,390 @@ Please go ahead and delete them.
   All 31 unused repository interfaces deleted. The project compiles successfully -- down from 355 to 324 source files.
 --END--
 
+==START==
+/plan
+A lot of the entity factories are defined as an interface and an implementation class.
+For example DockerDockerContainerEntityFactoryImpl implements DockerDockerContainerEntityFactory.
+This pattern was established to facilitate creating instances using an @Autowired annotation
+on the interface and letting Spring create an instances of the implementation class.
+Given that the factories are no longer created using @Autowired annotations,
+is there a case for simplifying the structure, removing the interface
+and just having the implementation class.
+In the above example, this would mean deleting the DockerDockerContainerEntityFactory interface
+and then renaming DockerDockerContainerEntityFactoryImpl to DockerDockerContainerEntityFactory.
+Please evaluate this plan and give a cost/benefit analysis.
+==END==
+
+--START--
+....
+....
+  ────────────────────────────────────────
+
+  Cost/Benefit Analysis: Removing Leaf Factory Interfaces
+
+  The current structure (3-level hierarchy)
+
+  LifecycleComponentEntityFactory<T>          (base - defines getKind(), select())
+    └── AbstractComputeResourceEntityFactory  (mid-level - adds create() method)
+          └── SimpleComputeResourceEntityFactory    (mid-level - empty)
+                ├── DockerSimpleComputeResourceEntityFactory  (LEAF - empty)
+                └── MockSimpleComputeResourceEntityFactory    (LEAF - empty)
+
+  This pattern repeats across all entity domains (compute, data, executable, storage, volume). The leaf interfaces (e.g.,
+  DockerSimpleComputeResourceEntityFactory, MockDockerContainerEntityFactory) are uniformly empty -- they add zero methods to their parents.
+
+  Who references what
+
+  There are three categories of interfaces:
+
+  1. Base/abstract interfaces (LifecycleComponentEntityFactory, AbstractComputeResourceEntityFactory, AbstractDataResourceEntityFactory,
+     AbstractStorageResourceEntityFactory): Define the contract methods. Referenced by abstract validators (e.g., SimpleVolumeMountValidatorImpl takes
+     AbstractDataResourceEntityFactory and AbstractStorageResourceEntityFactory as constructor parameters). These must stay.
+
+  2. Mid-level interfaces (SimpleComputeResourceEntityFactory, DockerContainerEntityFactory, SimpleStorageResourceEntityFactory, etc.): Also empty, but
+     some are used as parameter types in Platform interfaces (e.g., DockerPlatform.getDockerContainerEntityFactory() returns DockerContainerEntityFactory).
+      These are more nuanced -- some serve as useful abstraction points, others don't.
+
+  3. Leaf interfaces (e.g., DockerSimpleComputeResourceEntityFactory, MockDockerContainerEntityFactory): All empty. Referenced only as field types in the
+     platform impls and constructor parameter types in platform-specific validators. These are the candidates for removal.
+
+  Benefits of removing the leaf interfaces
+
+  • Eliminates ~20 empty files that add no methods and exist solely as type markers originally needed for @Autowired discrimination.
+  • Simplifies navigation -- developers no longer need to trace through an empty interface to reach the implementation.
+  • Reduces conceptual overhead -- the distinction between DockerSimpleComputeResourceEntityFactory (empty interface) and
+    DockerSimpleComputeResourceEntityFactoryImpl (the real class) is no longer meaningful.
+  • Aligns with the new architecture -- factories are now manually instantiated in Platform impls, not auto-wired, so the type discrimination reason is
+    gone.
+
+  Costs and risks
+
+  • Moderate scope: ~20 leaf interface files to delete, ~20 impl files to rename, and updates to every consumer (platform impls, validators, linkers).
+    Roughly 40-50 files touched.
+  • Rename is not atomic in Java: Renaming DockerSimpleComputeResourceEntityFactoryImpl to DockerSimpleComputeResourceEntityFactory means the impl class
+    takes the old interface's name. The impl class must also change its implements clause to the parent interface instead. Each impl currently has a line
+    like implements DockerSimpleComputeResourceEntityFactory that would change to implements SimpleComputeResourceEntityFactory.
+  • Mid-level interface ambiguity: Some mid-level interfaces (e.g., SimpleComputeResourceEntityFactory, DockerContainerEntityFactory) are also empty. The
+    question of whether to remove those too adds scope creep risk. However, they serve as useful abstraction points for validators that accept any Simple
+    or Docker variant.
+  • No functional risk: Since all leaf interfaces are empty and their only consumers are internal, the rename is purely mechanical with no behavioral
+    change.
+
+  Recommendation
+
+  The leaf interfaces are good candidates for removal. The cost is moderate (mechanical changes across ~40-50 files) but the benefit is a cleaner, more
+  honest codebase where you're no longer maintaining empty interfaces that exist for a purpose (Spring autowiring) that no longer applies.
+
+  I would not recommend also removing the mid-level interfaces in the same pass. Some of them (like DockerContainerEntityFactory) serve as abstraction points
+   in the Platform interface and validators, providing a useful level of indirection between the abstract factory and the platform-specific impl.
+
+  The work could be done incrementally by entity domain (compute, then executable, then data, etc.) to keep each change reviewable.
+--END--
+
+
+==START==
+/plan
+Given that we are only removing the empty leaf interfaces, and leaving the base and mid-level interfaces in place,
+it would be confusing to have some implementation classes with the Impl postfix and others not.
+In which case, please plan to remove the empty leaf interfaces, but do not rename the implementation classes.
+==END==
+
+--START--
+....
+....
+ ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Suggested Plan                                                                                                                                           │
+ │                                                                                                                                                          │
+ │ Remove Empty Leaf Factory Interfaces                                                                                                                     │
+ │                                                                                                                                                          │
+ │ Approach                                                                                                                                                 │
+ │                                                                                                                                                          │
+ │ Delete 15 empty leaf factory interfaces (keeping Impl class names unchanged). For each:                                                                  │
+ │ 1. Delete the empty interface file                                                                                                                       │
+ │ 2. Update the Impl class: change implements LeafInterface to implements ParentInterface                                                                  │
+ │ 3. Update consumers: change field types and parameter types from the leaf interface to the Impl class type                                               │
+ │                                                                                                                                                          │
+ │ Not deleted: DockerBindMountStorageEntityFactory -- it defines an additional create(session, result, path) method, so it is not empty.                   │
+ │                                                                                                                                                          │
+ │ Files to delete (15 interfaces)                                                                                                                          │
+ │                                                                                                                                                          │
+ │ Compute (2)                                                                                                                                              │
+ │                                                                                                                                                          │
+ │ • DockerSimpleComputeResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/     │
+ │   compute/simple/docker/DockerSimpleComputeResourceEntityFactory.java)                                                                                   │
+ │ • MockSimpleComputeResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/co     │
+ │   mpute/simple/mock/MockSimpleComputeResourceEntityFactory.java)                                                                                         │
+ │                                                                                                                                                          │
+ │ Executable (3)                                                                                                                                           │
+ │                                                                                                                                                          │
+ │ • DockerDockerContainerEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/execut     │
+ │   able/docker/docker/DockerDockerContainerEntityFactory.java)                                                                                            │
+ │ • MockDockerContainerEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/executab     │
+ │   le/docker/mock/MockDockerContainerEntityFactory.java)                                                                                                  │
+ │ • MockJupyterNotebookEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/executab     │
+ │   le/jupyter/mock/MockJupyterNotebookEntityFactory.java)                                                                                                 │
+ │                                                                                                                                                          │
+ │ Data (6)                                                                                                                                                 │
+ │                                                                                                                                                          │
+ │ • DockerFileResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/simp     │
+ │   le/docker/file/DockerFileResourceEntityFactory.java)                                                                                                   │
+ │ • DockerHttpResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/simp     │
+ │   le/docker/http/DockerHttpResourceEntityFactory.java)                                                                                                   │
+ │ • MockSimpleDataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/     │
+ │   simple/mock/MockSimpleDataResourceEntityFactory.java)                                                                                                  │
+ │ • MockAmazonS3DataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/dat     │
+ │   a/amazon/mock/MockAmazonS3DataResourceEntityFactory.java)                                                                                              │
+ │ • MockIvoaDataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/iv     │
+ │   oa/mock/MockIvoaDataResourceEntityFactory.java)                                                                                                        │
+ │ • MockSkaoDataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/sk     │
+ │   ao/mock/MockSkaoDataResourceEntityFactory.java)                                                                                                        │
+ │                                                                                                                                                          │
+ │ Storage (2)                                                                                                                                              │
+ │                                                                                                                                                          │
+ │ • DockerVolumeMountStorageEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/sto     │
+ │   rage/simple/docker/volume/DockerVolumeMountStorageEntityFactory.java)                                                                                  │
+ │ • MockSimpleStorageResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/st     │
+ │   orage/simple/mock/MockSimpleStorageResourceEntityFactory.java)                                                                                         │
+ │                                                                                                                                                          │
+ │ Volume (2)                                                                                                                                               │
+ │                                                                                                                                                          │
+ │ • DockerSimpleVolumeMountEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/volu     │
+ │   me/simple/docker/DockerSimpleVolumeMountEntityFactory.java)                                                                                            │
+ │ • MockSimpleVolumeMountEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/volume     │
+ │   /simple/mock/MockSimpleVolumeMountEntityFactory.java)                                                                                                  │
+ │                                                                                                                                                          │
+ │ Impl class changes (15 files)                                                                                                                            │
+ │                                                                                                                                                          │
+ │ Each Impl class changes its implements clause from the deleted leaf interface to its parent interface:                                                   │
+ │ • DockerSimpleComputeResourceEntityFactoryImpl: implements SimpleComputeResourceEntityFactory                                                            │
+ │ • MockSimpleComputeResourceEntityFactoryImpl: implements SimpleComputeResourceEntityFactory                                                              │
+ │ • DockerDockerContainerEntityFactoryImpl: implements DockerContainerEntityFactory                                                                        │
+ │ • MockDockerContainerEntityFactoryImpl: implements DockerContainerEntityFactory                                                                          │
+ │ • MockJupyterNotebookEntityFactoryImpl: implements JupyterNotebookEntityFactory                                                                          │
+ │ • DockerFileResourceEntityFactoryImpl: implements DockerSimpleDataResourceEntityFactory                                                                  │
+ │ • DockerHttpResourceEntityFactoryImpl: implements DockerSimpleDataResourceEntityFactory                                                                  │
+ │ • MockSimpleDataResourceEntityFactoryImpl: implements SimpleDataResourceEntityFactory                                                                    │
+ │ • MockAmazonS3DataResourceEntityFactoryImpl: implements AmazonS3DataResourceEntityFactory (note: AmazonS3DataResourceEntityFactory itself is an          │
+ │   empty mid-level interface, but it is kept as part of the mid-level hierarchy)                                                                          │
+ │ • MockIvoaDataResourceEntityFactoryImpl: implements IvoaDataResourceEntityFactory                                                                        │
+ │ • MockSkaoDataResourceEntityFactoryImpl: implements SkaoDataResourceEntityFactory                                                                        │
+ │ • DockerVolumeMountStorageEntityFactoryImpl: implements SimpleStorageResourceEntityFactory                                                               │
+ │ • MockSimpleStorageResourceEntityFactoryImpl: implements SimpleStorageResourceEntityFactory                                                              │
+ │ • DockerSimpleVolumeMountEntityFactoryImpl: implements SimpleVolumeMountEntityFactory                                                                    │
+ │ • MockSimpleVolumeMountEntityFactoryImpl: implements SimpleVolumeMountEntityFactory                                                                      │
+ │                                                                                                                                                          │
+ │ Consumer changes                                                                                                                                         │
+ │                                                                                                                                                          │
+ │ Since we are not renaming the Impl classes, field types and parameter types that currently reference the deleted leaf interface need to change to the    │
+ │ Impl class type (since the Impl is the concrete type being instantiated and stored).                                                                     │
+ │                                                                                                                                                          │
+ │ DockerPlatformImpl (7 field type changes)                                                                                                                │
+ │                                                                                                                                                          │
+ │ • DockerSimpleComputeResourceEntityFactory -> DockerSimpleComputeResourceEntityFactoryImpl                                                               │
+ │ • DockerDockerContainerEntityFactory -> DockerDockerContainerEntityFactoryImpl                                                                           │
+ │ • DockerFileResourceEntityFactory -> DockerFileResourceEntityFactoryImpl                                                                                 │
+ │ • DockerHttpResourceEntityFactory -> DockerHttpResourceEntityFactoryImpl                                                                                 │
+ │ • DockerVolumeMountStorageEntityFactory -> DockerVolumeMountStorageEntityFactoryImpl                                                                     │
+ │ • DockerSimpleVolumeMountEntityFactory -> DockerSimpleVolumeMountEntityFactoryImpl                                                                       │
+ │ • Update imports accordingly                                                                                                                             │
+ │                                                                                                                                                          │
+ │ MockPlatformImpl (9 field type changes)                                                                                                                  │
+ │                                                                                                                                                          │
+ │ • MockSimpleComputeResourceEntityFactory -> MockSimpleComputeResourceEntityFactoryImpl                                                                   │
+ │ • MockDockerContainerEntityFactory -> MockDockerContainerEntityFactoryImpl                                                                               │
+ │ • MockJupyterNotebookEntityFactory -> MockJupyterNotebookEntityFactoryImpl                                                                               │
+ │ • MockSimpleDataResourceEntityFactory -> MockSimpleDataResourceEntityFactoryImpl                                                                         │
+ │ • MockAmazonS3DataResourceEntityFactory -> MockAmazonS3DataResourceEntityFactoryImpl                                                                     │
+ │ • MockIvoaDataResourceEntityFactory -> MockIvoaDataResourceEntityFactoryImpl                                                                             │
+ │ • MockSkaoDataResourceEntityFactory -> MockSkaoDataResourceEntityFactoryImpl                                                                             │
+ │ • MockSimpleStorageResourceEntityFactory -> MockSimpleStorageResourceEntityFactoryImpl                                                                   │
+ │ • MockSimpleVolumeMountEntityFactory -> MockSimpleVolumeMountEntityFactoryImpl                                                                           │
+ │ • Update imports accordingly                                                                                                                             │
+ │                                                                                                                                                          │
+ │ Validator classes (4 parameter type changes)                                                                                                             │
+ │                                                                                                                                                          │
+ │ These 4 validators use the leaf interface as a constructor parameter type and need updating:                                                             │
+ │ • DockerSimpleComputeResourceValidatorImpl: parameter DockerSimpleComputeResourceEntityFactory -> DockerSimpleComputeResourceEntityFactoryImpl           │
+ │ • MockSimpleComputeResourceValidatorImpl: parameter MockSimpleComputeResourceEntityFactory -> MockSimpleComputeResourceEntityFactoryImpl                 │
+ │ • DockerFileResourceValidatorImpl: parameter DockerFileResourceEntityFactory -> DockerFileResourceEntityFactoryImpl                                      │
+ │ • DockerHttpResourceValidatorImpl: parameter DockerHttpResourceEntityFactory -> DockerHttpResourceEntityFactoryImpl                                      │
+ │                                                                                                                                                          │
+ │ DockerDataStorageLinkerImpl (2 field/parameter type changes)                                                                                             │
+ │                                                                                                                                                          │
+ │ • DockerBindMountStorageEntityFactory -- NOT changed (this interface has methods and is kept)                                                            │
+ │ • DockerVolumeMountStorageEntityFactory -> DockerVolumeMountStorageEntityFactoryImpl                                                                     │
+ │                                                                                                                                                          │
+ │ Implementation order                                                                                                                                     │
+ │                                                                                                                                                          │
+ │ Process by domain to keep changes reviewable:                                                                                                            │
+ │ 1. Compute (2 interfaces, 2 impls, 2 validators, 2 platform impls)                                                                                       │
+ │ 2. Executable (3 interfaces, 3 impls, 2 platform impls)                                                                                                  │
+ │ 3. Data (6 interfaces, 6 impls, 2 validators, 2 platform impls)                                                                                          │
+ │ 4. Storage (2 interfaces, 2 impls, 2 platform impls, 1 linker)                                                                                           │
+ │ 5. Volume (2 interfaces, 2 impls, 2 platform impls)                                                                                                      │
+ │ 6. Build and verify                                                                                                                                      │
+ │                                                                                                                                                          │
+ │  Saved to root/.cursor/plans/Remove empty leaf factory interfaces-b39c4460.plan.md                                                                       │
+ │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+ │                                                                                                                                                          │
+ │ Ready to build?                                                                                                                                          │
+ │                                                                                                                                                          │
+ │  → 1. Yes, build locally (b)                                                                                                                             │
+ │    2. No, propose changes (p or Esc)                                                                                                                     │
+ │                                                                                                                                                          │
+ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+--END--
+
+==START==
+/plan
+Given that we are not deleting DockerBindMountStorageEntityFactory
+we should also keep DockerVolumeMountStorageEntityFactory.
+==END==
+
+
+--START--
+  Good point -- keeping both Docker storage factory interfaces maintains consistency. Let me update the plan.
+....
+....
+  The plan has been updated. The changes are:
+
+  • DockerVolumeMountStorageEntityFactory is now kept (not deleted), for consistency with DockerBindMountStorageEntityFactory
+  • Total deletions reduced from 15 to 14 interfaces
+  • Storage group reduced from 2 deletions to 1 (only MockSimpleStorageResourceEntityFactory)
+  • DockerPlatformImpl field type changes reduced from 7 to 5
+  • DockerDataStorageLinkerImpl no longer needs any changes
+  • DockerVolumeMountStorageEntityFactoryImpl keeps its existing implements DockerVolumeMountStorageEntityFactory
+--END--
+
+
+==START==
+/plan
+Please save this plan so that we can come back to it later.
+==END==
+
+--START--
+  The plan is already saved at /root/.cursor/plans/Remove empty leaf factory interfaces-b39c4460.plan.md. It will persist there for you to return to
+  whenever you're ready to implement it.
+--END--
+
+
+==START==
+/plan
+Can you check the rest of the code base for any remaining Spring related dependencies,
+apart from ComputeResourceOfferFactoryImpl.
+==END==
+
+--START--
+....
+....
+  There are 3 files in the engine package with remaining Spring dependencies (besides ComputeResourceOfferFactoryImpl):
+
+  1. DockerClientFactoryImpl.java (engine/functional/platfom/docker/)
+    • Uses @Component and @Profile("docker") -- this is a Spring-managed bean that should move to the spring package, similar to the
+      DockerPlatformSettingsImpl pattern you've already applied.
+
+  2. SkaoDataResourceValidatorImpl.java (engine/entities/data/skao/)
+    • Uses JdbcTemplate, RowMapper, and JdbcClient to query a database for SKAO transfer rate data. This is a deeper dependency -- the validator's logic
+      itself uses Spring JDBC for direct SQL queries.
+
+  3. MockSkaoDataResourceValidatorImpl.java (engine/entities/data/skao/mock/)
+    • Takes a JdbcTemplate as a constructor parameter (passed through from MockPlatformImpl), forwarding it to the parent SkaoDataResourceValidatorImpl.
+
+  The DockerClientFactoryImpl case is straightforward -- same interface/impl split pattern used for DockerPlatformSettings. The SKAO validator is more
+  interesting since it embeds Spring JDBC usage in business logic rather than just using annotations for DI wiring.
+--END--
+
+
+==START==
+/plan
+Can you create a plan for splitting DockerClientFactoryImpl, using the same interface/impl split pattern used for DockerPlatformSettings.
+==END==
+
+--START--
+....
+....
+ ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Plan (rejected)                                                                                                                                          │
+ │                                                                                                                                                          │
+ │ Move DockerClientFactoryImpl to Spring Package                                                                                                           │
+ │                                                                                                                                                          │
+ │ Context                                                                                                                                                  │
+ │                                                                                                                                                          │
+ │ DockerClientFactory (the interface) is already framework-neutral -- it lives in engine.functional.platfom.docker and is used by multiple entity          │
+ │ classes. Only DockerClientFactoryImpl has Spring annotations (@Component, @Profile("docker")).                                                           │
+ │ This follows the exact same pattern already applied for DockerPlatformSettings/DockerPlatformSettingsImpl.                                               │
+ │                                                                                                                                                          │
+ │ Changes                                                                                                                                                  │
+ │                                                                                                                                                          │
+ │ 1. Move DockerClientFactoryImpl to the spring package                                                                                                    │
+ │                                                                                                                                                          │
+ │ • Source: DockerClientFactoryImpl.java                                                                                                                   │
+ │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerClientFactoryImpl.java)     │
+ │ • Destination: net.ivoa.calycopis.broker.spring.platfom.docker.DockerClientFactoryImpl                                                                   │
+ │ • Change package declaration from engine.functional.platfom.docker to spring.platfom.docker                                                              │
+ │ • Add import for net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory                                                          │
+ │ • Keep @Component, @Profile("docker"), and all existing logic unchanged                                                                                  │
+ │                                                                                                                                                          │
+ │ 2. No other changes needed                                                                                                                               │
+ │                                                                                                                                                          │
+ │ • DockerClientFactory.java                                                                                                                               │
+ │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerClientFactory.java) --      │
+ │   stays in engine, unchanged                                                                                                                             │
+ │ • DockerPlatform.java                                                                                                                                    │
+ │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerPlatform.java) --           │
+ │   references DockerClientFactory (the interface), unchanged                                                                                              │
+ │ • DockerPlatformImpl.java                                                                                                                                │
+ │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/spring/platfom/docker/DockerPlatformImpl.java) -- @Autowired       │
+ │   field is typed as DockerClientFactory (the interface), so Spring will still find the @Component impl by interface type. No change needed.              │
+ │ • All entity consumers (DockerSimpleComputeResourceEntity, DockerDockerContainerEntity, DockerHttpResourceEntity, DockerVolumeMountStorageEntity,        │
+ │   DockerDockerContainerValidatorImpl) reference only the DockerClientFactory interface, unchanged.                                                       │
+ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+
+==START==
+/plan
+Before we implement this plan. Can you analyse _why_ DockerClientFactoryImpl needs to be a Spring @Component ?
+Can we implement the same functionality without the Spring annotations.
+Can DockerPlatformImpl simply create an instance of DockerClientFactoryImpl, without requiring the @Autowired annotation ?
+==END==
+
+--START--
+....
+....
+  Looking at the DockerClientFactoryImpl code again -- it has no injected dependencies at all. No @Autowired fields, no constructor injection, no Spring
+  beans used internally. It simply reads environment variables and creates a Docker client using the docker-java library. The @Component and
+  @Profile("docker") annotations are only there so Spring discovers it and injects it into DockerPlatformImpl via @Autowired.
+
+  There is no reason it needs to be a Spring @Component. DockerPlatformImpl can simply create an instance directly:
+
+  private DockerClientFactory dockerClientFactory = new DockerClientFactoryImpl();
+
+  Or instantiate it in the initialize() method, consistent with how other factories are created in that class.
+
+  The @Profile("docker") annotation was originally used to ensure the bean was only created when the docker profile was active, but that constraint is
+  already handled by DockerPlatformImpl itself being annotated @Component @Profile("docker") -- so if the Docker platform isn't active, the factory would
+  never be needed anyway.
+
+  In short: Yes, DockerPlatformImpl can simply new DockerClientFactoryImpl() directly. The Spring annotations can be removed entirely from
+  DockerClientFactoryImpl, making it framework-neutral and leaving it in the engine package with no changes needed to any other file.
+--END--
+
+==START==
+/agent
+Please remove the Spring annotations from DockerPlatformImpl and update DockerPlatformImpl to
+simply create a new DockerClientFactoryImpl() directly.
+==END==
+
+--START--
+....
+....
+  Done. Two changes made:
+
+  • DockerClientFactoryImpl: Removed @Component, @Profile("docker"), and their Spring imports. The class is now fully framework-neutral.
+  • DockerPlatformImpl: Replaced @Autowired private DockerClientFactory with private DockerClientFactory dockerClientFactory = new
+    DockerClientFactoryImpl(), creating the instance directly.
+--END--
 
 

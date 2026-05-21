@@ -140,6 +140,7 @@ import net.ivoa.calycopis.broker.engine.entities.volume.simple.docker.DockerSimp
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOfferFactory;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory;
+import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactoryImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerPlatform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactory;
@@ -354,8 +355,7 @@ implements DockerPlatform
 
 // Docker client
 
-    @Autowired
-    private DockerClientFactory dockerClientFactory;
+    private DockerClientFactory dockerClientFactory = new DockerClientFactoryImpl();
     @Override
     public DockerClientFactory getDockerClientFactory()
         {

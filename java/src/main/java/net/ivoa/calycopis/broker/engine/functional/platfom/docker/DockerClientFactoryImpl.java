@@ -23,9 +23,6 @@
 
 package net.ivoa.calycopis.broker.engine.functional.platfom.docker;
 
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
@@ -42,8 +39,6 @@ import lombok.extern.slf4j.Slf4j;
  * 
  */
 @Slf4j
-@Component
-@Profile("docker")
 public class DockerClientFactoryImpl
 implements DockerClientFactory
     {
