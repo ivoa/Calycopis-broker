@@ -20,7 +20,7 @@
  *
  * AIMetrics: [
  *     {
- *     "timestamp": "2026-04-14T17:00:00",
+ *     "timestamp": "2026-05-20T14:00:00",
  *     "name": "Cursor CLI",
  *     "version": "2026.02.13-41ac335",
  *     "model": "Claude 4.6 Opus (Thinking)",
@@ -33,20 +33,30 @@
  *
  */
 
-package net.ivoa.calycopis.broker.engine.functional.platfom.mock;
+package net.ivoa.calycopis.broker.spring.jpa;
 
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
 /**
  * 
  */
-public interface MockPlatform extends Platform
+@NoRepositoryBean
+public interface SpringAbstractEntityRepository<EntityType>
+extends JpaRepository<EntityType, UUID>
     {
 
     /**
-     * Get the MockPlatformSettings for this platform.
-     *
+     * 
      */
-    public MockPlatformSettings getMockEntitySettings();
+    public Optional<EntityType> findById(final UUID uuid);
 
+    /**
+     * 
+     */
+    public <ActualType extends EntityType> ActualType save(ActualType entity);
+    
     }

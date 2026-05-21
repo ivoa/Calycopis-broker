@@ -49,12 +49,12 @@ server:
 logging:
     level:
         net.ivoa: DEBUG
-        net.ivoa.calycopis.broker.engine.functional.processing: INFO
         com.baeldung: INFO
         org.hibernate: INFO
         org.apache.tomcat: INFO
         org.apache.catalina: INFO
         org.springframework: INFO
+#       net.ivoa.calycopis.broker.spring: INFO
 
 spring:
     application:

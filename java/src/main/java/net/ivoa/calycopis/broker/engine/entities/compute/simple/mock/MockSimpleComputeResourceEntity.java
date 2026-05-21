@@ -46,7 +46,7 @@ import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
-import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockEntitySettings;
+import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockMonitorAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockPrepareAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockReleaseAction;
@@ -96,7 +96,7 @@ implements MockSimpleComputeResource
     @Override
     public ProcessingAction getPrepareAction(final Platform platform, final ComponentProcessingRequest request)
         {
-        MockEntitySettings settings = ((MockPlatform) platform).getMockEntitySettings();
+        MockPlatformSettings settings = ((MockPlatform) platform).getMockEntitySettings();
         return new MockPrepareAction(
             this,
             settings.getPrepareDelayMillis()
@@ -106,7 +106,7 @@ implements MockSimpleComputeResource
     @Override
     public ProcessingAction getMonitorAction(Platform platform, ComponentProcessingRequest request)
         {
-        MockEntitySettings settings = ((MockPlatform) platform).getMockEntitySettings();
+        MockPlatformSettings settings = ((MockPlatform) platform).getMockEntitySettings();
         if (this.lifecycleLoopCount < 0)
             {
             this.lifecycleLoopCount = settings.getMonitorCount();
@@ -120,7 +120,7 @@ implements MockSimpleComputeResource
     @Override
     public ProcessingAction getReleaseAction(final Platform platform, final ComponentProcessingRequest request)
         {
-        MockEntitySettings settings = ((MockPlatform) platform).getMockEntitySettings();
+        MockPlatformSettings settings = ((MockPlatform) platform).getMockEntitySettings();
         return new MockReleaseAction(
             this,
             settings.getReleaseDelayMillis()

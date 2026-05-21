@@ -1,7 +1,8 @@
 /*
+ *
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2026 University of Manchester.
+ *     Copyright (C) 2024 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -20,7 +21,7 @@
  *
  * AIMetrics: [
  *     {
- *     "timestamp": "2026-04-14T17:00:00",
+ *     "timestamp": "2026-05-21T10:54:00",
  *     "name": "Cursor CLI",
  *     "version": "2026.02.13-41ac335",
  *     "model": "Claude 4.6 Opus (Thinking)",
@@ -33,20 +34,17 @@
  *
  */
 
-package net.ivoa.calycopis.broker.engine.functional.platfom.mock;
+package net.ivoa.calycopis.broker.spring.webapp;
 
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
-/**
- * 
- */
-public interface MockPlatform extends Platform
-    {
+public class ServletInitializer extends SpringBootServletInitializer {
 
-    /**
-     * Get the MockPlatformSettings for this platform.
-     *
-     */
-    public MockPlatformSettings getMockEntitySettings();
-
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(
+		    AmbleckApplication.class
+		    );
+	    }
     }

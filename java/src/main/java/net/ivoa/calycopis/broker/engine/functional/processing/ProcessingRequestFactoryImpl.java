@@ -37,14 +37,14 @@ extends FactoryBaseImpl
 implements ProcessingRequestFactory
     {
 
-    private final ProcessingRequestRepository processingRequestRepository;
+    private final ProcessingRequestRepositoryBase processingRequestRepository;
 
     /**
      * Public constructor, used by our Platform.
      * 
      */
     public ProcessingRequestFactoryImpl(
-        final ProcessingRequestRepository processingRequestRepository,
+        final ProcessingRequestRepositoryBase processingRequestRepository,
         final SessionProcessingRequestFactory sessionProcessingRequestFactory,
         final ComponentProcessingRequestFactory componentProcessingRequestFactory
         ){

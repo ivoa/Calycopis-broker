@@ -164,7 +164,7 @@ EOF
     ?   the `SpringAbstractEntityRepository` repository interface and `SpringAbstractEntityRepositoryWrapper`
     ?   which implements a framework neutral `AbstractEntityRepository` interface that can be used in
     ?   the rest of the business logic.
-    ?   
+    ?
     ?   Can you identify what is causing the following runtime error:
     ?   ```
     ?   2026-05-20 10:15:59 WARN main AnnotationConfigServletWebServerApplicationContext refresh()
@@ -180,39 +180,39 @@ EOF
     >   ....
     >   ....
     >     The problem is in SpringAbstractEntityRepository. It's a generic interface annotated with @Repository that extends JpaRepository<EntityType, UUID>:
-    >   
+    >
     >      /calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/spring/SpringAbstractEntityRepository.java lines 35-38
-    >   
+    >
     >     @Repository
     >     public interface SpringAbstractEntityRepository<EntityType>
     >     extends JpaRepository<EntityType, UUID>
     >         {
-    >   
+    >
     >     Because AmbleckApplication has @EnableJpaRepositories("net.ivoa.calycopis"), Spring Data JPA scans the package and finds SpringAbstractEntityRepository. It tries to create a repository
     >      proxy bean for it directly. Due to Java type erasure, the unbound type parameter EntityType resolves to Object at runtime. Spring then checks whether Object is a JPA managed entity —
     >     it isn't — and you get the error: "Not a managed type: class java.lang.Object".
-    >   
+    >
     >     The concrete subinterface SpringSessionEntityRepository works fine because it binds the type parameter to a real entity class:
-    >   
+    >
     >      /calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/spring/SpringSessionEntityRepository.java lines 35-37
-    >   
+    >
     >     @Repository
     >     public interface SpringSessionEntityRepository
     >     extends SpringAbstractEntityRepository<SimpleExecutionSessionEntity>
-    >   
+    >
     >     The fix: Add @NoRepositoryBean to SpringAbstractEntityRepository to tell Spring Data JPA it's a base interface and should not be instantiated directly:
-    >   
+    >
     >     import org.springframework.data.repository.NoRepositoryBean;
     >     @NoRepositoryBean
     >     public interface SpringAbstractEntityRepository<EntityType>
     >     extends JpaRepository<EntityType, UUID>
-    >   
+    >
     >     However, this alone won't fully solve the problem. In DockerPlatformImpl, you're @Autowired-injecting generic parameterizations of SpringAbstractEntityRepository directly (e.g.
     >     SpringAbstractEntityRepository<AbstractComputeResourceEntity>). With @NoRepositoryBean, Spring won't create proxies for the generic base, so those injections will have no bean to
     >     satisfy them.
-    >   
+    >
     >     You'll need to create concrete sub-interfaces for each entity type, following the same pattern as SpringSessionEntityRepository. For example:
-    >   
+    >
     >     @Repository
     >     public interface SpringComputeResourceEntityRepository
     >     extends SpringAbstractEntityRepository<AbstractComputeResourceEntity> {}
@@ -228,7 +228,7 @@ EOF
     >     @Repository
     >     public interface SpringVolumeMountEntityRepository
     >     extends SpringAbstractEntityRepository<AbstractVolumeMountEntity> {}
-    >   
+    >
     >     Then update the @Autowired fields in DockerPlatformImpl (and MockPlatformImpl) to reference these concrete types instead of the generic SpringAbstractEntityRepository<...>.
 
 
@@ -241,25 +241,25 @@ EOF
     >   ....
     >   ....
     >     No remaining references to the generic SpringAbstractEntityRepository<...> in the engine package. All changes are complete. Here's a summary:
-    >   
+    >
     >     Files modified:
-    >   
+    >
     >     1. AmbleckApplication.java — Removed @EnableJpaRepositories annotation and its import.
-    >   
+    >
     >     2. SpringAbstractEntityRepository.java — Replaced @Repository with @NoRepositoryBean so Spring Data JPA won't try to instantiate this generic base interface directly.
-    >   
+    >
     >     3. DockerPlatformImpl.java — Changed all five @Autowired fields from SpringAbstractEntityRepository<...> to the concrete repository types, and updated imports.
-    >   
+    >
     >     4. MockPlatformImpl.java — Same changes as DockerPlatformImpl for its five @Autowired fields.
-    >   
+    >
     >     Files created (in net.ivoa.calycopis.broker.spring):
-    >   
+    >
     >     • SpringComputeResourceEntityRepository — extends SpringAbstractEntityRepository<AbstractComputeResourceEntity>
     >     • SpringDataResourceEntityRepository — extends SpringAbstractEntityRepository<AbstractDataResourceEntity>
     >     • SpringExecutableEntityRepository — extends SpringAbstractEntityRepository<AbstractExecutableEntity>
     >     • SpringStorageResourceEntityRepository — extends SpringAbstractEntityRepository<AbstractStorageResourceEntity>
     >     • SpringVolumeMountEntityRepository — extends SpringAbstractEntityRepository<AbstractVolumeMountEntity>
-    >   
+    >
     >     One thing to note: With @EnableJpaRepositories removed from AmbleckApplication, Spring Boot's auto-configuration will take over JPA repository scanning. It will scan from the package
     >     of the @SpringBootApplication class (net.ivoa.calycopis.broker.engine.webapp). Since the new concrete repository interfaces are in net.ivoa.calycopis.broker.spring — which is not a
     >     sub-package of that — you may need to either add @EnableJpaRepositories("net.ivoa.calycopis.broker.spring") somewhere (e.g. on a configuration class in the spring package), or ensure
@@ -436,20 +436,20 @@ EOF
     >   ....
     >   ....
     >     All clean -- the only references to ComponentProcessingRequestRepository and SessionProcessingRequestRepository are now to the new Spring-prefixed versions in the spring package.
-    >   
+    >
     >     Here's a summary of what was done:
-    >   
+    >
     >     Created (in net.ivoa.calycopis.broker.spring):
     >     • SpringComponentProcessingRequestRepository -- extends SpringAbstractEntityRepository<ComponentProcessingRequestEntityImpl>
     >     • SpringSessionProcessingRequestRepository -- extends SpringAbstractEntityRepository<SessionProcessingRequestEntity>
-    >   
+    >
     >     Modified:
     >     • ComponentProcessingRequestFactoryImpl -- constructor now takes AbstractEntityRepository<ComponentProcessingRequestEntityImpl> instead of the Spring JPA repository
     >     • SessionProcessingRequestFactoryImpl -- constructor now takes AbstractEntityRepository<SessionProcessingRequestEntity>, removed @Component annotation (since it's constructed manually
     >       by the platform impls)
     >     • DockerPlatformImpl -- autowires the new Spring repositories, wraps them with SpringAbstractEntityRepositoryWrapper<> when passing to factory constructors
     >     • MockPlatformImpl -- same changes as DockerPlatformImpl
-    >   
+    >
     >     Deleted (from engine package):
     >     • ComponentProcessingRequestRepository.java
     >     • SessionProcessingRequestRepository.java
@@ -466,20 +466,20 @@ EOF
     >   ....
     >   ....
     >   All done. Here's a summary of what was applied:
-    >   
+    >
     >     7 new files -- replaced the incorrect licence header with the canonical format from licence-header.mdc (using Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/) and along
     >     with this software.), and added AIMetrics entries with contribution: 100.
-    >   
+    >
     >     2 modified files -- updated copyright year to 2026:
     >     • AmbleckApplication.java (was 2024)
     >     • SessionProcessingRequestFactoryImpl.java (was 2025)
-    >   
+    >
     >     4 modified files with no AIMetrics block -- added new AIMetrics block with contribution: 5:
     >     • AmbleckApplication.java
     >     • SpringAbstractEntityRepository.java
     >     • ComponentProcessingRequestFactoryImpl.java
     >     • SessionProcessingRequestFactoryImpl.java
-    >   
+    >
     >     2 modified files with existing AIMetrics -- appended new entry with contribution: 5:
     >     • DockerPlatformImpl.java
     >     • MockPlatformImpl.java
@@ -668,69 +668,69 @@ EOF
     ?   Before we implment this, can you analyse what happens to the database connections and transactions during an iteration of the loop() method.
 
     >     Good question. Let me trace through the transaction and connection lifecycle for a single iteration of loop().
-    >   
+    >
     >     The loop() method itself has no @Transactional annotation, and is invoked by @Scheduled(fixedDelay = 1000) on TestProcessingSerivceImpl, which also doesn't start a transaction. So there
     >     is no ambient transaction wrapping the loop.
-    >   
+    >
     >     Each iteration goes through four distinct phases:
-    >   
+    >
     >     ────────────────────────────────────────
-    >   
+    >
     >     Phase 1: inner.getNext(this) -- @Transactional(propagation = Propagation.REQUIRES_NEW)
-    >   
+    >
     >     • Spring acquires a database connection from the pool and opens a new transaction.
     >     • Executes selectNextRequest() -- a JPQL query looking for a request already claimed by this service.
     >     • If none found, executes updateNextRequest() -- a @Modifying JPQL UPDATE that atomically claims the next unclaimed request by setting its service column to this service's UUID.
     >     • If a row was claimed, executes selectNextRequest() again to retrieve the claimed request's UUID.
     >     • Transaction commits, connection returned to the pool.
     >     • Returns the UUID (or null if no work available).
-    >   
+    >
     >     ────────────────────────────────────────
-    >   
+    >
     >     Phase 2: inner.preProcess(this, requestId) -- @Transactional(propagation = Propagation.REQUIRES_NEW)
-    >   
+    >
     >     • Spring acquires a connection and opens a new, independent transaction.
     >     • requestRepository.findById(requestId).orElseThrow() -- loads a fresh ProcessingRequestEntity from the database. This entity is managed within this transaction's persistence context.
     >     • Calls back to outer.preProcess(request), which calls request.preProcess(platform). This is where the business logic determines what action to take. Any lazy-loaded associations on
     >       the entity are fetched within this transaction.
     >     • Returns a ProcessingAction object (a plain Java object, not an entity).
     >     • Transaction commits, connection returned to pool. The ProcessingRequestEntity becomes detached.
-    >   
+    >
     >     ────────────────────────────────────────
-    >   
+    >
     >     Phase 3: action.process() -- No transaction, no connection
-    >   
+    >
     >     • Runs entirely outside any database transaction. No connection is held.
     >     • This is the potentially long-running external work (e.g., Docker container operations, HTTP calls).
     >     • This is intentional by design -- the ProcessingAction javadoc says: "An external action that is performed outside of any database transactions. This means that the action may take a
     >       non-trivial amount of time without locking up the database."
-    >   
+    >
     >     ────────────────────────────────────────
-    >   
+    >
     >     Phase 4: inner.postProcess(this, requestId, action) -- @Transactional(propagation = Propagation.REQUIRES_NEW)
-    >   
+    >
     >     • Spring acquires a connection and opens a new, independent transaction.
     >     • requestRepository.findById(requestId).orElseThrow() -- reloads the entity fresh from the database (not reusing the detached instance from Phase 2).
     >     • Calls back to outer.postProcess(request, action), which calls request.postProcess(platform, action) -- updates entity state based on the action result.
     >     • request.setService(null) -- releases ownership of the request so it won't be picked up by selectNextRequest again for this service.
     >     • Transaction commits (dirty-checking flushes the entity changes), connection returned to pool.
-    >   
+    >
     >     ────────────────────────────────────────
-    >   
+    >
     >     Key observations:
-    >   
+    >
     >     1. Three independent transactions per iteration -- each using REQUIRES_NEW, so they are completely isolated from each other. A failure in Phase 4 does not roll back Phase 2's commit.
-    >   
+    >
     >     2. No connection held across the loop iteration -- connections are acquired and released within each transactional method. During action.process() (Phase 3), no database connection is
     >        held at all.
-    >   
+    >
     >     3. Entity is reloaded fresh in each transaction -- Phase 2 and Phase 4 both do findById(), avoiding detached entity problems. The entity from Phase 2 is not carried into Phase 4.
-    >   
+    >
     >     4. Single-threaded -- the loop is sequential, so at most one connection is held at any time.
-    >   
+    >
     >     5. Claim-then-load pattern in getNext() -- the updateNextRequest() uses a subquery with LIMIT 1 to atomically claim a request, avoiding race conditions between concurrent service
     >        instances.
-    >   
+    >
     >     6. Regarding the planned refactoring -- the transaction boundaries are entirely defined by the @Transactional(propagation = Propagation.REQUIRES_NEW) annotations on the inner class
     >        methods. When these move to SpringProcessingTransactionHandlerImpl, the transaction behavior will be preserved identically, since the new class will be a @Service bean and Spring's
     >        transaction proxy will apply the same way.
@@ -741,17 +741,17 @@ EOF
     >   ....
     >   ....
     >     All done. Here's a summary:
-    >   
+    >
     >     Created:
     >     • ProcessingTransactionHandler.java (engine package) -- framework-neutral interface with getNext(), preProcess(), postProcess() methods
     >     • SpringProcessingTransactionHandlerImpl.java (spring package) -- @Service implementation with @Transactional(REQUIRES_NEW) on each method and @Autowired ProcessingRequestRepository
-    >   
+    >
     >     Modified:
     >     • ProcessingServiceImpl.java -- removed the static inner TransactionalInner class and all Spring imports (@Autowired, @Service, @Transactional). Now receives
     >       ProcessingTransactionHandler via constructor. Fully framework-neutral.
     >     • TestProcessingSerivceImpl.java -- constructor updated to receive and pass ProcessingTransactionHandler to super. Spring will auto-inject the SpringProcessingTransactionHandlerImpl
     >       bean.
-    >   
+    >
     >     No references to TransactionalInner remain in the codebase. The transaction boundaries (three independent REQUIRES_NEW transactions per loop iteration) are preserved identically in the
     >      new structure.
 
@@ -761,7 +761,7 @@ EOF
     >   ....
     >   ....
     >     Done. Here's what changed:
-    >   
+    >
     >     • Platform.java -- added getProcessingTransactionHandler() method to the interface
     >     • DockerPlatformImpl.java -- @Autowired ProcessingTransactionHandler field with getter
     >     • MockPlatformImpl.java -- same as Docker
@@ -779,28 +779,28 @@ EOF
     >   ....
     >   ....
     >   Now let me rebuild and run again.
-    >   
+    >
     >     $ cd /calycopis/Calycopis-broker/github-zrq/java && SPRING_PROFILES_ACTIVE=mock ./mvnw clean spring-boot:run 2>&1 28s (background)
-    >   
+    >
     >       Waited for shell regex: /Started AmbleckApplication|APPLICATION FAILED TO START|Error creating bean/
-    >   
+    >
     >     The service started successfully. Let me verify it's healthy.
-    >   
+    >
     >     $ grep "Started AmbleckApplication" /root/.cursor/projects/terminals/220037.txt 304ms
     >       Found MappingJackson2HttpMessageConverter [org.springframework.http.converter.json.MappingJackson2HttpMessageConverter]Fou​nd MappingJackson2HttpMessageConverter
     >       [org.springframework.http.converter.json.MappingJackson2HttpMessageConverter]202​6-05-20 15:42:13 INFO main AmbleckApplication logStarted() Started AmbleckApplication in 11.073 seconds
     >       (process running for 12.152)
-    >   
+    >
     >     Let me stop the service now.
-    >   
+    >
     >     $ kill 9294 2>/dev/null; sleep 1; echo "stopped" 1.2s
     >       stopped
-    >   
+    >
     >     The service starts successfully now. There were two issues:
-    >   
+    >
     >     1. @EnableJpaRepositories scope too narrow -- It was restricted to net.ivoa.calycopis.broker.spring, but three JPA repositories (ProcessingRequestRepository, OfferSetRepository,
     >        MessageEntityRepository) still live in the engine package. Fixed by expanding the scan to include both net.ivoa.calycopis.broker.spring and net.ivoa.calycopis.broker.engine.
-    >   
+    >
     >     2. @Component on SpringAbstractEntityRepositoryWrapper -- Spring tried to auto-create this generic wrapper as a bean, but found 8 matching SpringAbstractEntityRepository sub-interfaces
     >        and couldn't pick one. Since this class is always instantiated manually (via new SpringAbstractEntityRepositoryWrapper<>(repo)), the @Component and @Autowired annotations were
     >        removed.
@@ -809,13 +809,499 @@ EOF
     ?     The service is still running, can you send the kill message again.
 
     >     $ pkill -f "spring-boot:run" 2>/dev/null; pkill -f "AmbleckApplication" 2>/dev/null; sleep 1; echo "done" 461ms
-    >   
+    >
     >     $ pgrep -f "spring-boot\|AmbleckApplication" || echo "No processes found" 161ms
     >       No processes found
-    >   
+    >
     >     All Spring Boot processes have been stopped.
 
 
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Build and run the service.
+#[root@calycopis-pod java]
+
+    ./mvnw clean spring-boot:run -D calycopis-platform=docker
+
+--START--
+....
+....
+--END--
+
+# -----------------------------------------------------
+# Run the Docker tests.
+#[root@calycopis-pod tests]
+
+    pushd python/docker ; pytest * ; popd
+
+--START--
+....
+....
+--END--
+
+# -----------------------------------------------------
+# Build and run the service.
+#[root@calycopis-pod java]#
+
+    ./mvnw clean spring-boot:run -D calycopis-platform=mock
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# Run the Mock tests.
+#[root@calycopis-pod tests]
+
+    pushd python/mock ; pytest * ; popd
+
+--START--
+....
+....
+================= 48 passed, 60 warnings in 547.85s (0:09:07) ==================
+--END--
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Next steps in the repackaging.
+#[root@calycopis-dev]
+
+==START==
+/plan
+Building on the patterns we have developed.
+Can you create a plan to handle the remaining Spring related classes
+in the engine package.
+==END==
+
+--START--
+....
+....
+  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ … Thought for 25s                                                                                                                                        │
+  │ Now I have a comprehensive picture. Let me categorize what needs to be addressed vs what should stay:                                                    │
+  │                                                                                                                                                          │
+  │ Should stay in engine package (inherently Spring-bound):                                                                                                 │
+  │ • webapp/AmbleckApplication.java - the Spring Boot entry point                                                                                           │
+  │ • webapp/ServletInitializer.java - WAR deployment                                                                                                        │
+  │ • webapp/SessionsApiDelegateImpl.java - REST controllers                                                                                                 │
+  │ • webapp/OffersetsApiDelegateImpl.java - REST controllers                                                                                                │
+  │ • webapp/BaseDelegateImpl.java - REST base class                                                                                                         │
+  │ • util/YamlConverter.java - Spring HTTP message converter                                                                                                │
+  │                                                                                                                                                          │
+  │ • webapp package itself is part of the engine, so these are inherently Spring-specific                                                                   │
+  │                                                                                                                                                          │
+  │ I'm realizing the pattern here: JPA repositories should move to the spring package as concrete implementations of neutral interfaces, and any classes    │
+  │ with Spring annotations either need to move or get wrapped with abstraction layers. The @Autowired fields are already being handled through the          │
+  │ repository wrapper approach, so I should focus on identifying which other classes in the engine have direct Spring dependencies that could be            │
+  │ decoupled.                                                                                                                                               │
+  │ Autowired JdbcTemplate, and several settings and validator classes that use Spring annotations or JDBC utilities. The pattern we're following is         │
+  │ clear:                                                                                                                                                   │
+  │ move Spring JPA repositories to concrete sub-interfaces in the spring package, keep framework-neutral interfaces in the engine, use wrapper classes to   │
+  │ bridge Spring beans to those neutral interfaces, and let platform implementations hold the Spring-specific autowiring.                                   │
+  │                                                                                                                                                          │
+  │ For the remaining repositories like OfferSetRepository and MessageEntityRepository, I should apply the same approach we used for the processing          │
+  │ request                                                                                                                                                  │
+  │ repositories—create Spring-specific versions in the spring package, establish framework-neutral interfaces, and update consumers to use the wrappers.    │
+  │ The                                                                                                                                                      │
+  │ webapp classes are a separate consideration since they're inherently tied to the web framework, but the actionable work right now is focusing on these   │
+  │ JPA repositories and other classes that can be cleanly separated. The webapp classes should move to the spring package as-is since they're already       │
+  │ Spring-dependent. For the other groups, I need to organize a structured plan that prioritizes what's actionable using the repository wrapping and        │
+  │ interface extraction patterns we've established.                                                                                                         │
+  │  ctrl+o to collapse                                                                                                                                      │
+  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+....
+....
+--END--
+
+
+--START--
+....
+....
+ ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Suggested Plan                                                                                                                                           │
+ │                                                                                                                                                          │
+ │ Remove Remaining Spring Dependencies from Engine Package                                                                                                 │
+ │                                                                                                                                                          │
+ │ 18 files in the engine package currently import from org.springframework. These fall into four groups, ordered from most straightforward to most         │
+ │ involved.                                                                                                                                                │
+ │                                                                                                                                                          │
+ │ Group 1: JPA Repositories (3 files)                                                                                                                      │
+ │                                                                                                                                                          │
+ │ Apply the same pattern used for ComponentProcessingRequestRepository and SessionProcessingRequestRepository: create concrete sub-interfaces of           │
+ │ SpringAbstractEntityRepository in the spring package, update consumers to use SpringAbstractEntityRepositoryWrapper, delete the old interfaces.          │
+ │                                                                                                                                                          │
+ │ 1a. OfferSetRepository (simple)                                                                                                                          │
+ │                                                                                                                                                          │
+ │ • entities/offerset/OfferSetRepository.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/offerset/OfferSetRepository.java) --           │
+ │   extends JpaRepository<OfferSetEntity, UUID> with no custom methods.                                                                                    │
+ │ • Used by: OfferSetFactoryImpl (calls save()), and @Autowired in both platform impls.                                                                    │
+ │ • Action: Create SpringOfferSetRepository in spring package. Update OfferSetFactoryImpl to take AbstractEntityRepository<OfferSetEntity>. Wrap in        │
+ │   platform impls. Delete old interface.                                                                                                                  │
+ │                                                                                                                                                          │
+ │ 1b. MessageEntityRepository (simple)                                                                                                                     │
+ │                                                                                                                                                          │
+ │ • entities/message/MessageEntityRepository.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/message/MessageEntityRepository.java)      │
+ │   -- extends JpaRepository<MessageEntity, Long> with no custom methods.                                                                                  │
+ │ • Need to check consumers to determine wrapping approach.                                                                                                │
+ │ • Note: Uses Long as ID type rather than UUID. SpringAbstractEntityRepository uses UUID. This will need either a separate base interface or a new        │
+ │   concrete Spring repository that extends JpaRepository<MessageEntity, Long> directly (not via SpringAbstractEntityRepository).                          │
+ │                                                                                                                                                          │
+ │ 1c. ProcessingRequestRepository (complex -- custom queries)                                                                                              │
+ │                                                                                                                                                          │
+ │ • functional/processing/ProcessingRequestRepository.java                                                                                                 │
+ │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/ProcessingRequestRepository.java) -- extends                                │
+ │   JpaRepository<ProcessingRequestEntity, UUID> with custom @Query methods (selectNextRequest, updateNextRequest), plus findByUuid, deleteByUuid.         │
+ │ • Used by: SpringProcessingTransactionHandlerImpl (already in spring package) and ProcessingRequestFactoryImpl (uses delete()).                          │
+ │ • Action: Create a framework-neutral ProcessingRequestRepositoryBase interface in the engine package with the methods needed by consumers (findById,     │
+ │   save, delete, selectNextRequest, updateNextRequest). Create SpringProcessingRequestRepository in the spring package (with the @Query annotations).     │
+ │   Create SpringProcessingRequestRepositoryWrapper in the spring package. Update ProcessingRequestFactoryImpl to use the neutral interface. Update        │
+ │   SpringProcessingTransactionHandlerImpl to use the Spring repository directly (it's already in the spring package). Delete old interface.               │
+ │                                                                                                                                                          │
+ │ Group 2: Webapp Classes (6 files) -- move to spring package                                                                                              │
+ │                                                                                                                                                          │
+ │ These are inherently Spring-specific (REST controllers, Boot application, message converters). They should be moved to the spring package since they     │
+ │ cannot be made framework-neutral.                                                                                                                        │
+ │ • webapp/AmbleckApplication.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/AmbleckApplication.java) -- @SpringBootApplication          │
+ │   entry point                                                                                                                                            │
+ │ • webapp/ServletInitializer.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/ServletInitializer.java) -- WAR deployment support          │
+ │ • webapp/SessionsApiDelegateImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/SessionsApiDelegateImpl.java) -- @Service REST         │
+ │   delegate                                                                                                                                               │
+ │ • webapp/OffersetsApiDelegateImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/OffersetsApiDelegateImpl.java) -- @Service REST       │
+ │   delegate                                                                                                                                               │
+ │ • webapp/BaseDelegateImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/BaseDelegateImpl.java) -- base class using                    │
+ │   NativeWebRequest                                                                                                                                       │
+ │ • util/YamlConverter.java (java/src/main/java/net/ivoa/calycopis/broker/engine/util/YamlConverter.java) -- @Component extending Spring HTTP              │
+ │   converter                                                                                                                                              │
+ │                                                                                                                                                          │
+ │ Action: Move all 6 files to net.ivoa.calycopis.broker.spring.webapp (or net.ivoa.calycopis.broker.spring), update package declarations and any           │
+ │ internal references.                                                                                                                                     │
+ │                                                                                                                                                          │
+ │ Group 3: Platform Impls and Processing Service (3 files)                                                                                                 │
+ │                                                                                                                                                          │
+ │ These use @Component/@Service, @Profile, @Autowired, and @Scheduled. They are the Spring-specific "wiring" layer and could be moved to the spring        │
+ │ package, leaving the business logic interfaces in the engine package.                                                                                    │
+ │ • functional/platfom/docker/DockerPlatformImpl.java                                                                                                      │
+ │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerPlatformImpl.java) -- @Component @Profile("docker") with 13+      │
+ │   @Autowired fields                                                                                                                                      │
+ │ • functional/platfom/mock/MockPlatformImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/mock/MockPlatformImpl.java)      │
+ │   -- @Component @Profile("mock") with 13+ @Autowired fields                                                                                              │
+ │ • functional/processing/test/TestProcessingSerivceImpl.java                                                                                              │
+ │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/test/TestProcessingSerivceImpl.java) -- @Service with @Autowired and        │
+ │   @Scheduled                                                                                                                                             │
+ │                                                                                                                                                          │
+ │ Action: Move all 3 to the spring package. Their interfaces (Platform, DockerPlatform, MockPlatform, ProcessingService) stay in engine. This is the       │
+ │ same pattern as SpringProcessingTransactionHandlerImpl -- Spring implementation in spring package, neutral interface in engine.                          │
+ │                                                                                                                                                          │
+ │ Group 4: Configuration and Infrastructure Classes (5 files)                                                                                              │
+ │                                                                                                                                                          │
+ │ These are Spring-specific infrastructure (configuration properties, JDBC wrappers, Docker client factory).                                               │
+ │ • functional/processing/mock/MockEntitySettings.java                                                                                                     │
+ │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/mock/MockEntitySettings.java) -- @Component @ConfigurationProperties        │
+ │ • functional/platfom/docker/DockerSettings.java (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerSettings.java)      │
+ │   -- @Component @ConfigurationProperties                                                                                                                 │
+ │ • functional/platfom/docker/DockerClientFactoryImpl.java                                                                                                 │
+ │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerClientFactoryImpl.java) -- @Component @Profile("docker")          │
+ │ • functional/booking/compute/ComputeResourceOfferFactoryImpl.java                                                                                        │
+ │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/booking/compute/ComputeResourceOfferFactoryImpl.java) -- @Component using              │
+ │   JdbcTemplate                                                                                                                                           │
+ │ • entities/data/skao/SkaoDataResourceValidatorImpl.java                                                                                                  │
+ │   (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/skao/SkaoDataResourceValidatorImpl.java) -- uses JdbcTemplate, JdbcClient,          │
+ │   RowMapper                                                                                                                                              │
+ │                                                                                                                                                          │
+ │ Action: For the @ConfigurationProperties classes and DockerClientFactoryImpl, move to spring package (they are Spring configuration beans). For          │
+ │ ComputeResourceOfferFactoryImpl and SkaoDataResourceValidatorImpl, extract framework-neutral interfaces (they contain business logic) and move the       │
+ │ Spring-dependent implementations to the spring package.                                                                                                  │
+ │                                                                                                                                                          │
+ │ Recommended Implementation Order                                                                                                                         │
+ │                                                                                                                                                          │
+ │ 1. Group 1a + 1b -- Simple repository migrations (OfferSet, Message). Quick wins, same pattern as before.                                                │
+ │ 2. Group 1c -- ProcessingRequestRepository. More involved but follows the plan already drafted.                                                          │
+ │ 3. Group 2 -- Move webapp classes. Mechanical package move with no interface changes.                                                                    │
+ │ 4. Group 4 -- Configuration and infrastructure classes. Small, self-contained.                                                                           │
+ │ 5. Group 3 -- Platform impls. Largest scope, should be last as they touch the most files.                                                                │
+ │                                                                                                                                                          │
+ │ Scope Note                                                                                                                                               │
+ │                                                                                                                                                          │
+ │ After all groups are complete, the @EnableJpaRepositories annotation can be restricted back to just "net.ivoa.calycopis.broker.spring" since all JPA     │
+ │ repositories will be in that package. The engine package will contain only framework-neutral business logic.                                             │
+ │                                                                                                                                                          │
+ │  Saved to root/.cursor/plans/Remove Spring from engine-b39c4460.plan.md                                                                                  │
+ │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+ │                                                                                                                                                          │
+ │ Ready to build?                                                                                                                                          │
+ │                                                                                                                                                          │
+ │  → 1. Yes, build locally (b)                                                                                                                             │
+ │    2. No, propose changes (p or Esc)                                                                                                                     │
+ │                                                                                                                                                          │
+ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+==START==
+Please go ahead and implement groups 1, 2, 3, and 5.
+Leave group 4 to be handled individually in later steps.
+==END==
+
+--START--
+  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ … Thought for 32s                                                                                                                                        │
+  │ The user wants me to implement groups 1a, 1b, 1c, 2, 3, and 5 (which is group 3 in the plan - platform impls). Wait, let me re-read. The plan has        │
+  │ groups                                                                                                                                                   │
+  │ 1, 2, 3, 4 and a "Recommended Implementation Order" section with steps 1-5. The user says "groups 1, 2, 3, and 5". Let me check what group 5 is.         │
+  │                                                                                                                                                          │
+  │ Looking at the plan:                                                                                                                                     │
+  │ • Group 1: JPA Repositories (1a, 1b, 1c)                                                                                                                 │
+  │                                                                                                                                                          │
+  │ • Group 2: Webapp Classes                                                                                                                                │
+  │ • Group 3: Platform Impls and Processing Service                                                                                                         │
+  │ • Group 4: Configuration and Infrastructure Classes                                                                                                      │
+  │                                                                                                                                                          │
+  │ And the recommended implementation order lists steps 1-5, where step 5 corresponds to Group 3. So when the user says "groups 1, 2, 3, and 5", they're    │
+  │ asking for Group 1 (all JPA repositories), Group 2 (webapp classes), Group 3 (platform impls), and step 5 from the implementation order, which is also   │
+  │ Group 3.                                                                                                                                                 │
+  │                                                                                                                                                          │
+  │ Actually, I'm realizing the user might be referring to the todo items themselves as groups. Looking at the todo list, there are seven items: group-1a,   │
+  │ group-1b, group-1c, group-2, group-4, group-3, and restrict-jpa-scan. If they're counting these as groups 1 through 7, then "groups 1, 2, 3, and 5"      │
+  │ would                                                                                                                                                    │
+  │ mean group-1a, group-1b, group-1c, and group-4 (the configuration classes). But they also mentioned leaving group 4 out, so I need to clarify what       │
+  │ they                                                                                                                                                     │
+  │ actually want.                                                                                                                                           │
+  │                                                                                                                                                          │
+  │ Let me reconsider the structure. The plan has four main groups: Group 1 (JPA Repositories with subsections 1a, 1b, 1c), Group 2 (Webapp Classes),        │
+  │ Group 3                                                                                                                                                  │
+  │ (Platform Impls and Processing Service), and Group 4 (Configuration and Infrastructure Classes). The user is asking for groups 1, 2, 3, and 5, while     │
+  │ leaving group 4 for later. So they want the JPA repositories, webapp classes, and platform implementations done now. So the user is actually referring   │
+  │  to                                                                                                                                                      │
+  │ the numbered items in the recommended order, not the group numbers themselves—that's the key distinction I was missing. Items 1, 2, 3, and 5 from that   │
+  │ list correspond to Groups 1a+1b, 1c, 2, and 3 respectively, while skipping item 4 (Group 4) to handle later. The @EnableJpaRepositories restriction      │
+  │ should wrap up at the end. This is a substantial refactoring, so I need to map out the execution carefully.                                              │
+  │                                                                                                                                                          │
+  │ After moving Groups 1, 2, and 3, all three JPA repositories will be in the spring package alongside the webapp and platform implementation classes.      │
+  │ Group                                                                                                                                                    │
+  │ 4 classes will remain in the engine package without JPA dependencies, so the scanning restriction can finally be applied once those three groups are     │
+  │ complete. Now I'm realizing this is going to be a massive undertaking. Let me think through the implications more carefully—moving the platform          │
+  │ implementations to the spring package means the interfaces stay in engine, which is fine, but TestProcessingServiceImpl's package would change, and      │
+  │ the                                                                                                                                                      │
+  │ webapp classes moving from engine/webapp/ to spring/webapp/ creates a significant structural shift. I should switch to agent mode and tackle each        │
+  │ group                                                                                                                                                    │
+  │ systematically to manage this complexity.                                                                                                                │
+  │  ctrl+o to collapse                                                                                                                                      │
+  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+
+==START==
+/plan
+To clarify, I would like you to follow the recommended implementation order, but leave the Configuration and infrastructure classes for later.
+1. Group 1a + 1b YES -- Simple repository migrations (OfferSet, Message).
+2. Group 1c YES      -- ProcessingRequestRepository.
+3. Group 2  YES      -- Move webapp classes.
+4. Group 4  SKIP     -- Leave the Configuration and infrastructure classes for later.
+5. Group 3  YES      -- Platform impls.
+Please confirm that this makes sense.
+==END==
+
+--START--
+  Yes, that makes sense. The order is:
+
+  1. Group 1a + 1b -- Migrate OfferSetRepository and MessageEntityRepository to the spring package using the established wrapper pattern.
+  2. Group 1c -- Migrate ProcessingRequestRepository with its custom query methods (neutral interface + Spring repo + wrapper).
+  3. Group 2 -- Move the 6 webapp classes (AmbleckApplication, ServletInitializer, SessionsApiDelegateImpl, OffersetsApiDelegateImpl, BaseDelegateImpl,
+     YamlConverter) to the spring package.
+  4. Group 4 -- SKIP (configuration and infrastructure classes left for later).
+  5. Group 3 -- Move the 3 platform/processing impl classes (DockerPlatformImpl, MockPlatformImpl, TestProcessingSerivceImpl) to the spring package.
+
+  After steps 1-3 and 5 are complete, all JPA repositories will be in the spring package, so @EnableJpaRepositories can be restricted back to just
+  "net.ivoa.calycopis.broker.spring".
+
+  The only Spring dependencies remaining in the engine package will be the 5 Group 4 classes (settings, Docker client factory, JDBC-based
+  implementations), which you'll handle individually later.
+
+  Shall I start implementing?
+--END--
+
+==START==
+yes
+==END==
+
+--START--
+....
+....
+    To-do All done
+    ☒ Migrate OfferSetRepository to spring package
+    ☒ Migrate MessageEntityRepository to spring package
+    ☒ Migrate ProcessingRequestRepository: neutral interface, Spring repo, wrapper
+    ☒ Move 6 webapp classes to spring.webapp package
+    ☒ Move 3 platform/processing impl classes to spring package
+    ☒ Restrict @EnableJpaRepositories back to spring package only
+
+  All tasks are complete. The project builds and the service starts successfully. Here's a summary of what was done:
+
+  Group 1a -- OfferSetRepository:
+  • Created SpringOfferSetRepository in the spring package
+  • Updated OfferSetFactoryImpl to use the neutral AbstractEntityRepository<OfferSetEntity>
+  • Updated both platform impls to autowire SpringOfferSetRepository and wrap it
+  • Deleted the old OfferSetRepository from the engine package
+
+  Group 1b -- MessageEntityRepository:
+  • Created SpringMessageEntityRepository (extends JpaRepository<MessageEntity, Long> directly since it uses Long IDs)
+  • Deleted the old MessageEntityRepository from the engine package
+
+  Group 1c -- ProcessingRequestRepository:
+  • Created ProcessingRequestRepositoryBase neutral interface (extends AbstractEntityRepository + delete())
+  • Created SpringProcessingRequestRepository with all custom @Query methods
+  • Created SpringProcessingRequestRepositoryWrapper implementing the neutral interface
+  • Updated ProcessingRequestFactoryImpl to use the neutral ProcessingRequestRepositoryBase
+  • Updated SpringProcessingTransactionHandlerImpl to use SpringProcessingRequestRepository
+  • Updated both platform impls to autowire and wrap accordingly
+  • Deleted the old ProcessingRequestRepository from the engine package
+
+  Group 2 -- Webapp classes:
+  • Moved all 5 classes (AmbleckApplication, ServletInitializer, BaseDelegateImpl, SessionsApiDelegateImpl, OffersetsApiDelegateImpl) from engine.webapp
+    to spring.webapp
+
+  Group 3 -- Platform/processing implementations:
+  • Moved DockerPlatformImpl to spring.platfom.docker
+  • Moved MockPlatformImpl to spring.platfom.mock
+  • Moved TestProcessingSerivceImpl to spring.processing
+
+  Final step:
+  • Restricted @EnableJpaRepositories to scan only net.ivoa.calycopis.broker.spring -- no JPA repositories remain in the engine package.
+--END--
+
+# -----------------------------------------------------
+# Small tidying steps ....
+#[root@calycopis-dev]
+
+==START==
+Can you move all of the JPA repository interfaces and wrapper classes from
+the spring package into a sub-package called spring.jpa.
+==END==
+
+--START--
+....
+....
+  Everything works. Here's a summary of what was done:
+
+  Moved 15 files from net.ivoa.calycopis.broker.spring to net.ivoa.calycopis.broker.spring.jpa:
+
+  • Base interfaces: SpringAbstractEntityRepository, SpringAbstractEntityRepository
+  • Concrete repositories: SpringComputeResourceEntityRepository, SpringDataResourceEntityRepository, SpringExecutableEntityRepository,
+    SpringStorageResourceEntityRepository, SpringVolumeMountEntityRepository, SpringSessionEntityRepository, SpringComponentProcessingRequestRepository,
+    SpringSessionProcessingRequestRepository, SpringOfferSetRepository, SpringMessageEntityRepository, SpringProcessingRequestRepository
+  • Wrappers: SpringAbstractEntityRepositoryWrapper, SpringSessionEntityRepositoryWrapper, SpringProcessingRequestRepositoryWrapper
+
+  Updated imports in 3 consumer files:
+  • DockerPlatformImpl (13 imports)
+  • MockPlatformImpl (13 imports)
+  • SpringProcessingTransactionHandlerImpl (1 import added)
+
+  The @EnableJpaRepositories("net.ivoa.calycopis.broker.spring") scan scope still covers the new spring.jpa sub-package, so no change was needed there.
+  Build compiles and service starts successfully.
+--END--
+
+
+==START==
+Can you split DockerSettings into an interface called DockerPlatformSettings in the functional.platform.docker package,
+and an implementation class called DockerPlatformSettingsImpl in the spring.platform.docker package.
+==END==
+
+--START--
+....
+....
+ Build succeeds. Here's what was done:
+
+  • Created DockerPlatformSettings interface in engine.functional.platfom.docker with the getHelperImage() method
+  • Created DockerPlatformSettingsImpl in spring.platfom.docker with @Component and @ConfigurationProperties(prefix = "broker.docker"), implementing the
+    interface
+  • Updated DockerPlatform interface to return DockerPlatformSettings instead of DockerSettings
+  • Updated DockerPlatformImpl to autowire DockerPlatformSettingsImpl and return DockerPlatformSettings
+  • Deleted the old DockerSettings class
+
+  The consumer in DockerHttpResourceEntity already accesses settings through dockerPlatform.getDockerSettings().getHelperImage(), which works unchanged
+  since DockerPlatformSettings exposes getHelperImage().
+--END--
+
+==START==
+Can you split the MockEntitySettings into an interface called MockPlatformSettings in the functional.platform.mock package,
+and an implementation class called MockPlatformSettingsImpl in the spring.platform.mock package.
+==END==
+
+--START--
+....
+....
+  Build succeeds. Here's what was done:
+
+  • Created MockPlatformSettings interface in engine.functional.platfom.mock with the 6 convenience methods (getPrepareDelayMillis(),
+    getMonitorDelayMillis(), getMonitorCount(), getReleaseDelayMillis(), getCancelDelayMillis(), getFailDelayMillis())
+  • Created MockPlatformSettingsImpl in spring.platfom.mock with @Component and @ConfigurationProperties(prefix = "broker.mock-entities"), implementing
+    the interface and containing all the inner Actions/settings classes
+  • Updated MockPlatform interface to return MockPlatformSettings instead of MockEntitySettings
+  • Updated MockPlatformImpl to autowire MockPlatformSettingsImpl and return MockPlatformSettings
+  • Updated 9 entity files to import and use MockPlatformSettings instead of MockEntitySettings
+  • Deleted the old MockEntitySettings class
+--END--
+
+
+==START==
+There are a number of old JPA repository interfaces in the source code that have been marked as @Deprecated.
+For example AbstractStorageResourceEntityRepository and SimpleStorageResourceEntityRepository.
+Can you identify all of the old repository interfaces and verify that they are no longer used.
+==END==
+
+--START--
+....
+....
+  All imports are only between deprecated repository files themselves -- no non-deprecated code imports any of them. These 31 files form a self-contained,
+   entirely unused inheritance tree:
+
+  ComponentEntityRepository (not deprecated, but only used by deprecated code)
+    └── LifecycleComponentEntityRepository (@Deprecated)
+          ├── AbstractStorageResourceEntityRepository
+          │     └── SimpleStorageResourceEntityRepository
+          │           ├── DockerSimpleStorageResourceEntityRepository
+          │           │     ├── DockerBindMountStorageEntityRepository
+          │           │     └── DockerVolumeMountStorageEntityRepository
+          │           └── MockSimpleStorageResourceEntityRepository
+          ├── AbstractVolumeMountEntityRepository
+          │     └── SimpleVolumeMountEntityRepository
+          │           ├── DockerSimpleVolumeMountEntityRepository
+          │           └── MockSimpleVolumeMountEntityRepository
+          ├── AbstractExecutableEntityRepository
+          ├── AbstractDataResourceEntityRepository
+          ├── SimpleDataResourceEntityRepository
+          │     ├── DockerSimpleDataResourceEntityRepository
+          │     │     ├── DockerHttpResourceEntityRepository
+          │     │     └── DockerFileResourceEntityRepository
+          │     └── MockSimpleDataResourceEntityRepository
+          ├── SimpleComputeResourceEntityRepository
+          ├── DockerSimpleComputeResourceEntityRepository
+          ├── MockSimpleComputeResourceEntityRepository
+          ├── SkaoDataResourceEntityRepository
+          │     └── MockSkaoDataResourceEntityRepository
+          ├── IvoaDataResourceEntityRepository
+          │     └── MockIvoaDataResourceEntityRepository
+          ├── AmazonS3DataResourceEntityRepository
+          ├── MockAmazonS3DataResourceEntityRepository
+          ├── DockerDockerContainerEntityRepository
+          ├── MockDockerContainerEntityRepository
+          └── MockJupyterNotebookEntityRepository
+
+  All 31 files (30 deprecated + ComponentEntityRepository) are only referenced by each other. None are imported by any active code. They are all safe to
+  delete.
+--END--
+
+==START==
+Please go ahead and delete them.
+==END==
+
+--START--
+....
+....
+  All 31 unused repository interfaces deleted. The project compiles successfully -- down from 355 to 324 source files.
+--END--
 
 
 

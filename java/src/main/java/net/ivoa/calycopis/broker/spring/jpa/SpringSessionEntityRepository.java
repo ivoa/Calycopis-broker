@@ -18,35 +18,24 @@
  *   </meta:licence>
  * </meta:header>
  *
- * AIMetrics: [
- *     {
- *     "timestamp": "2026-04-14T17:00:00",
- *     "name": "Cursor CLI",
- *     "version": "2026.02.13-41ac335",
- *     "model": "Claude 4.6 Opus (Thinking)",
- *     "contribution": {
- *       "value": 5,
- *       "units": "%"
- *       }
- *     }
- *   ]
  *
  */
 
-package net.ivoa.calycopis.broker.engine.functional.platfom.mock;
+package net.ivoa.calycopis.broker.spring.jpa;
 
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import org.springframework.stereotype.Repository;
+
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
+import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
  * 
  */
-public interface MockPlatform extends Platform
+@Repository
+public interface SpringSessionEntityRepository
+extends SpringAbstractEntityRepository<SimpleExecutionSessionEntity>
     {
-
-    /**
-     * Get the MockPlatformSettings for this platform.
-     *
-     */
-    public MockPlatformSettings getMockEntitySettings();
-
+    
+    public Iterable<SimpleExecutionSessionEntity> findByPhase(final IvoaSimpleExecutionSessionPhase phase);
+    
     }

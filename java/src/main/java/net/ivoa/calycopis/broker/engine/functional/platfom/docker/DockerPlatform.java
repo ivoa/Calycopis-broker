@@ -66,9 +66,9 @@ public interface DockerPlatform extends Platform
     public JupyterNotebookEntityFactory getJupyterNotebookEntityFactory();
 
     /**
-     * Get the DockerSettings for this platform.
+     * Get the DockerPlatformSettings for this platform.
      *
      */
-    public DockerSettings getDockerSettings();
+    public DockerPlatformSettings getDockerSettings();
     
     }

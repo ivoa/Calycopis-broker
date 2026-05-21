@@ -54,7 +54,7 @@ import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockDelayAction;
-import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockEntitySettings;
+import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
 import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
 import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 import net.ivoa.calycopis.schema.spring.model.IvoaLifecycleSchedule;
@@ -411,7 +411,7 @@ implements LifecycleComponent
         int delay = 30_000;
         if (platform instanceof MockPlatform)
             {
-            MockEntitySettings settings = ((MockPlatform) platform).getMockEntitySettings();
+            MockPlatformSettings settings = ((MockPlatform) platform).getMockEntitySettings();
             delay = settings.getCancelDelayMillis();
             }
         return new MockDelayAction(
@@ -428,7 +428,7 @@ implements LifecycleComponent
         int delay = 30_000;
         if (platform instanceof MockPlatform)
             {
-            MockEntitySettings settings = ((MockPlatform) platform).getMockEntitySettings();
+            MockPlatformSettings settings = ((MockPlatform) platform).getMockEntitySettings();
             delay = settings.getFailDelayMillis();
             }
         return new MockDelayAction(

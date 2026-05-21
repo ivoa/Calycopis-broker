@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
@@ -52,7 +53,7 @@ public class OfferSetFactoryImpl
     private final Platform platform;
     private final OfferSetRequestParser offersetRequestParser;
     
-    private final OfferSetRepository offersetRepository;
+    private final AbstractEntityRepository<OfferSetEntity> offersetRepository;
 
     /**
      * Public constructor used by our Platform.
@@ -60,7 +61,7 @@ public class OfferSetFactoryImpl
      */
     public OfferSetFactoryImpl(
         final Platform platform,
-        final OfferSetRepository offersetRepository,
+        final AbstractEntityRepository<OfferSetEntity> offersetRepository,
         final OfferSetRequestParser offersetParser
         ){
         super();

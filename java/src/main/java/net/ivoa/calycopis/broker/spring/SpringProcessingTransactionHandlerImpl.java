@@ -43,9 +43,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestRepository;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestEntity;
-import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestRepository;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingService;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingServiceImpl;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingTransactionHandler;
@@ -62,7 +62,7 @@ implements ProcessingTransactionHandler
     {
 
     @Autowired
-    private ProcessingRequestRepository requestRepository;
+    private SpringProcessingRequestRepository requestRepository;
 
     /**
      * 

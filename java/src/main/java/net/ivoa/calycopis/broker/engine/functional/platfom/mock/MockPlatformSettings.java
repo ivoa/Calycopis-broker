@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2026 University of Manchester.
+ *     Copyright (c) 2026, University of Manchester (http://www.manchester.ac.uk/)
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -14,18 +14,18 @@
  *     GNU General Public License for more details.
  *
  *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *     along with this software. If not, see <http://www.gnu.org/licenses/>.
  *   </meta:licence>
  * </meta:header>
  *
  * AIMetrics: [
  *     {
- *     "timestamp": "2026-04-14T17:00:00",
+ *     "timestamp": "2026-05-21T11:44:00",
  *     "name": "Cursor CLI",
  *     "version": "2026.02.13-41ac335",
  *     "model": "Claude 4.6 Opus (Thinking)",
  *     "contribution": {
- *       "value": 5,
+ *       "value": 100,
  *       "units": "%"
  *       }
  *     }
@@ -35,18 +35,23 @@
 
 package net.ivoa.calycopis.broker.engine.functional.platfom.mock;
 
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
-
 /**
- * 
+ * Framework-neutral interface for mock platform configuration settings.
+ *
  */
-public interface MockPlatform extends Platform
+public interface MockPlatformSettings
     {
 
-    /**
-     * Get the MockPlatformSettings for this platform.
-     *
-     */
-    public MockPlatformSettings getMockEntitySettings();
+    public int getPrepareDelayMillis();
+
+    public int getMonitorDelayMillis();
+
+    public int getMonitorCount();
+
+    public int getReleaseDelayMillis();
+
+    public int getCancelDelayMillis();
+
+    public int getFailDelayMillis();
 
     }
