@@ -823,10 +823,8 @@ EOF
 
     ./mvnw clean spring-boot:run -D calycopis-platform=docker
 
---START--
-....
-....
---END--
+    >   ....
+    >   ....
 
 # -----------------------------------------------------
 # Run the Docker tests.
@@ -834,10 +832,8 @@ EOF
 
     pushd python/docker ; pytest * ; popd
 
---START--
-....
-....
---END--
+    >   ....
+    >   ....
 
 # -----------------------------------------------------
 # Build and run the service.
@@ -845,10 +841,8 @@ EOF
 
     ./mvnw clean spring-boot:run -D calycopis-platform=mock
 
---START--
-....
-....
---END--
+    >   ....
+    >   ....
 
 
 # -----------------------------------------------------
@@ -857,11 +851,9 @@ EOF
 
     pushd python/mock ; pytest * ; popd
 
---START--
-....
-....
-================= 48 passed, 60 warnings in 547.85s (0:09:07) ==================
---END--
+    >   ....
+    >   ....
+    >   ================= 48 passed, 60 warnings in 547.85s (0:09:07) ==================
 
 
 # -----------------------------------------------------
@@ -869,825 +861,755 @@ EOF
 # Next steps in the repackaging.
 #[root@calycopis-dev]
 
-==START==
-/plan
-Building on the patterns we have developed.
-Can you create a plan to handle the remaining Spring related classes
-in the engine package.
-==END==
+    ?   /plan
+    ?   Building on the patterns we have developed.
+    ?   Can you create a plan to handle the remaining Spring related classes
+    ?   in the engine package.
 
---START--
-....
-....
-  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-  │ … Thought for 25s                                                                                                                                        │
-  │ Now I have a comprehensive picture. Let me categorize what needs to be addressed vs what should stay:                                                    │
-  │                                                                                                                                                          │
-  │ Should stay in engine package (inherently Spring-bound):                                                                                                 │
-  │ • webapp/AmbleckApplication.java - the Spring Boot entry point                                                                                           │
-  │ • webapp/ServletInitializer.java - WAR deployment                                                                                                        │
-  │ • webapp/SessionsApiDelegateImpl.java - REST controllers                                                                                                 │
-  │ • webapp/OffersetsApiDelegateImpl.java - REST controllers                                                                                                │
-  │ • webapp/BaseDelegateImpl.java - REST base class                                                                                                         │
-  │ • util/YamlConverter.java - Spring HTTP message converter                                                                                                │
-  │                                                                                                                                                          │
-  │ • webapp package itself is part of the engine, so these are inherently Spring-specific                                                                   │
-  │                                                                                                                                                          │
-  │ I'm realizing the pattern here: JPA repositories should move to the spring package as concrete implementations of neutral interfaces, and any classes    │
-  │ with Spring annotations either need to move or get wrapped with abstraction layers. The @Autowired fields are already being handled through the          │
-  │ repository wrapper approach, so I should focus on identifying which other classes in the engine have direct Spring dependencies that could be            │
-  │ decoupled.                                                                                                                                               │
-  │ Autowired JdbcTemplate, and several settings and validator classes that use Spring annotations or JDBC utilities. The pattern we're following is         │
-  │ clear:                                                                                                                                                   │
-  │ move Spring JPA repositories to concrete sub-interfaces in the spring package, keep framework-neutral interfaces in the engine, use wrapper classes to   │
-  │ bridge Spring beans to those neutral interfaces, and let platform implementations hold the Spring-specific autowiring.                                   │
-  │                                                                                                                                                          │
-  │ For the remaining repositories like OfferSetRepository and MessageEntityRepository, I should apply the same approach we used for the processing          │
-  │ request                                                                                                                                                  │
-  │ repositories—create Spring-specific versions in the spring package, establish framework-neutral interfaces, and update consumers to use the wrappers.    │
-  │ The                                                                                                                                                      │
-  │ webapp classes are a separate consideration since they're inherently tied to the web framework, but the actionable work right now is focusing on these   │
-  │ JPA repositories and other classes that can be cleanly separated. The webapp classes should move to the spring package as-is since they're already       │
-  │ Spring-dependent. For the other groups, I need to organize a structured plan that prioritizes what's actionable using the repository wrapping and        │
-  │ interface extraction patterns we've established.                                                                                                         │
-  │  ctrl+o to collapse                                                                                                                                      │
-  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-....
-....
---END--
+    >   ....
+    >   ....
+    >     ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >     │ … Thought for 25s                                                                                                                                        │
+    >     │ Now I have a comprehensive picture. Let me categorize what needs to be addressed vs what should stay:                                                    │
+    >     │                                                                                                                                                          │
+    >     │ Should stay in engine package (inherently Spring-bound):                                                                                                 │
+    >     │ • webapp/AmbleckApplication.java - the Spring Boot entry point                                                                                           │
+    >     │ • webapp/ServletInitializer.java - WAR deployment                                                                                                        │
+    >     │ • webapp/SessionsApiDelegateImpl.java - REST controllers                                                                                                 │
+    >     │ • webapp/OffersetsApiDelegateImpl.java - REST controllers                                                                                                │
+    >     │ • webapp/BaseDelegateImpl.java - REST base class                                                                                                         │
+    >     │ • util/YamlConverter.java - Spring HTTP message converter                                                                                                │
+    >     │                                                                                                                                                          │
+    >     │ • webapp package itself is part of the engine, so these are inherently Spring-specific                                                                   │
+    >     │                                                                                                                                                          │
+    >     │ I'm realizing the pattern here: JPA repositories should move to the spring package as concrete implementations of neutral interfaces, and any classes    │
+    >     │ with Spring annotations either need to move or get wrapped with abstraction layers. The @Autowired fields are already being handled through the          │
+    >     │ repository wrapper approach, so I should focus on identifying which other classes in the engine have direct Spring dependencies that could be            │
+    >     │ decoupled.                                                                                                                                               │
+    >     │ Autowired JdbcTemplate, and several settings and validator classes that use Spring annotations or JDBC utilities. The pattern we're following is         │
+    >     │ clear:                                                                                                                                                   │
+    >     │ move Spring JPA repositories to concrete sub-interfaces in the spring package, keep framework-neutral interfaces in the engine, use wrapper classes to   │
+    >     │ bridge Spring beans to those neutral interfaces, and let platform implementations hold the Spring-specific autowiring.                                   │
+    >     │                                                                                                                                                          │
+    >     │ For the remaining repositories like OfferSetRepository and MessageEntityRepository, I should apply the same approach we used for the processing          │
+    >     │ request                                                                                                                                                  │
+    >     │ repositories—create Spring-specific versions in the spring package, establish framework-neutral interfaces, and update consumers to use the wrappers.    │
+    >     │ The                                                                                                                                                      │
+    >     │ webapp classes are a separate consideration since they're inherently tied to the web framework, but the actionable work right now is focusing on these   │
+    >     │ JPA repositories and other classes that can be cleanly separated. The webapp classes should move to the spring package as-is since they're already       │
+    >     │ Spring-dependent. For the other groups, I need to organize a structured plan that prioritizes what's actionable using the repository wrapping and        │
+    >     │ interface extraction patterns we've established.                                                                                                         │
+    >     │  ctrl+o to collapse                                                                                                                                      │
+    >     └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >   ....
+    >   ....
 
 
---START--
-....
-....
- ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
- │ Suggested Plan                                                                                                                                           │
- │                                                                                                                                                          │
- │ Remove Remaining Spring Dependencies from Engine Package                                                                                                 │
- │                                                                                                                                                          │
- │ 18 files in the engine package currently import from org.springframework. These fall into four groups, ordered from most straightforward to most         │
- │ involved.                                                                                                                                                │
- │                                                                                                                                                          │
- │ Group 1: JPA Repositories (3 files)                                                                                                                      │
- │                                                                                                                                                          │
- │ Apply the same pattern used for ComponentProcessingRequestRepository and SessionProcessingRequestRepository: create concrete sub-interfaces of           │
- │ SpringAbstractEntityRepository in the spring package, update consumers to use SpringAbstractEntityRepositoryWrapper, delete the old interfaces.          │
- │                                                                                                                                                          │
- │ 1a. OfferSetRepository (simple)                                                                                                                          │
- │                                                                                                                                                          │
- │ • entities/offerset/OfferSetRepository.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/offerset/OfferSetRepository.java) --           │
- │   extends JpaRepository<OfferSetEntity, UUID> with no custom methods.                                                                                    │
- │ • Used by: OfferSetFactoryImpl (calls save()), and @Autowired in both platform impls.                                                                    │
- │ • Action: Create SpringOfferSetRepository in spring package. Update OfferSetFactoryImpl to take AbstractEntityRepository<OfferSetEntity>. Wrap in        │
- │   platform impls. Delete old interface.                                                                                                                  │
- │                                                                                                                                                          │
- │ 1b. MessageEntityRepository (simple)                                                                                                                     │
- │                                                                                                                                                          │
- │ • entities/message/MessageEntityRepository.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/message/MessageEntityRepository.java)      │
- │   -- extends JpaRepository<MessageEntity, Long> with no custom methods.                                                                                  │
- │ • Need to check consumers to determine wrapping approach.                                                                                                │
- │ • Note: Uses Long as ID type rather than UUID. SpringAbstractEntityRepository uses UUID. This will need either a separate base interface or a new        │
- │   concrete Spring repository that extends JpaRepository<MessageEntity, Long> directly (not via SpringAbstractEntityRepository).                          │
- │                                                                                                                                                          │
- │ 1c. ProcessingRequestRepository (complex -- custom queries)                                                                                              │
- │                                                                                                                                                          │
- │ • functional/processing/ProcessingRequestRepository.java                                                                                                 │
- │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/ProcessingRequestRepository.java) -- extends                                │
- │   JpaRepository<ProcessingRequestEntity, UUID> with custom @Query methods (selectNextRequest, updateNextRequest), plus findByUuid, deleteByUuid.         │
- │ • Used by: SpringProcessingTransactionHandlerImpl (already in spring package) and ProcessingRequestFactoryImpl (uses delete()).                          │
- │ • Action: Create a framework-neutral ProcessingRequestRepositoryBase interface in the engine package with the methods needed by consumers (findById,     │
- │   save, delete, selectNextRequest, updateNextRequest). Create SpringProcessingRequestRepository in the spring package (with the @Query annotations).     │
- │   Create SpringProcessingRequestRepositoryWrapper in the spring package. Update ProcessingRequestFactoryImpl to use the neutral interface. Update        │
- │   SpringProcessingTransactionHandlerImpl to use the Spring repository directly (it's already in the spring package). Delete old interface.               │
- │                                                                                                                                                          │
- │ Group 2: Webapp Classes (6 files) -- move to spring package                                                                                              │
- │                                                                                                                                                          │
- │ These are inherently Spring-specific (REST controllers, Boot application, message converters). They should be moved to the spring package since they     │
- │ cannot be made framework-neutral.                                                                                                                        │
- │ • webapp/AmbleckApplication.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/AmbleckApplication.java) -- @SpringBootApplication          │
- │   entry point                                                                                                                                            │
- │ • webapp/ServletInitializer.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/ServletInitializer.java) -- WAR deployment support          │
- │ • webapp/SessionsApiDelegateImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/SessionsApiDelegateImpl.java) -- @Service REST         │
- │   delegate                                                                                                                                               │
- │ • webapp/OffersetsApiDelegateImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/OffersetsApiDelegateImpl.java) -- @Service REST       │
- │   delegate                                                                                                                                               │
- │ • webapp/BaseDelegateImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/BaseDelegateImpl.java) -- base class using                    │
- │   NativeWebRequest                                                                                                                                       │
- │ • util/YamlConverter.java (java/src/main/java/net/ivoa/calycopis/broker/engine/util/YamlConverter.java) -- @Component extending Spring HTTP              │
- │   converter                                                                                                                                              │
- │                                                                                                                                                          │
- │ Action: Move all 6 files to net.ivoa.calycopis.broker.spring.webapp (or net.ivoa.calycopis.broker.spring), update package declarations and any           │
- │ internal references.                                                                                                                                     │
- │                                                                                                                                                          │
- │ Group 3: Platform Impls and Processing Service (3 files)                                                                                                 │
- │                                                                                                                                                          │
- │ These use @Component/@Service, @Profile, @Autowired, and @Scheduled. They are the Spring-specific "wiring" layer and could be moved to the spring        │
- │ package, leaving the business logic interfaces in the engine package.                                                                                    │
- │ • functional/platfom/docker/DockerPlatformImpl.java                                                                                                      │
- │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerPlatformImpl.java) -- @Component @Profile("docker") with 13+      │
- │   @Autowired fields                                                                                                                                      │
- │ • functional/platfom/mock/MockPlatformImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/mock/MockPlatformImpl.java)      │
- │   -- @Component @Profile("mock") with 13+ @Autowired fields                                                                                              │
- │ • functional/processing/test/TestProcessingSerivceImpl.java                                                                                              │
- │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/test/TestProcessingSerivceImpl.java) -- @Service with @Autowired and        │
- │   @Scheduled                                                                                                                                             │
- │                                                                                                                                                          │
- │ Action: Move all 3 to the spring package. Their interfaces (Platform, DockerPlatform, MockPlatform, ProcessingService) stay in engine. This is the       │
- │ same pattern as SpringProcessingTransactionHandlerImpl -- Spring implementation in spring package, neutral interface in engine.                          │
- │                                                                                                                                                          │
- │ Group 4: Configuration and Infrastructure Classes (5 files)                                                                                              │
- │                                                                                                                                                          │
- │ These are Spring-specific infrastructure (configuration properties, JDBC wrappers, Docker client factory).                                               │
- │ • functional/processing/mock/MockEntitySettings.java                                                                                                     │
- │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/mock/MockEntitySettings.java) -- @Component @ConfigurationProperties        │
- │ • functional/platfom/docker/DockerSettings.java (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerSettings.java)      │
- │   -- @Component @ConfigurationProperties                                                                                                                 │
- │ • functional/platfom/docker/DockerClientFactoryImpl.java                                                                                                 │
- │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerClientFactoryImpl.java) -- @Component @Profile("docker")          │
- │ • functional/booking/compute/ComputeResourceOfferFactoryImpl.java                                                                                        │
- │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/booking/compute/ComputeResourceOfferFactoryImpl.java) -- @Component using              │
- │   JdbcTemplate                                                                                                                                           │
- │ • entities/data/skao/SkaoDataResourceValidatorImpl.java                                                                                                  │
- │   (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/skao/SkaoDataResourceValidatorImpl.java) -- uses JdbcTemplate, JdbcClient,          │
- │   RowMapper                                                                                                                                              │
- │                                                                                                                                                          │
- │ Action: For the @ConfigurationProperties classes and DockerClientFactoryImpl, move to spring package (they are Spring configuration beans). For          │
- │ ComputeResourceOfferFactoryImpl and SkaoDataResourceValidatorImpl, extract framework-neutral interfaces (they contain business logic) and move the       │
- │ Spring-dependent implementations to the spring package.                                                                                                  │
- │                                                                                                                                                          │
- │ Recommended Implementation Order                                                                                                                         │
- │                                                                                                                                                          │
- │ 1. Group 1a + 1b -- Simple repository migrations (OfferSet, Message). Quick wins, same pattern as before.                                                │
- │ 2. Group 1c -- ProcessingRequestRepository. More involved but follows the plan already drafted.                                                          │
- │ 3. Group 2 -- Move webapp classes. Mechanical package move with no interface changes.                                                                    │
- │ 4. Group 4 -- Configuration and infrastructure classes. Small, self-contained.                                                                           │
- │ 5. Group 3 -- Platform impls. Largest scope, should be last as they touch the most files.                                                                │
- │                                                                                                                                                          │
- │ Scope Note                                                                                                                                               │
- │                                                                                                                                                          │
- │ After all groups are complete, the @EnableJpaRepositories annotation can be restricted back to just "net.ivoa.calycopis.broker.spring" since all JPA     │
- │ repositories will be in that package. The engine package will contain only framework-neutral business logic.                                             │
- │                                                                                                                                                          │
- │  Saved to root/.cursor/plans/Remove Spring from engine-b39c4460.plan.md                                                                                  │
- │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
- │                                                                                                                                                          │
- │ Ready to build?                                                                                                                                          │
- │                                                                                                                                                          │
- │  → 1. Yes, build locally (b)                                                                                                                             │
- │    2. No, propose changes (p or Esc)                                                                                                                     │
- │                                                                                                                                                          │
- └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
---END--
+    >   ....
+    >   ....
+    >    ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >    │ Suggested Plan                                                                                                                                           │
+    >    │                                                                                                                                                          │
+    >    │ Remove Remaining Spring Dependencies from Engine Package                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ 18 files in the engine package currently import from org.springframework. These fall into four groups, ordered from most straightforward to most         │
+    >    │ involved.                                                                                                                                                │
+    >    │                                                                                                                                                          │
+    >    │ Group 1: JPA Repositories (3 files)                                                                                                                      │
+    >    │                                                                                                                                                          │
+    >    │ Apply the same pattern used for ComponentProcessingRequestRepository and SessionProcessingRequestRepository: create concrete sub-interfaces of           │
+    >    │ SpringAbstractEntityRepository in the spring package, update consumers to use SpringAbstractEntityRepositoryWrapper, delete the old interfaces.          │
+    >    │                                                                                                                                                          │
+    >    │ 1a. OfferSetRepository (simple)                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ • entities/offerset/OfferSetRepository.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/offerset/OfferSetRepository.java) --           │
+    >    │   extends JpaRepository<OfferSetEntity, UUID> with no custom methods.                                                                                    │
+    >    │ • Used by: OfferSetFactoryImpl (calls save()), and @Autowired in both platform impls.                                                                    │
+    >    │ • Action: Create SpringOfferSetRepository in spring package. Update OfferSetFactoryImpl to take AbstractEntityRepository<OfferSetEntity>. Wrap in        │
+    >    │   platform impls. Delete old interface.                                                                                                                  │
+    >    │                                                                                                                                                          │
+    >    │ 1b. MessageEntityRepository (simple)                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ • entities/message/MessageEntityRepository.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/message/MessageEntityRepository.java)      │
+    >    │   -- extends JpaRepository<MessageEntity, Long> with no custom methods.                                                                                  │
+    >    │ • Need to check consumers to determine wrapping approach.                                                                                                │
+    >    │ • Note: Uses Long as ID type rather than UUID. SpringAbstractEntityRepository uses UUID. This will need either a separate base interface or a new        │
+    >    │   concrete Spring repository that extends JpaRepository<MessageEntity, Long> directly (not via SpringAbstractEntityRepository).                          │
+    >    │                                                                                                                                                          │
+    >    │ 1c. ProcessingRequestRepository (complex -- custom queries)                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ • functional/processing/ProcessingRequestRepository.java                                                                                                 │
+    >    │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/ProcessingRequestRepository.java) -- extends                                │
+    >    │   JpaRepository<ProcessingRequestEntity, UUID> with custom @Query methods (selectNextRequest, updateNextRequest), plus findByUuid, deleteByUuid.         │
+    >    │ • Used by: SpringProcessingTransactionHandlerImpl (already in spring package) and ProcessingRequestFactoryImpl (uses delete()).                          │
+    >    │ • Action: Create a framework-neutral ProcessingRequestRepositoryBase interface in the engine package with the methods needed by consumers (findById,     │
+    >    │   save, delete, selectNextRequest, updateNextRequest). Create SpringProcessingRequestRepository in the spring package (with the @Query annotations).     │
+    >    │   Create SpringProcessingRequestRepositoryWrapper in the spring package. Update ProcessingRequestFactoryImpl to use the neutral interface. Update        │
+    >    │   SpringProcessingTransactionHandlerImpl to use the Spring repository directly (it's already in the spring package). Delete old interface.               │
+    >    │                                                                                                                                                          │
+    >    │ Group 2: Webapp Classes (6 files) -- move to spring package                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ These are inherently Spring-specific (REST controllers, Boot application, message converters). They should be moved to the spring package since they     │
+    >    │ cannot be made framework-neutral.                                                                                                                        │
+    >    │ • webapp/AmbleckApplication.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/AmbleckApplication.java) -- @SpringBootApplication          │
+    >    │   entry point                                                                                                                                            │
+    >    │ • webapp/ServletInitializer.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/ServletInitializer.java) -- WAR deployment support          │
+    >    │ • webapp/SessionsApiDelegateImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/SessionsApiDelegateImpl.java) -- @Service REST         │
+    >    │   delegate                                                                                                                                               │
+    >    │ • webapp/OffersetsApiDelegateImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/OffersetsApiDelegateImpl.java) -- @Service REST       │
+    >    │   delegate                                                                                                                                               │
+    >    │ • webapp/BaseDelegateImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/webapp/BaseDelegateImpl.java) -- base class using                    │
+    >    │   NativeWebRequest                                                                                                                                       │
+    >    │ • util/YamlConverter.java (java/src/main/java/net/ivoa/calycopis/broker/engine/util/YamlConverter.java) -- @Component extending Spring HTTP              │
+    >    │   converter                                                                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ Action: Move all 6 files to net.ivoa.calycopis.broker.spring.webapp (or net.ivoa.calycopis.broker.spring), update package declarations and any           │
+    >    │ internal references.                                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ Group 3: Platform Impls and Processing Service (3 files)                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ These use @Component/@Service, @Profile, @Autowired, and @Scheduled. They are the Spring-specific "wiring" layer and could be moved to the spring        │
+    >    │ package, leaving the business logic interfaces in the engine package.                                                                                    │
+    >    │ • functional/platfom/docker/DockerPlatformImpl.java                                                                                                      │
+    >    │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerPlatformImpl.java) -- @Component @Profile("docker") with 13+      │
+    >    │   @Autowired fields                                                                                                                                      │
+    >    │ • functional/platfom/mock/MockPlatformImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/mock/MockPlatformImpl.java)      │
+    >    │   -- @Component @Profile("mock") with 13+ @Autowired fields                                                                                              │
+    >    │ • functional/processing/test/TestProcessingSerivceImpl.java                                                                                              │
+    >    │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/test/TestProcessingSerivceImpl.java) -- @Service with @Autowired and        │
+    >    │   @Scheduled                                                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ Action: Move all 3 to the spring package. Their interfaces (Platform, DockerPlatform, MockPlatform, ProcessingService) stay in engine. This is the       │
+    >    │ same pattern as SpringProcessingTransactionHandlerImpl -- Spring implementation in spring package, neutral interface in engine.                          │
+    >    │                                                                                                                                                          │
+    >    │ Group 4: Configuration and Infrastructure Classes (5 files)                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ These are Spring-specific infrastructure (configuration properties, JDBC wrappers, Docker client factory).                                               │
+    >    │ • functional/processing/mock/MockEntitySettings.java                                                                                                     │
+    >    │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/mock/MockEntitySettings.java) -- @Component @ConfigurationProperties        │
+    >    │ • functional/platfom/docker/DockerSettings.java (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerSettings.java)      │
+    >    │   -- @Component @ConfigurationProperties                                                                                                                 │
+    >    │ • functional/platfom/docker/DockerClientFactoryImpl.java                                                                                                 │
+    >    │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerClientFactoryImpl.java) -- @Component @Profile("docker")          │
+    >    │ • functional/booking/compute/ComputeResourceOfferFactoryImpl.java                                                                                        │
+    >    │   (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/booking/compute/ComputeResourceOfferFactoryImpl.java) -- @Component using              │
+    >    │   JdbcTemplate                                                                                                                                           │
+    >    │ • entities/data/skao/SkaoDataResourceValidatorImpl.java                                                                                                  │
+    >    │   (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/skao/SkaoDataResourceValidatorImpl.java) -- uses JdbcTemplate, JdbcClient,          │
+    >    │   RowMapper                                                                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ Action: For the @ConfigurationProperties classes and DockerClientFactoryImpl, move to spring package (they are Spring configuration beans). For          │
+    >    │ ComputeResourceOfferFactoryImpl and SkaoDataResourceValidatorImpl, extract framework-neutral interfaces (they contain business logic) and move the       │
+    >    │ Spring-dependent implementations to the spring package.                                                                                                  │
+    >    │                                                                                                                                                          │
+    >    │ Recommended Implementation Order                                                                                                                         │
+    >    │                                                                                                                                                          │
+    >    │ 1. Group 1a + 1b -- Simple repository migrations (OfferSet, Message). Quick wins, same pattern as before.                                                │
+    >    │ 2. Group 1c -- ProcessingRequestRepository. More involved but follows the plan already drafted.                                                          │
+    >    │ 3. Group 2 -- Move webapp classes. Mechanical package move with no interface changes.                                                                    │
+    >    │ 4. Group 4 -- Configuration and infrastructure classes. Small, self-contained.                                                                           │
+    >    │ 5. Group 3 -- Platform impls. Largest scope, should be last as they touch the most files.                                                                │
+    >    │                                                                                                                                                          │
+    >    │ Scope Note                                                                                                                                               │
+    >    │                                                                                                                                                          │
+    >    │ After all groups are complete, the @EnableJpaRepositories annotation can be restricted back to just "net.ivoa.calycopis.broker.spring" since all JPA     │
+    >    │ repositories will be in that package. The engine package will contain only framework-neutral business logic.                                             │
+    >    │                                                                                                                                                          │
+    >    │  Saved to root/.cursor/plans/Remove Spring from engine-b39c4460.plan.md                                                                                  │
+    >    │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+    >    │                                                                                                                                                          │
+    >    │ Ready to build?                                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │  → 1. Yes, build locally (b)                                                                                                                             │
+    >    │    2. No, propose changes (p or Esc)                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-==START==
-Please go ahead and implement groups 1, 2, 3, and 5.
-Leave group 4 to be handled individually in later steps.
-==END==
+    ?   Please go ahead and implement groups 1, 2, 3, and 5.
+    ?   Leave group 4 to be handled individually in later steps.
 
---START--
-  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-  │ … Thought for 32s                                                                                                                                        │
-  │ The user wants me to implement groups 1a, 1b, 1c, 2, 3, and 5 (which is group 3 in the plan - platform impls). Wait, let me re-read. The plan has        │
-  │ groups                                                                                                                                                   │
-  │ 1, 2, 3, 4 and a "Recommended Implementation Order" section with steps 1-5. The user says "groups 1, 2, 3, and 5". Let me check what group 5 is.         │
-  │                                                                                                                                                          │
-  │ Looking at the plan:                                                                                                                                     │
-  │ • Group 1: JPA Repositories (1a, 1b, 1c)                                                                                                                 │
-  │                                                                                                                                                          │
-  │ • Group 2: Webapp Classes                                                                                                                                │
-  │ • Group 3: Platform Impls and Processing Service                                                                                                         │
-  │ • Group 4: Configuration and Infrastructure Classes                                                                                                      │
-  │                                                                                                                                                          │
-  │ And the recommended implementation order lists steps 1-5, where step 5 corresponds to Group 3. So when the user says "groups 1, 2, 3, and 5", they're    │
-  │ asking for Group 1 (all JPA repositories), Group 2 (webapp classes), Group 3 (platform impls), and step 5 from the implementation order, which is also   │
-  │ Group 3.                                                                                                                                                 │
-  │                                                                                                                                                          │
-  │ Actually, I'm realizing the user might be referring to the todo items themselves as groups. Looking at the todo list, there are seven items: group-1a,   │
-  │ group-1b, group-1c, group-2, group-4, group-3, and restrict-jpa-scan. If they're counting these as groups 1 through 7, then "groups 1, 2, 3, and 5"      │
-  │ would                                                                                                                                                    │
-  │ mean group-1a, group-1b, group-1c, and group-4 (the configuration classes). But they also mentioned leaving group 4 out, so I need to clarify what       │
-  │ they                                                                                                                                                     │
-  │ actually want.                                                                                                                                           │
-  │                                                                                                                                                          │
-  │ Let me reconsider the structure. The plan has four main groups: Group 1 (JPA Repositories with subsections 1a, 1b, 1c), Group 2 (Webapp Classes),        │
-  │ Group 3                                                                                                                                                  │
-  │ (Platform Impls and Processing Service), and Group 4 (Configuration and Infrastructure Classes). The user is asking for groups 1, 2, 3, and 5, while     │
-  │ leaving group 4 for later. So they want the JPA repositories, webapp classes, and platform implementations done now. So the user is actually referring   │
-  │  to                                                                                                                                                      │
-  │ the numbered items in the recommended order, not the group numbers themselves—that's the key distinction I was missing. Items 1, 2, 3, and 5 from that   │
-  │ list correspond to Groups 1a+1b, 1c, 2, and 3 respectively, while skipping item 4 (Group 4) to handle later. The @EnableJpaRepositories restriction      │
-  │ should wrap up at the end. This is a substantial refactoring, so I need to map out the execution carefully.                                              │
-  │                                                                                                                                                          │
-  │ After moving Groups 1, 2, and 3, all three JPA repositories will be in the spring package alongside the webapp and platform implementation classes.      │
-  │ Group                                                                                                                                                    │
-  │ 4 classes will remain in the engine package without JPA dependencies, so the scanning restriction can finally be applied once those three groups are     │
-  │ complete. Now I'm realizing this is going to be a massive undertaking. Let me think through the implications more carefully—moving the platform          │
-  │ implementations to the spring package means the interfaces stay in engine, which is fine, but TestProcessingServiceImpl's package would change, and      │
-  │ the                                                                                                                                                      │
-  │ webapp classes moving from engine/webapp/ to spring/webapp/ creates a significant structural shift. I should switch to agent mode and tackle each        │
-  │ group                                                                                                                                                    │
-  │ systematically to manage this complexity.                                                                                                                │
-  │  ctrl+o to collapse                                                                                                                                      │
-  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
---END--
+    >     ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >     │ … Thought for 32s                                                                                                                                        │
+    >     │ The user wants me to implement groups 1a, 1b, 1c, 2, 3, and 5 (which is group 3 in the plan - platform impls). Wait, let me re-read. The plan has        │
+    >     │ groups                                                                                                                                                   │
+    >     │ 1, 2, 3, 4 and a "Recommended Implementation Order" section with steps 1-5. The user says "groups 1, 2, 3, and 5". Let me check what group 5 is.         │
+    >     │                                                                                                                                                          │
+    >     │ Looking at the plan:                                                                                                                                     │
+    >     │ • Group 1: JPA Repositories (1a, 1b, 1c)                                                                                                                 │
+    >     │                                                                                                                                                          │
+    >     │ • Group 2: Webapp Classes                                                                                                                                │
+    >     │ • Group 3: Platform Impls and Processing Service                                                                                                         │
+    >     │ • Group 4: Configuration and Infrastructure Classes                                                                                                      │
+    >     │                                                                                                                                                          │
+    >     │ And the recommended implementation order lists steps 1-5, where step 5 corresponds to Group 3. So when the user says "groups 1, 2, 3, and 5", they're    │
+    >     │ asking for Group 1 (all JPA repositories), Group 2 (webapp classes), Group 3 (platform impls), and step 5 from the implementation order, which is also   │
+    >     │ Group 3.                                                                                                                                                 │
+    >     │                                                                                                                                                          │
+    >     │ Actually, I'm realizing the user might be referring to the todo items themselves as groups. Looking at the todo list, there are seven items: group-1a,   │
+    >     │ group-1b, group-1c, group-2, group-4, group-3, and restrict-jpa-scan. If they're counting these as groups 1 through 7, then "groups 1, 2, 3, and 5"      │
+    >     │ would                                                                                                                                                    │
+    >     │ mean group-1a, group-1b, group-1c, and group-4 (the configuration classes). But they also mentioned leaving group 4 out, so I need to clarify what       │
+    >     │ they                                                                                                                                                     │
+    >     │ actually want.                                                                                                                                           │
+    >     │                                                                                                                                                          │
+    >     │ Let me reconsider the structure. The plan has four main groups: Group 1 (JPA Repositories with subsections 1a, 1b, 1c), Group 2 (Webapp Classes),        │
+    >     │ Group 3                                                                                                                                                  │
+    >     │ (Platform Impls and Processing Service), and Group 4 (Configuration and Infrastructure Classes). The user is asking for groups 1, 2, 3, and 5, while     │
+    >     │ leaving group 4 for later. So they want the JPA repositories, webapp classes, and platform implementations done now. So the user is actually referring   │
+    >     │  to                                                                                                                                                      │
+    >     │ the numbered items in the recommended order, not the group numbers themselves—that's the key distinction I was missing. Items 1, 2, 3, and 5 from that   │
+    >     │ list correspond to Groups 1a+1b, 1c, 2, and 3 respectively, while skipping item 4 (Group 4) to handle later. The @EnableJpaRepositories restriction      │
+    >     │ should wrap up at the end. This is a substantial refactoring, so I need to map out the execution carefully.                                              │
+    >     │                                                                                                                                                          │
+    >     │ After moving Groups 1, 2, and 3, all three JPA repositories will be in the spring package alongside the webapp and platform implementation classes.      │
+    >     │ Group                                                                                                                                                    │
+    >     │ 4 classes will remain in the engine package without JPA dependencies, so the scanning restriction can finally be applied once those three groups are     │
+    >     │ complete. Now I'm realizing this is going to be a massive undertaking. Let me think through the implications more carefully—moving the platform          │
+    >     │ implementations to the spring package means the interfaces stay in engine, which is fine, but TestProcessingServiceImpl's package would change, and      │
+    >     │ the                                                                                                                                                      │
+    >     │ webapp classes moving from engine/webapp/ to spring/webapp/ creates a significant structural shift. I should switch to agent mode and tackle each        │
+    >     │ group                                                                                                                                                    │
+    >     │ systematically to manage this complexity.                                                                                                                │
+    >     │  ctrl+o to collapse                                                                                                                                      │
+    >     └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 
-==START==
-/plan
-To clarify, I would like you to follow the recommended implementation order, but leave the Configuration and infrastructure classes for later.
-1. Group 1a + 1b YES -- Simple repository migrations (OfferSet, Message).
-2. Group 1c YES      -- ProcessingRequestRepository.
-3. Group 2  YES      -- Move webapp classes.
-4. Group 4  SKIP     -- Leave the Configuration and infrastructure classes for later.
-5. Group 3  YES      -- Platform impls.
-Please confirm that this makes sense.
-==END==
+    ?   /plan
+    ?   To clarify, I would like you to follow the recommended implementation order, but leave the Configuration and infrastructure classes for later.
+    ?   1. Group 1a + 1b YES -- Simple repository migrations (OfferSet, Message).
+    ?   2. Group 1c YES      -- ProcessingRequestRepository.
+    ?   3. Group 2  YES      -- Move webapp classes.
+    ?   4. Group 4  SKIP     -- Leave the Configuration and infrastructure classes for later.
+    ?   5. Group 3  YES      -- Platform impls.
+    ?   Please confirm that this makes sense.
 
---START--
-  Yes, that makes sense. The order is:
+    >     Yes, that makes sense. The order is:
+    >   
+    >     1. Group 1a + 1b -- Migrate OfferSetRepository and MessageEntityRepository to the spring package using the established wrapper pattern.
+    >     2. Group 1c -- Migrate ProcessingRequestRepository with its custom query methods (neutral interface + Spring repo + wrapper).
+    >     3. Group 2 -- Move the 6 webapp classes (AmbleckApplication, ServletInitializer, SessionsApiDelegateImpl, OffersetsApiDelegateImpl, BaseDelegateImpl,
+    >        YamlConverter) to the spring package.
+    >     4. Group 4 -- SKIP (configuration and infrastructure classes left for later).
+    >     5. Group 3 -- Move the 3 platform/processing impl classes (DockerPlatformImpl, MockPlatformImpl, TestProcessingSerivceImpl) to the spring package.
+    >   
+    >     After steps 1-3 and 5 are complete, all JPA repositories will be in the spring package, so @EnableJpaRepositories can be restricted back to just
+    >     "net.ivoa.calycopis.broker.spring".
+    >   
+    >     The only Spring dependencies remaining in the engine package will be the 5 Group 4 classes (settings, Docker client factory, JDBC-based
+    >     implementations), which you'll handle individually later.
+    >   
+    >     Shall I start implementing?
 
-  1. Group 1a + 1b -- Migrate OfferSetRepository and MessageEntityRepository to the spring package using the established wrapper pattern.
-  2. Group 1c -- Migrate ProcessingRequestRepository with its custom query methods (neutral interface + Spring repo + wrapper).
-  3. Group 2 -- Move the 6 webapp classes (AmbleckApplication, ServletInitializer, SessionsApiDelegateImpl, OffersetsApiDelegateImpl, BaseDelegateImpl,
-     YamlConverter) to the spring package.
-  4. Group 4 -- SKIP (configuration and infrastructure classes left for later).
-  5. Group 3 -- Move the 3 platform/processing impl classes (DockerPlatformImpl, MockPlatformImpl, TestProcessingSerivceImpl) to the spring package.
+    ?   yes
 
-  After steps 1-3 and 5 are complete, all JPA repositories will be in the spring package, so @EnableJpaRepositories can be restricted back to just
-  "net.ivoa.calycopis.broker.spring".
-
-  The only Spring dependencies remaining in the engine package will be the 5 Group 4 classes (settings, Docker client factory, JDBC-based
-  implementations), which you'll handle individually later.
-
-  Shall I start implementing?
---END--
-
-==START==
-yes
-==END==
-
---START--
-....
-....
-    To-do All done
-    ☒ Migrate OfferSetRepository to spring package
-    ☒ Migrate MessageEntityRepository to spring package
-    ☒ Migrate ProcessingRequestRepository: neutral interface, Spring repo, wrapper
-    ☒ Move 6 webapp classes to spring.webapp package
-    ☒ Move 3 platform/processing impl classes to spring package
-    ☒ Restrict @EnableJpaRepositories back to spring package only
-
-  All tasks are complete. The project builds and the service starts successfully. Here's a summary of what was done:
-
-  Group 1a -- OfferSetRepository:
-  • Created SpringOfferSetRepository in the spring package
-  • Updated OfferSetFactoryImpl to use the neutral AbstractEntityRepository<OfferSetEntity>
-  • Updated both platform impls to autowire SpringOfferSetRepository and wrap it
-  • Deleted the old OfferSetRepository from the engine package
-
-  Group 1b -- MessageEntityRepository:
-  • Created SpringMessageEntityRepository (extends JpaRepository<MessageEntity, Long> directly since it uses Long IDs)
-  • Deleted the old MessageEntityRepository from the engine package
-
-  Group 1c -- ProcessingRequestRepository:
-  • Created ProcessingRequestRepositoryBase neutral interface (extends AbstractEntityRepository + delete())
-  • Created SpringProcessingRequestRepository with all custom @Query methods
-  • Created SpringProcessingRequestRepositoryWrapper implementing the neutral interface
-  • Updated ProcessingRequestFactoryImpl to use the neutral ProcessingRequestRepositoryBase
-  • Updated SpringProcessingTransactionHandlerImpl to use SpringProcessingRequestRepository
-  • Updated both platform impls to autowire and wrap accordingly
-  • Deleted the old ProcessingRequestRepository from the engine package
-
-  Group 2 -- Webapp classes:
-  • Moved all 5 classes (AmbleckApplication, ServletInitializer, BaseDelegateImpl, SessionsApiDelegateImpl, OffersetsApiDelegateImpl) from engine.webapp
-    to spring.webapp
-
-  Group 3 -- Platform/processing implementations:
-  • Moved DockerPlatformImpl to spring.platfom.docker
-  • Moved MockPlatformImpl to spring.platfom.mock
-  • Moved TestProcessingSerivceImpl to spring.processing
-
-  Final step:
-  • Restricted @EnableJpaRepositories to scan only net.ivoa.calycopis.broker.spring -- no JPA repositories remain in the engine package.
---END--
+    >   ....
+    >   ....
+    >       To-do All done
+    >       ☒ Migrate OfferSetRepository to spring package
+    >       ☒ Migrate MessageEntityRepository to spring package
+    >       ☒ Migrate ProcessingRequestRepository: neutral interface, Spring repo, wrapper
+    >       ☒ Move 6 webapp classes to spring.webapp package
+    >       ☒ Move 3 platform/processing impl classes to spring package
+    >       ☒ Restrict @EnableJpaRepositories back to spring package only
+    >   
+    >     All tasks are complete. The project builds and the service starts successfully. Here's a summary of what was done:
+    >   
+    >     Group 1a -- OfferSetRepository:
+    >     • Created SpringOfferSetRepository in the spring package
+    >     • Updated OfferSetFactoryImpl to use the neutral AbstractEntityRepository<OfferSetEntity>
+    >     • Updated both platform impls to autowire SpringOfferSetRepository and wrap it
+    >     • Deleted the old OfferSetRepository from the engine package
+    >   
+    >     Group 1b -- MessageEntityRepository:
+    >     • Created SpringMessageEntityRepository (extends JpaRepository<MessageEntity, Long> directly since it uses Long IDs)
+    >     • Deleted the old MessageEntityRepository from the engine package
+    >   
+    >     Group 1c -- ProcessingRequestRepository:
+    >     • Created ProcessingRequestRepositoryBase neutral interface (extends AbstractEntityRepository + delete())
+    >     • Created SpringProcessingRequestRepository with all custom @Query methods
+    >     • Created SpringProcessingRequestRepositoryWrapper implementing the neutral interface
+    >     • Updated ProcessingRequestFactoryImpl to use the neutral ProcessingRequestRepositoryBase
+    >     • Updated SpringProcessingTransactionHandlerImpl to use SpringProcessingRequestRepository
+    >     • Updated both platform impls to autowire and wrap accordingly
+    >     • Deleted the old ProcessingRequestRepository from the engine package
+    >   
+    >     Group 2 -- Webapp classes:
+    >     • Moved all 5 classes (AmbleckApplication, ServletInitializer, BaseDelegateImpl, SessionsApiDelegateImpl, OffersetsApiDelegateImpl) from engine.webapp
+    >       to spring.webapp
+    >   
+    >     Group 3 -- Platform/processing implementations:
+    >     • Moved DockerPlatformImpl to spring.platfom.docker
+    >     • Moved MockPlatformImpl to spring.platfom.mock
+    >     • Moved TestProcessingSerivceImpl to spring.processing
+    >   
+    >     Final step:
+    >     • Restricted @EnableJpaRepositories to scan only net.ivoa.calycopis.broker.spring -- no JPA repositories remain in the engine package.
 
 # -----------------------------------------------------
 # Small tidying steps ....
 #[root@calycopis-dev]
 
-==START==
-Can you move all of the JPA repository interfaces and wrapper classes from
-the spring package into a sub-package called spring.jpa.
-==END==
-
---START--
-....
-....
-  Everything works. Here's a summary of what was done:
-
-  Moved 15 files from net.ivoa.calycopis.broker.spring to net.ivoa.calycopis.broker.spring.jpa:
-
-  • Base interfaces: SpringAbstractEntityRepository, SpringAbstractEntityRepository
-  • Concrete repositories: SpringComputeResourceEntityRepository, SpringDataResourceEntityRepository, SpringExecutableEntityRepository,
-    SpringStorageResourceEntityRepository, SpringVolumeMountEntityRepository, SpringSessionEntityRepository, SpringComponentProcessingRequestRepository,
-    SpringSessionProcessingRequestRepository, SpringOfferSetRepository, SpringMessageEntityRepository, SpringProcessingRequestRepository
-  • Wrappers: SpringAbstractEntityRepositoryWrapper, SpringSessionEntityRepositoryWrapper, SpringProcessingRequestRepositoryWrapper
-
-  Updated imports in 3 consumer files:
-  • DockerPlatformImpl (13 imports)
-  • MockPlatformImpl (13 imports)
-  • SpringProcessingTransactionHandlerImpl (1 import added)
-
-  The @EnableJpaRepositories("net.ivoa.calycopis.broker.spring") scan scope still covers the new spring.jpa sub-package, so no change was needed there.
-  Build compiles and service starts successfully.
---END--
-
-
-==START==
-Can you split DockerSettings into an interface called DockerPlatformSettings in the functional.platform.docker package,
-and an implementation class called DockerPlatformSettingsImpl in the spring.platform.docker package.
-==END==
-
---START--
-....
-....
- Build succeeds. Here's what was done:
-
-  • Created DockerPlatformSettings interface in engine.functional.platfom.docker with the getHelperImage() method
-  • Created DockerPlatformSettingsImpl in spring.platfom.docker with @Component and @ConfigurationProperties(prefix = "broker.docker"), implementing the
-    interface
-  • Updated DockerPlatform interface to return DockerPlatformSettings instead of DockerSettings
-  • Updated DockerPlatformImpl to autowire DockerPlatformSettingsImpl and return DockerPlatformSettings
-  • Deleted the old DockerSettings class
-
-  The consumer in DockerHttpResourceEntity already accesses settings through dockerPlatform.getDockerSettings().getHelperImage(), which works unchanged
-  since DockerPlatformSettings exposes getHelperImage().
---END--
-
-==START==
-Can you split the MockEntitySettings into an interface called MockPlatformSettings in the functional.platform.mock package,
-and an implementation class called MockPlatformSettingsImpl in the spring.platform.mock package.
-==END==
-
---START--
-....
-....
-  Build succeeds. Here's what was done:
-
-  • Created MockPlatformSettings interface in engine.functional.platfom.mock with the 6 convenience methods (getPrepareDelayMillis(),
-    getMonitorDelayMillis(), getMonitorCount(), getReleaseDelayMillis(), getCancelDelayMillis(), getFailDelayMillis())
-  • Created MockPlatformSettingsImpl in spring.platfom.mock with @Component and @ConfigurationProperties(prefix = "broker.mock-entities"), implementing
-    the interface and containing all the inner Actions/settings classes
-  • Updated MockPlatform interface to return MockPlatformSettings instead of MockEntitySettings
-  • Updated MockPlatformImpl to autowire MockPlatformSettingsImpl and return MockPlatformSettings
-  • Updated 9 entity files to import and use MockPlatformSettings instead of MockEntitySettings
-  • Deleted the old MockEntitySettings class
---END--
-
-
-==START==
-There are a number of old JPA repository interfaces in the source code that have been marked as @Deprecated.
-For example AbstractStorageResourceEntityRepository and SimpleStorageResourceEntityRepository.
-Can you identify all of the old repository interfaces and verify that they are no longer used.
-==END==
-
---START--
-....
-....
-  All imports are only between deprecated repository files themselves -- no non-deprecated code imports any of them. These 31 files form a self-contained,
-   entirely unused inheritance tree:
-
-  ComponentEntityRepository (not deprecated, but only used by deprecated code)
-    └── LifecycleComponentEntityRepository (@Deprecated)
-          ├── AbstractStorageResourceEntityRepository
-          │     └── SimpleStorageResourceEntityRepository
-          │           ├── DockerSimpleStorageResourceEntityRepository
-          │           │     ├── DockerBindMountStorageEntityRepository
-          │           │     └── DockerVolumeMountStorageEntityRepository
-          │           └── MockSimpleStorageResourceEntityRepository
-          ├── AbstractVolumeMountEntityRepository
-          │     └── SimpleVolumeMountEntityRepository
-          │           ├── DockerSimpleVolumeMountEntityRepository
-          │           └── MockSimpleVolumeMountEntityRepository
-          ├── AbstractExecutableEntityRepository
-          ├── AbstractDataResourceEntityRepository
-          ├── SimpleDataResourceEntityRepository
-          │     ├── DockerSimpleDataResourceEntityRepository
-          │     │     ├── DockerHttpResourceEntityRepository
-          │     │     └── DockerFileResourceEntityRepository
-          │     └── MockSimpleDataResourceEntityRepository
-          ├── SimpleComputeResourceEntityRepository
-          ├── DockerSimpleComputeResourceEntityRepository
-          ├── MockSimpleComputeResourceEntityRepository
-          ├── SkaoDataResourceEntityRepository
-          │     └── MockSkaoDataResourceEntityRepository
-          ├── IvoaDataResourceEntityRepository
-          │     └── MockIvoaDataResourceEntityRepository
-          ├── AmazonS3DataResourceEntityRepository
-          ├── MockAmazonS3DataResourceEntityRepository
-          ├── DockerDockerContainerEntityRepository
-          ├── MockDockerContainerEntityRepository
-          └── MockJupyterNotebookEntityRepository
-
-  All 31 files (30 deprecated + ComponentEntityRepository) are only referenced by each other. None are imported by any active code. They are all safe to
-  delete.
---END--
-
-==START==
-Please go ahead and delete them.
-==END==
-
---START--
-....
-....
-  All 31 unused repository interfaces deleted. The project compiles successfully -- down from 355 to 324 source files.
---END--
-
-==START==
-/plan
-A lot of the entity factories are defined as an interface and an implementation class.
-For example DockerDockerContainerEntityFactoryImpl implements DockerDockerContainerEntityFactory.
-This pattern was established to facilitate creating instances using an @Autowired annotation
-on the interface and letting Spring create an instances of the implementation class.
-Given that the factories are no longer created using @Autowired annotations,
-is there a case for simplifying the structure, removing the interface
-and just having the implementation class.
-In the above example, this would mean deleting the DockerDockerContainerEntityFactory interface
-and then renaming DockerDockerContainerEntityFactoryImpl to DockerDockerContainerEntityFactory.
-Please evaluate this plan and give a cost/benefit analysis.
-==END==
-
---START--
-....
-....
-  ────────────────────────────────────────
-
-  Cost/Benefit Analysis: Removing Leaf Factory Interfaces
-
-  The current structure (3-level hierarchy)
-
-  LifecycleComponentEntityFactory<T>          (base - defines getKind(), select())
-    └── AbstractComputeResourceEntityFactory  (mid-level - adds create() method)
-          └── SimpleComputeResourceEntityFactory    (mid-level - empty)
-                ├── DockerSimpleComputeResourceEntityFactory  (LEAF - empty)
-                └── MockSimpleComputeResourceEntityFactory    (LEAF - empty)
-
-  This pattern repeats across all entity domains (compute, data, executable, storage, volume). The leaf interfaces (e.g.,
-  DockerSimpleComputeResourceEntityFactory, MockDockerContainerEntityFactory) are uniformly empty -- they add zero methods to their parents.
-
-  Who references what
-
-  There are three categories of interfaces:
-
-  1. Base/abstract interfaces (LifecycleComponentEntityFactory, AbstractComputeResourceEntityFactory, AbstractDataResourceEntityFactory,
-     AbstractStorageResourceEntityFactory): Define the contract methods. Referenced by abstract validators (e.g., SimpleVolumeMountValidatorImpl takes
-     AbstractDataResourceEntityFactory and AbstractStorageResourceEntityFactory as constructor parameters). These must stay.
-
-  2. Mid-level interfaces (SimpleComputeResourceEntityFactory, DockerContainerEntityFactory, SimpleStorageResourceEntityFactory, etc.): Also empty, but
-     some are used as parameter types in Platform interfaces (e.g., DockerPlatform.getDockerContainerEntityFactory() returns DockerContainerEntityFactory).
-      These are more nuanced -- some serve as useful abstraction points, others don't.
-
-  3. Leaf interfaces (e.g., DockerSimpleComputeResourceEntityFactory, MockDockerContainerEntityFactory): All empty. Referenced only as field types in the
-     platform impls and constructor parameter types in platform-specific validators. These are the candidates for removal.
-
-  Benefits of removing the leaf interfaces
-
-  • Eliminates ~20 empty files that add no methods and exist solely as type markers originally needed for @Autowired discrimination.
-  • Simplifies navigation -- developers no longer need to trace through an empty interface to reach the implementation.
-  • Reduces conceptual overhead -- the distinction between DockerSimpleComputeResourceEntityFactory (empty interface) and
-    DockerSimpleComputeResourceEntityFactoryImpl (the real class) is no longer meaningful.
-  • Aligns with the new architecture -- factories are now manually instantiated in Platform impls, not auto-wired, so the type discrimination reason is
-    gone.
-
-  Costs and risks
-
-  • Moderate scope: ~20 leaf interface files to delete, ~20 impl files to rename, and updates to every consumer (platform impls, validators, linkers).
-    Roughly 40-50 files touched.
-  • Rename is not atomic in Java: Renaming DockerSimpleComputeResourceEntityFactoryImpl to DockerSimpleComputeResourceEntityFactory means the impl class
-    takes the old interface's name. The impl class must also change its implements clause to the parent interface instead. Each impl currently has a line
-    like implements DockerSimpleComputeResourceEntityFactory that would change to implements SimpleComputeResourceEntityFactory.
-  • Mid-level interface ambiguity: Some mid-level interfaces (e.g., SimpleComputeResourceEntityFactory, DockerContainerEntityFactory) are also empty. The
-    question of whether to remove those too adds scope creep risk. However, they serve as useful abstraction points for validators that accept any Simple
-    or Docker variant.
-  • No functional risk: Since all leaf interfaces are empty and their only consumers are internal, the rename is purely mechanical with no behavioral
-    change.
-
-  Recommendation
-
-  The leaf interfaces are good candidates for removal. The cost is moderate (mechanical changes across ~40-50 files) but the benefit is a cleaner, more
-  honest codebase where you're no longer maintaining empty interfaces that exist for a purpose (Spring autowiring) that no longer applies.
-
-  I would not recommend also removing the mid-level interfaces in the same pass. Some of them (like DockerContainerEntityFactory) serve as abstraction points
-   in the Platform interface and validators, providing a useful level of indirection between the abstract factory and the platform-specific impl.
-
-  The work could be done incrementally by entity domain (compute, then executable, then data, etc.) to keep each change reviewable.
---END--
-
-
-==START==
-/plan
-Given that we are only removing the empty leaf interfaces, and leaving the base and mid-level interfaces in place,
-it would be confusing to have some implementation classes with the Impl postfix and others not.
-In which case, please plan to remove the empty leaf interfaces, but do not rename the implementation classes.
-==END==
-
---START--
-....
-....
- ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
- │ Suggested Plan                                                                                                                                           │
- │                                                                                                                                                          │
- │ Remove Empty Leaf Factory Interfaces                                                                                                                     │
- │                                                                                                                                                          │
- │ Approach                                                                                                                                                 │
- │                                                                                                                                                          │
- │ Delete 15 empty leaf factory interfaces (keeping Impl class names unchanged). For each:                                                                  │
- │ 1. Delete the empty interface file                                                                                                                       │
- │ 2. Update the Impl class: change implements LeafInterface to implements ParentInterface                                                                  │
- │ 3. Update consumers: change field types and parameter types from the leaf interface to the Impl class type                                               │
- │                                                                                                                                                          │
- │ Not deleted: DockerBindMountStorageEntityFactory -- it defines an additional create(session, result, path) method, so it is not empty.                   │
- │                                                                                                                                                          │
- │ Files to delete (15 interfaces)                                                                                                                          │
- │                                                                                                                                                          │
- │ Compute (2)                                                                                                                                              │
- │                                                                                                                                                          │
- │ • DockerSimpleComputeResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/     │
- │   compute/simple/docker/DockerSimpleComputeResourceEntityFactory.java)                                                                                   │
- │ • MockSimpleComputeResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/co     │
- │   mpute/simple/mock/MockSimpleComputeResourceEntityFactory.java)                                                                                         │
- │                                                                                                                                                          │
- │ Executable (3)                                                                                                                                           │
- │                                                                                                                                                          │
- │ • DockerDockerContainerEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/execut     │
- │   able/docker/docker/DockerDockerContainerEntityFactory.java)                                                                                            │
- │ • MockDockerContainerEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/executab     │
- │   le/docker/mock/MockDockerContainerEntityFactory.java)                                                                                                  │
- │ • MockJupyterNotebookEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/executab     │
- │   le/jupyter/mock/MockJupyterNotebookEntityFactory.java)                                                                                                 │
- │                                                                                                                                                          │
- │ Data (6)                                                                                                                                                 │
- │                                                                                                                                                          │
- │ • DockerFileResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/simp     │
- │   le/docker/file/DockerFileResourceEntityFactory.java)                                                                                                   │
- │ • DockerHttpResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/simp     │
- │   le/docker/http/DockerHttpResourceEntityFactory.java)                                                                                                   │
- │ • MockSimpleDataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/     │
- │   simple/mock/MockSimpleDataResourceEntityFactory.java)                                                                                                  │
- │ • MockAmazonS3DataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/dat     │
- │   a/amazon/mock/MockAmazonS3DataResourceEntityFactory.java)                                                                                              │
- │ • MockIvoaDataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/iv     │
- │   oa/mock/MockIvoaDataResourceEntityFactory.java)                                                                                                        │
- │ • MockSkaoDataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/sk     │
- │   ao/mock/MockSkaoDataResourceEntityFactory.java)                                                                                                        │
- │                                                                                                                                                          │
- │ Storage (2)                                                                                                                                              │
- │                                                                                                                                                          │
- │ • DockerVolumeMountStorageEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/sto     │
- │   rage/simple/docker/volume/DockerVolumeMountStorageEntityFactory.java)                                                                                  │
- │ • MockSimpleStorageResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/st     │
- │   orage/simple/mock/MockSimpleStorageResourceEntityFactory.java)                                                                                         │
- │                                                                                                                                                          │
- │ Volume (2)                                                                                                                                               │
- │                                                                                                                                                          │
- │ • DockerSimpleVolumeMountEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/volu     │
- │   me/simple/docker/DockerSimpleVolumeMountEntityFactory.java)                                                                                            │
- │ • MockSimpleVolumeMountEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/volume     │
- │   /simple/mock/MockSimpleVolumeMountEntityFactory.java)                                                                                                  │
- │                                                                                                                                                          │
- │ Impl class changes (15 files)                                                                                                                            │
- │                                                                                                                                                          │
- │ Each Impl class changes its implements clause from the deleted leaf interface to its parent interface:                                                   │
- │ • DockerSimpleComputeResourceEntityFactoryImpl: implements SimpleComputeResourceEntityFactory                                                            │
- │ • MockSimpleComputeResourceEntityFactoryImpl: implements SimpleComputeResourceEntityFactory                                                              │
- │ • DockerDockerContainerEntityFactoryImpl: implements DockerContainerEntityFactory                                                                        │
- │ • MockDockerContainerEntityFactoryImpl: implements DockerContainerEntityFactory                                                                          │
- │ • MockJupyterNotebookEntityFactoryImpl: implements JupyterNotebookEntityFactory                                                                          │
- │ • DockerFileResourceEntityFactoryImpl: implements DockerSimpleDataResourceEntityFactory                                                                  │
- │ • DockerHttpResourceEntityFactoryImpl: implements DockerSimpleDataResourceEntityFactory                                                                  │
- │ • MockSimpleDataResourceEntityFactoryImpl: implements SimpleDataResourceEntityFactory                                                                    │
- │ • MockAmazonS3DataResourceEntityFactoryImpl: implements AmazonS3DataResourceEntityFactory (note: AmazonS3DataResourceEntityFactory itself is an          │
- │   empty mid-level interface, but it is kept as part of the mid-level hierarchy)                                                                          │
- │ • MockIvoaDataResourceEntityFactoryImpl: implements IvoaDataResourceEntityFactory                                                                        │
- │ • MockSkaoDataResourceEntityFactoryImpl: implements SkaoDataResourceEntityFactory                                                                        │
- │ • DockerVolumeMountStorageEntityFactoryImpl: implements SimpleStorageResourceEntityFactory                                                               │
- │ • MockSimpleStorageResourceEntityFactoryImpl: implements SimpleStorageResourceEntityFactory                                                              │
- │ • DockerSimpleVolumeMountEntityFactoryImpl: implements SimpleVolumeMountEntityFactory                                                                    │
- │ • MockSimpleVolumeMountEntityFactoryImpl: implements SimpleVolumeMountEntityFactory                                                                      │
- │                                                                                                                                                          │
- │ Consumer changes                                                                                                                                         │
- │                                                                                                                                                          │
- │ Since we are not renaming the Impl classes, field types and parameter types that currently reference the deleted leaf interface need to change to the    │
- │ Impl class type (since the Impl is the concrete type being instantiated and stored).                                                                     │
- │                                                                                                                                                          │
- │ DockerPlatformImpl (7 field type changes)                                                                                                                │
- │                                                                                                                                                          │
- │ • DockerSimpleComputeResourceEntityFactory -> DockerSimpleComputeResourceEntityFactoryImpl                                                               │
- │ • DockerDockerContainerEntityFactory -> DockerDockerContainerEntityFactoryImpl                                                                           │
- │ • DockerFileResourceEntityFactory -> DockerFileResourceEntityFactoryImpl                                                                                 │
- │ • DockerHttpResourceEntityFactory -> DockerHttpResourceEntityFactoryImpl                                                                                 │
- │ • DockerVolumeMountStorageEntityFactory -> DockerVolumeMountStorageEntityFactoryImpl                                                                     │
- │ • DockerSimpleVolumeMountEntityFactory -> DockerSimpleVolumeMountEntityFactoryImpl                                                                       │
- │ • Update imports accordingly                                                                                                                             │
- │                                                                                                                                                          │
- │ MockPlatformImpl (9 field type changes)                                                                                                                  │
- │                                                                                                                                                          │
- │ • MockSimpleComputeResourceEntityFactory -> MockSimpleComputeResourceEntityFactoryImpl                                                                   │
- │ • MockDockerContainerEntityFactory -> MockDockerContainerEntityFactoryImpl                                                                               │
- │ • MockJupyterNotebookEntityFactory -> MockJupyterNotebookEntityFactoryImpl                                                                               │
- │ • MockSimpleDataResourceEntityFactory -> MockSimpleDataResourceEntityFactoryImpl                                                                         │
- │ • MockAmazonS3DataResourceEntityFactory -> MockAmazonS3DataResourceEntityFactoryImpl                                                                     │
- │ • MockIvoaDataResourceEntityFactory -> MockIvoaDataResourceEntityFactoryImpl                                                                             │
- │ • MockSkaoDataResourceEntityFactory -> MockSkaoDataResourceEntityFactoryImpl                                                                             │
- │ • MockSimpleStorageResourceEntityFactory -> MockSimpleStorageResourceEntityFactoryImpl                                                                   │
- │ • MockSimpleVolumeMountEntityFactory -> MockSimpleVolumeMountEntityFactoryImpl                                                                           │
- │ • Update imports accordingly                                                                                                                             │
- │                                                                                                                                                          │
- │ Validator classes (4 parameter type changes)                                                                                                             │
- │                                                                                                                                                          │
- │ These 4 validators use the leaf interface as a constructor parameter type and need updating:                                                             │
- │ • DockerSimpleComputeResourceValidatorImpl: parameter DockerSimpleComputeResourceEntityFactory -> DockerSimpleComputeResourceEntityFactoryImpl           │
- │ • MockSimpleComputeResourceValidatorImpl: parameter MockSimpleComputeResourceEntityFactory -> MockSimpleComputeResourceEntityFactoryImpl                 │
- │ • DockerFileResourceValidatorImpl: parameter DockerFileResourceEntityFactory -> DockerFileResourceEntityFactoryImpl                                      │
- │ • DockerHttpResourceValidatorImpl: parameter DockerHttpResourceEntityFactory -> DockerHttpResourceEntityFactoryImpl                                      │
- │                                                                                                                                                          │
- │ DockerDataStorageLinkerImpl (2 field/parameter type changes)                                                                                             │
- │                                                                                                                                                          │
- │ • DockerBindMountStorageEntityFactory -- NOT changed (this interface has methods and is kept)                                                            │
- │ • DockerVolumeMountStorageEntityFactory -> DockerVolumeMountStorageEntityFactoryImpl                                                                     │
- │                                                                                                                                                          │
- │ Implementation order                                                                                                                                     │
- │                                                                                                                                                          │
- │ Process by domain to keep changes reviewable:                                                                                                            │
- │ 1. Compute (2 interfaces, 2 impls, 2 validators, 2 platform impls)                                                                                       │
- │ 2. Executable (3 interfaces, 3 impls, 2 platform impls)                                                                                                  │
- │ 3. Data (6 interfaces, 6 impls, 2 validators, 2 platform impls)                                                                                          │
- │ 4. Storage (2 interfaces, 2 impls, 2 platform impls, 1 linker)                                                                                           │
- │ 5. Volume (2 interfaces, 2 impls, 2 platform impls)                                                                                                      │
- │ 6. Build and verify                                                                                                                                      │
- │                                                                                                                                                          │
- │  Saved to root/.cursor/plans/Remove empty leaf factory interfaces-b39c4460.plan.md                                                                       │
- │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
- │                                                                                                                                                          │
- │ Ready to build?                                                                                                                                          │
- │                                                                                                                                                          │
- │  → 1. Yes, build locally (b)                                                                                                                             │
- │    2. No, propose changes (p or Esc)                                                                                                                     │
- │                                                                                                                                                          │
- └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
---END--
-
-==START==
-/plan
-Given that we are not deleting DockerBindMountStorageEntityFactory
-we should also keep DockerVolumeMountStorageEntityFactory.
-==END==
-
-
---START--
-  Good point -- keeping both Docker storage factory interfaces maintains consistency. Let me update the plan.
-....
-....
-  The plan has been updated. The changes are:
-
-  • DockerVolumeMountStorageEntityFactory is now kept (not deleted), for consistency with DockerBindMountStorageEntityFactory
-  • Total deletions reduced from 15 to 14 interfaces
-  • Storage group reduced from 2 deletions to 1 (only MockSimpleStorageResourceEntityFactory)
-  • DockerPlatformImpl field type changes reduced from 7 to 5
-  • DockerDataStorageLinkerImpl no longer needs any changes
-  • DockerVolumeMountStorageEntityFactoryImpl keeps its existing implements DockerVolumeMountStorageEntityFactory
---END--
-
-
-==START==
-/plan
-Please save this plan so that we can come back to it later.
-==END==
-
---START--
-  The plan is already saved at /root/.cursor/plans/Remove empty leaf factory interfaces-b39c4460.plan.md. It will persist there for you to return to
-  whenever you're ready to implement it.
---END--
-
-
-==START==
-/plan
-Can you check the rest of the code base for any remaining Spring related dependencies,
-apart from ComputeResourceOfferFactoryImpl.
-==END==
-
---START--
-....
-....
-  There are 3 files in the engine package with remaining Spring dependencies (besides ComputeResourceOfferFactoryImpl):
-
-  1. DockerClientFactoryImpl.java (engine/functional/platfom/docker/)
-    • Uses @Component and @Profile("docker") -- this is a Spring-managed bean that should move to the spring package, similar to the
-      DockerPlatformSettingsImpl pattern you've already applied.
-
-  2. SkaoDataResourceValidatorImpl.java (engine/entities/data/skao/)
-    • Uses JdbcTemplate, RowMapper, and JdbcClient to query a database for SKAO transfer rate data. This is a deeper dependency -- the validator's logic
-      itself uses Spring JDBC for direct SQL queries.
-
-  3. MockSkaoDataResourceValidatorImpl.java (engine/entities/data/skao/mock/)
-    • Takes a JdbcTemplate as a constructor parameter (passed through from MockPlatformImpl), forwarding it to the parent SkaoDataResourceValidatorImpl.
-
-  The DockerClientFactoryImpl case is straightforward -- same interface/impl split pattern used for DockerPlatformSettings. The SKAO validator is more
-  interesting since it embeds Spring JDBC usage in business logic rather than just using annotations for DI wiring.
---END--
-
-
-==START==
-/plan
-Can you create a plan for splitting DockerClientFactoryImpl, using the same interface/impl split pattern used for DockerPlatformSettings.
-==END==
-
---START--
-....
-....
- ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
- │ Plan (rejected)                                                                                                                                          │
- │                                                                                                                                                          │
- │ Move DockerClientFactoryImpl to Spring Package                                                                                                           │
- │                                                                                                                                                          │
- │ Context                                                                                                                                                  │
- │                                                                                                                                                          │
- │ DockerClientFactory (the interface) is already framework-neutral -- it lives in engine.functional.platfom.docker and is used by multiple entity          │
- │ classes. Only DockerClientFactoryImpl has Spring annotations (@Component, @Profile("docker")).                                                           │
- │ This follows the exact same pattern already applied for DockerPlatformSettings/DockerPlatformSettingsImpl.                                               │
- │                                                                                                                                                          │
- │ Changes                                                                                                                                                  │
- │                                                                                                                                                          │
- │ 1. Move DockerClientFactoryImpl to the spring package                                                                                                    │
- │                                                                                                                                                          │
- │ • Source: DockerClientFactoryImpl.java                                                                                                                   │
- │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerClientFactoryImpl.java)     │
- │ • Destination: net.ivoa.calycopis.broker.spring.platfom.docker.DockerClientFactoryImpl                                                                   │
- │ • Change package declaration from engine.functional.platfom.docker to spring.platfom.docker                                                              │
- │ • Add import for net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory                                                          │
- │ • Keep @Component, @Profile("docker"), and all existing logic unchanged                                                                                  │
- │                                                                                                                                                          │
- │ 2. No other changes needed                                                                                                                               │
- │                                                                                                                                                          │
- │ • DockerClientFactory.java                                                                                                                               │
- │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerClientFactory.java) --      │
- │   stays in engine, unchanged                                                                                                                             │
- │ • DockerPlatform.java                                                                                                                                    │
- │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerPlatform.java) --           │
- │   references DockerClientFactory (the interface), unchanged                                                                                              │
- │ • DockerPlatformImpl.java                                                                                                                                │
- │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/spring/platfom/docker/DockerPlatformImpl.java) -- @Autowired       │
- │   field is typed as DockerClientFactory (the interface), so Spring will still find the @Component impl by interface type. No change needed.              │
- │ • All entity consumers (DockerSimpleComputeResourceEntity, DockerDockerContainerEntity, DockerHttpResourceEntity, DockerVolumeMountStorageEntity,        │
- │   DockerDockerContainerValidatorImpl) reference only the DockerClientFactory interface, unchanged.                                                       │
- └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
---END--
-
-
-==START==
-/plan
-Before we implement this plan. Can you analyse _why_ DockerClientFactoryImpl needs to be a Spring @Component ?
-Can we implement the same functionality without the Spring annotations.
-Can DockerPlatformImpl simply create an instance of DockerClientFactoryImpl, without requiring the @Autowired annotation ?
-==END==
-
---START--
-....
-....
-  Looking at the DockerClientFactoryImpl code again -- it has no injected dependencies at all. No @Autowired fields, no constructor injection, no Spring
-  beans used internally. It simply reads environment variables and creates a Docker client using the docker-java library. The @Component and
-  @Profile("docker") annotations are only there so Spring discovers it and injects it into DockerPlatformImpl via @Autowired.
-
-  There is no reason it needs to be a Spring @Component. DockerPlatformImpl can simply create an instance directly:
-
-  private DockerClientFactory dockerClientFactory = new DockerClientFactoryImpl();
-
-  Or instantiate it in the initialize() method, consistent with how other factories are created in that class.
-
-  The @Profile("docker") annotation was originally used to ensure the bean was only created when the docker profile was active, but that constraint is
-  already handled by DockerPlatformImpl itself being annotated @Component @Profile("docker") -- so if the Docker platform isn't active, the factory would
-  never be needed anyway.
-
-  In short: Yes, DockerPlatformImpl can simply new DockerClientFactoryImpl() directly. The Spring annotations can be removed entirely from
-  DockerClientFactoryImpl, making it framework-neutral and leaving it in the engine package with no changes needed to any other file.
---END--
-
-==START==
-/agent
-Please remove the Spring annotations from DockerPlatformImpl and update DockerPlatformImpl to
-simply create a new DockerClientFactoryImpl() directly.
-==END==
-
---START--
-....
-....
-  Done. Two changes made:
-
-  • DockerClientFactoryImpl: Removed @Component, @Profile("docker"), and their Spring imports. The class is now fully framework-neutral.
-  • DockerPlatformImpl: Replaced @Autowired private DockerClientFactory with private DockerClientFactory dockerClientFactory = new
-    DockerClientFactoryImpl(), creating the instance directly.
---END--
+    ?   Can you move all of the JPA repository interfaces and wrapper classes from
+    ?   the spring package into a sub-package called spring.jpa.
+
+    >   ....
+    >   ....
+    >     Everything works. Here's a summary of what was done:
+    >   
+    >     Moved 15 files from net.ivoa.calycopis.broker.spring to net.ivoa.calycopis.broker.spring.jpa:
+    >   
+    >     • Base interfaces: SpringAbstractEntityRepository, SpringAbstractEntityRepository
+    >     • Concrete repositories: SpringComputeResourceEntityRepository, SpringDataResourceEntityRepository, SpringExecutableEntityRepository,
+    >       SpringStorageResourceEntityRepository, SpringVolumeMountEntityRepository, SpringSessionEntityRepository, SpringComponentProcessingRequestRepository,
+    >       SpringSessionProcessingRequestRepository, SpringOfferSetRepository, SpringMessageEntityRepository, SpringProcessingRequestRepository
+    >     • Wrappers: SpringAbstractEntityRepositoryWrapper, SpringSessionEntityRepositoryWrapper, SpringProcessingRequestRepositoryWrapper
+    >   
+    >     Updated imports in 3 consumer files:
+    >     • DockerPlatformImpl (13 imports)
+    >     • MockPlatformImpl (13 imports)
+    >     • SpringProcessingTransactionHandlerImpl (1 import added)
+    >   
+    >     The @EnableJpaRepositories("net.ivoa.calycopis.broker.spring") scan scope still covers the new spring.jpa sub-package, so no change was needed there.
+    >     Build compiles and service starts successfully.
+
+
+    ?   Can you split DockerSettings into an interface called DockerPlatformSettings in the functional.platform.docker package,
+    ?   and an implementation class called DockerPlatformSettingsImpl in the spring.platform.docker package.
+
+    >   ....
+    >   ....
+    >    Build succeeds. Here's what was done:
+    >   
+    >     • Created DockerPlatformSettings interface in engine.functional.platfom.docker with the getHelperImage() method
+    >     • Created DockerPlatformSettingsImpl in spring.platfom.docker with @Component and @ConfigurationProperties(prefix = "broker.docker"), implementing the
+    >       interface
+    >     • Updated DockerPlatform interface to return DockerPlatformSettings instead of DockerSettings
+    >     • Updated DockerPlatformImpl to autowire DockerPlatformSettingsImpl and return DockerPlatformSettings
+    >     • Deleted the old DockerSettings class
+    >   
+    >     The consumer in DockerHttpResourceEntity already accesses settings through dockerPlatform.getDockerSettings().getHelperImage(), which works unchanged
+    >     since DockerPlatformSettings exposes getHelperImage().
+
+    ?   Can you split the MockEntitySettings into an interface called MockPlatformSettings in the functional.platform.mock package,
+    ?   and an implementation class called MockPlatformSettingsImpl in the spring.platform.mock package.
+
+    >   ....
+    >   ....
+    >     Build succeeds. Here's what was done:
+    >   
+    >     • Created MockPlatformSettings interface in engine.functional.platfom.mock with the 6 convenience methods (getPrepareDelayMillis(),
+    >       getMonitorDelayMillis(), getMonitorCount(), getReleaseDelayMillis(), getCancelDelayMillis(), getFailDelayMillis())
+    >     • Created MockPlatformSettingsImpl in spring.platfom.mock with @Component and @ConfigurationProperties(prefix = "broker.mock-entities"), implementing
+    >       the interface and containing all the inner Actions/settings classes
+    >     • Updated MockPlatform interface to return MockPlatformSettings instead of MockEntitySettings
+    >     • Updated MockPlatformImpl to autowire MockPlatformSettingsImpl and return MockPlatformSettings
+    >     • Updated 9 entity files to import and use MockPlatformSettings instead of MockEntitySettings
+    >     • Deleted the old MockEntitySettings class
+
+
+    ?   There are a number of old JPA repository interfaces in the source code that have been marked as @Deprecated.
+    ?   For example AbstractStorageResourceEntityRepository and SimpleStorageResourceEntityRepository.
+    ?   Can you identify all of the old repository interfaces and verify that they are no longer used.
+
+    >   ....
+    >   ....
+    >     All imports are only between deprecated repository files themselves -- no non-deprecated code imports any of them. These 31 files form a self-contained,
+    >      entirely unused inheritance tree:
+    >   
+    >     ComponentEntityRepository (not deprecated, but only used by deprecated code)
+    >       └── LifecycleComponentEntityRepository (@Deprecated)
+    >             ├── AbstractStorageResourceEntityRepository
+    >             │     └── SimpleStorageResourceEntityRepository
+    >             │           ├── DockerSimpleStorageResourceEntityRepository
+    >             │           │     ├── DockerBindMountStorageEntityRepository
+    >             │           │     └── DockerVolumeMountStorageEntityRepository
+    >             │           └── MockSimpleStorageResourceEntityRepository
+    >             ├── AbstractVolumeMountEntityRepository
+    >             │     └── SimpleVolumeMountEntityRepository
+    >             │           ├── DockerSimpleVolumeMountEntityRepository
+    >             │           └── MockSimpleVolumeMountEntityRepository
+    >             ├── AbstractExecutableEntityRepository
+    >             ├── AbstractDataResourceEntityRepository
+    >             ├── SimpleDataResourceEntityRepository
+    >             │     ├── DockerSimpleDataResourceEntityRepository
+    >             │     │     ├── DockerHttpResourceEntityRepository
+    >             │     │     └── DockerFileResourceEntityRepository
+    >             │     └── MockSimpleDataResourceEntityRepository
+    >             ├── SimpleComputeResourceEntityRepository
+    >             ├── DockerSimpleComputeResourceEntityRepository
+    >             ├── MockSimpleComputeResourceEntityRepository
+    >             ├── SkaoDataResourceEntityRepository
+    >             │     └── MockSkaoDataResourceEntityRepository
+    >             ├── IvoaDataResourceEntityRepository
+    >             │     └── MockIvoaDataResourceEntityRepository
+    >             ├── AmazonS3DataResourceEntityRepository
+    >             ├── MockAmazonS3DataResourceEntityRepository
+    >             ├── DockerDockerContainerEntityRepository
+    >             ├── MockDockerContainerEntityRepository
+    >             └── MockJupyterNotebookEntityRepository
+    >   
+    >     All 31 files (30 deprecated + ComponentEntityRepository) are only referenced by each other. None are imported by any active code. They are all safe to
+    >     delete.
+
+    ?   Please go ahead and delete them.
+
+    >   ....
+    >   ....
+    >     All 31 unused repository interfaces deleted. The project compiles successfully -- down from 355 to 324 source files.
+
+    ?   /plan
+    ?   A lot of the entity factories are defined as an interface and an implementation class.
+    ?   For example DockerDockerContainerEntityFactoryImpl implements DockerDockerContainerEntityFactory.
+    ?   This pattern was established to facilitate creating instances using an @Autowired annotation
+    ?   on the interface and letting Spring create an instances of the implementation class.
+    ?   Given that the factories are no longer created using @Autowired annotations,
+    ?   is there a case for simplifying the structure, removing the interface
+    ?   and just having the implementation class.
+    ?   In the above example, this would mean deleting the DockerDockerContainerEntityFactory interface
+    ?   and then renaming DockerDockerContainerEntityFactoryImpl to DockerDockerContainerEntityFactory.
+    ?   Please evaluate this plan and give a cost/benefit analysis.
+
+    >   ....
+    >   ....
+    >     ────────────────────────────────────────
+    >   
+    >     Cost/Benefit Analysis: Removing Leaf Factory Interfaces
+    >   
+    >     The current structure (3-level hierarchy)
+    >   
+    >     LifecycleComponentEntityFactory<T>          (base - defines getKind(), select())
+    >       └── AbstractComputeResourceEntityFactory  (mid-level - adds create() method)
+    >             └── SimpleComputeResourceEntityFactory    (mid-level - empty)
+    >                   ├── DockerSimpleComputeResourceEntityFactory  (LEAF - empty)
+    >                   └── MockSimpleComputeResourceEntityFactory    (LEAF - empty)
+    >   
+    >     This pattern repeats across all entity domains (compute, data, executable, storage, volume). The leaf interfaces (e.g.,
+    >     DockerSimpleComputeResourceEntityFactory, MockDockerContainerEntityFactory) are uniformly empty -- they add zero methods to their parents.
+    >   
+    >     Who references what
+    >   
+    >     There are three categories of interfaces:
+    >   
+    >     1. Base/abstract interfaces (LifecycleComponentEntityFactory, AbstractComputeResourceEntityFactory, AbstractDataResourceEntityFactory,
+    >        AbstractStorageResourceEntityFactory): Define the contract methods. Referenced by abstract validators (e.g., SimpleVolumeMountValidatorImpl takes
+    >        AbstractDataResourceEntityFactory and AbstractStorageResourceEntityFactory as constructor parameters). These must stay.
+    >   
+    >     2. Mid-level interfaces (SimpleComputeResourceEntityFactory, DockerContainerEntityFactory, SimpleStorageResourceEntityFactory, etc.): Also empty, but
+    >        some are used as parameter types in Platform interfaces (e.g., DockerPlatform.getDockerContainerEntityFactory() returns DockerContainerEntityFactory).
+    >         These are more nuanced -- some serve as useful abstraction points, others don't.
+    >   
+    >     3. Leaf interfaces (e.g., DockerSimpleComputeResourceEntityFactory, MockDockerContainerEntityFactory): All empty. Referenced only as field types in the
+    >        platform impls and constructor parameter types in platform-specific validators. These are the candidates for removal.
+    >   
+    >     Benefits of removing the leaf interfaces
+    >   
+    >     • Eliminates ~20 empty files that add no methods and exist solely as type markers originally needed for @Autowired discrimination.
+    >     • Simplifies navigation -- developers no longer need to trace through an empty interface to reach the implementation.
+    >     • Reduces conceptual overhead -- the distinction between DockerSimpleComputeResourceEntityFactory (empty interface) and
+    >       DockerSimpleComputeResourceEntityFactoryImpl (the real class) is no longer meaningful.
+    >     • Aligns with the new architecture -- factories are now manually instantiated in Platform impls, not auto-wired, so the type discrimination reason is
+    >       gone.
+    >   
+    >     Costs and risks
+    >   
+    >     • Moderate scope: ~20 leaf interface files to delete, ~20 impl files to rename, and updates to every consumer (platform impls, validators, linkers).
+    >       Roughly 40-50 files touched.
+    >     • Rename is not atomic in Java: Renaming DockerSimpleComputeResourceEntityFactoryImpl to DockerSimpleComputeResourceEntityFactory means the impl class
+    >       takes the old interface's name. The impl class must also change its implements clause to the parent interface instead. Each impl currently has a line
+    >       like implements DockerSimpleComputeResourceEntityFactory that would change to implements SimpleComputeResourceEntityFactory.
+    >     • Mid-level interface ambiguity: Some mid-level interfaces (e.g., SimpleComputeResourceEntityFactory, DockerContainerEntityFactory) are also empty. The
+    >       question of whether to remove those too adds scope creep risk. However, they serve as useful abstraction points for validators that accept any Simple
+    >       or Docker variant.
+    >     • No functional risk: Since all leaf interfaces are empty and their only consumers are internal, the rename is purely mechanical with no behavioral
+    >       change.
+    >   
+    >     Recommendation
+    >   
+    >     The leaf interfaces are good candidates for removal. The cost is moderate (mechanical changes across ~40-50 files) but the benefit is a cleaner, more
+    >     honest codebase where you're no longer maintaining empty interfaces that exist for a purpose (Spring autowiring) that no longer applies.
+    >   
+    >     I would not recommend also removing the mid-level interfaces in the same pass. Some of them (like DockerContainerEntityFactory) serve as abstraction points
+    >      in the Platform interface and validators, providing a useful level of indirection between the abstract factory and the platform-specific impl.
+    >   
+    >     The work could be done incrementally by entity domain (compute, then executable, then data, etc.) to keep each change reviewable.
+
+
+    ?   /plan
+    ?   Given that we are only removing the empty leaf interfaces, and leaving the base and mid-level interfaces in place,
+    ?   it would be confusing to have some implementation classes with the Impl postfix and others not.
+    ?   In which case, please plan to remove the empty leaf interfaces, but do not rename the implementation classes.
+
+    >   ....
+    >   ....
+    >    ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >    │ Suggested Plan                                                                                                                                           │
+    >    │                                                                                                                                                          │
+    >    │ Remove Empty Leaf Factory Interfaces                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ Approach                                                                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ Delete 15 empty leaf factory interfaces (keeping Impl class names unchanged). For each:                                                                  │
+    >    │ 1. Delete the empty interface file                                                                                                                       │
+    >    │ 2. Update the Impl class: change implements LeafInterface to implements ParentInterface                                                                  │
+    >    │ 3. Update consumers: change field types and parameter types from the leaf interface to the Impl class type                                               │
+    >    │                                                                                                                                                          │
+    >    │ Not deleted: DockerBindMountStorageEntityFactory -- it defines an additional create(session, result, path) method, so it is not empty.                   │
+    >    │                                                                                                                                                          │
+    >    │ Files to delete (15 interfaces)                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ Compute (2)                                                                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ • DockerSimpleComputeResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/     │
+    >    │   compute/simple/docker/DockerSimpleComputeResourceEntityFactory.java)                                                                                   │
+    >    │ • MockSimpleComputeResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/co     │
+    >    │   mpute/simple/mock/MockSimpleComputeResourceEntityFactory.java)                                                                                         │
+    >    │                                                                                                                                                          │
+    >    │ Executable (3)                                                                                                                                           │
+    >    │                                                                                                                                                          │
+    >    │ • DockerDockerContainerEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/execut     │
+    >    │   able/docker/docker/DockerDockerContainerEntityFactory.java)                                                                                            │
+    >    │ • MockDockerContainerEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/executab     │
+    >    │   le/docker/mock/MockDockerContainerEntityFactory.java)                                                                                                  │
+    >    │ • MockJupyterNotebookEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/executab     │
+    >    │   le/jupyter/mock/MockJupyterNotebookEntityFactory.java)                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ Data (6)                                                                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ • DockerFileResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/simp     │
+    >    │   le/docker/file/DockerFileResourceEntityFactory.java)                                                                                                   │
+    >    │ • DockerHttpResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/simp     │
+    >    │   le/docker/http/DockerHttpResourceEntityFactory.java)                                                                                                   │
+    >    │ • MockSimpleDataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/     │
+    >    │   simple/mock/MockSimpleDataResourceEntityFactory.java)                                                                                                  │
+    >    │ • MockAmazonS3DataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/dat     │
+    >    │   a/amazon/mock/MockAmazonS3DataResourceEntityFactory.java)                                                                                              │
+    >    │ • MockIvoaDataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/iv     │
+    >    │   oa/mock/MockIvoaDataResourceEntityFactory.java)                                                                                                        │
+    >    │ • MockSkaoDataResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/data/sk     │
+    >    │   ao/mock/MockSkaoDataResourceEntityFactory.java)                                                                                                        │
+    >    │                                                                                                                                                          │
+    >    │ Storage (2)                                                                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ • DockerVolumeMountStorageEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/sto     │
+    >    │   rage/simple/docker/volume/DockerVolumeMountStorageEntityFactory.java)                                                                                  │
+    >    │ • MockSimpleStorageResourceEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/st     │
+    >    │   orage/simple/mock/MockSimpleStorageResourceEntityFactory.java)                                                                                         │
+    >    │                                                                                                                                                          │
+    >    │ Volume (2)                                                                                                                                               │
+    >    │                                                                                                                                                          │
+    >    │ • DockerSimpleVolumeMountEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/volu     │
+    >    │   me/simple/docker/DockerSimpleVolumeMountEntityFactory.java)                                                                                            │
+    >    │ • MockSimpleVolumeMountEntityFactory.java (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/entities/volume     │
+    >    │   /simple/mock/MockSimpleVolumeMountEntityFactory.java)                                                                                                  │
+    >    │                                                                                                                                                          │
+    >    │ Impl class changes (15 files)                                                                                                                            │
+    >    │                                                                                                                                                          │
+    >    │ Each Impl class changes its implements clause from the deleted leaf interface to its parent interface:                                                   │
+    >    │ • DockerSimpleComputeResourceEntityFactoryImpl: implements SimpleComputeResourceEntityFactory                                                            │
+    >    │ • MockSimpleComputeResourceEntityFactoryImpl: implements SimpleComputeResourceEntityFactory                                                              │
+    >    │ • DockerDockerContainerEntityFactoryImpl: implements DockerContainerEntityFactory                                                                        │
+    >    │ • MockDockerContainerEntityFactoryImpl: implements DockerContainerEntityFactory                                                                          │
+    >    │ • MockJupyterNotebookEntityFactoryImpl: implements JupyterNotebookEntityFactory                                                                          │
+    >    │ • DockerFileResourceEntityFactoryImpl: implements DockerSimpleDataResourceEntityFactory                                                                  │
+    >    │ • DockerHttpResourceEntityFactoryImpl: implements DockerSimpleDataResourceEntityFactory                                                                  │
+    >    │ • MockSimpleDataResourceEntityFactoryImpl: implements SimpleDataResourceEntityFactory                                                                    │
+    >    │ • MockAmazonS3DataResourceEntityFactoryImpl: implements AmazonS3DataResourceEntityFactory (note: AmazonS3DataResourceEntityFactory itself is an          │
+    >    │   empty mid-level interface, but it is kept as part of the mid-level hierarchy)                                                                          │
+    >    │ • MockIvoaDataResourceEntityFactoryImpl: implements IvoaDataResourceEntityFactory                                                                        │
+    >    │ • MockSkaoDataResourceEntityFactoryImpl: implements SkaoDataResourceEntityFactory                                                                        │
+    >    │ • DockerVolumeMountStorageEntityFactoryImpl: implements SimpleStorageResourceEntityFactory                                                               │
+    >    │ • MockSimpleStorageResourceEntityFactoryImpl: implements SimpleStorageResourceEntityFactory                                                              │
+    >    │ • DockerSimpleVolumeMountEntityFactoryImpl: implements SimpleVolumeMountEntityFactory                                                                    │
+    >    │ • MockSimpleVolumeMountEntityFactoryImpl: implements SimpleVolumeMountEntityFactory                                                                      │
+    >    │                                                                                                                                                          │
+    >    │ Consumer changes                                                                                                                                         │
+    >    │                                                                                                                                                          │
+    >    │ Since we are not renaming the Impl classes, field types and parameter types that currently reference the deleted leaf interface need to change to the    │
+    >    │ Impl class type (since the Impl is the concrete type being instantiated and stored).                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ DockerPlatformImpl (7 field type changes)                                                                                                                │
+    >    │                                                                                                                                                          │
+    >    │ • DockerSimpleComputeResourceEntityFactory -> DockerSimpleComputeResourceEntityFactoryImpl                                                               │
+    >    │ • DockerDockerContainerEntityFactory -> DockerDockerContainerEntityFactoryImpl                                                                           │
+    >    │ • DockerFileResourceEntityFactory -> DockerFileResourceEntityFactoryImpl                                                                                 │
+    >    │ • DockerHttpResourceEntityFactory -> DockerHttpResourceEntityFactoryImpl                                                                                 │
+    >    │ • DockerVolumeMountStorageEntityFactory -> DockerVolumeMountStorageEntityFactoryImpl                                                                     │
+    >    │ • DockerSimpleVolumeMountEntityFactory -> DockerSimpleVolumeMountEntityFactoryImpl                                                                       │
+    >    │ • Update imports accordingly                                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ MockPlatformImpl (9 field type changes)                                                                                                                  │
+    >    │                                                                                                                                                          │
+    >    │ • MockSimpleComputeResourceEntityFactory -> MockSimpleComputeResourceEntityFactoryImpl                                                                   │
+    >    │ • MockDockerContainerEntityFactory -> MockDockerContainerEntityFactoryImpl                                                                               │
+    >    │ • MockJupyterNotebookEntityFactory -> MockJupyterNotebookEntityFactoryImpl                                                                               │
+    >    │ • MockSimpleDataResourceEntityFactory -> MockSimpleDataResourceEntityFactoryImpl                                                                         │
+    >    │ • MockAmazonS3DataResourceEntityFactory -> MockAmazonS3DataResourceEntityFactoryImpl                                                                     │
+    >    │ • MockIvoaDataResourceEntityFactory -> MockIvoaDataResourceEntityFactoryImpl                                                                             │
+    >    │ • MockSkaoDataResourceEntityFactory -> MockSkaoDataResourceEntityFactoryImpl                                                                             │
+    >    │ • MockSimpleStorageResourceEntityFactory -> MockSimpleStorageResourceEntityFactoryImpl                                                                   │
+    >    │ • MockSimpleVolumeMountEntityFactory -> MockSimpleVolumeMountEntityFactoryImpl                                                                           │
+    >    │ • Update imports accordingly                                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ Validator classes (4 parameter type changes)                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ These 4 validators use the leaf interface as a constructor parameter type and need updating:                                                             │
+    >    │ • DockerSimpleComputeResourceValidatorImpl: parameter DockerSimpleComputeResourceEntityFactory -> DockerSimpleComputeResourceEntityFactoryImpl           │
+    >    │ • MockSimpleComputeResourceValidatorImpl: parameter MockSimpleComputeResourceEntityFactory -> MockSimpleComputeResourceEntityFactoryImpl                 │
+    >    │ • DockerFileResourceValidatorImpl: parameter DockerFileResourceEntityFactory -> DockerFileResourceEntityFactoryImpl                                      │
+    >    │ • DockerHttpResourceValidatorImpl: parameter DockerHttpResourceEntityFactory -> DockerHttpResourceEntityFactoryImpl                                      │
+    >    │                                                                                                                                                          │
+    >    │ DockerDataStorageLinkerImpl (2 field/parameter type changes)                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ • DockerBindMountStorageEntityFactory -- NOT changed (this interface has methods and is kept)                                                            │
+    >    │ • DockerVolumeMountStorageEntityFactory -> DockerVolumeMountStorageEntityFactoryImpl                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ Implementation order                                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ Process by domain to keep changes reviewable:                                                                                                            │
+    >    │ 1. Compute (2 interfaces, 2 impls, 2 validators, 2 platform impls)                                                                                       │
+    >    │ 2. Executable (3 interfaces, 3 impls, 2 platform impls)                                                                                                  │
+    >    │ 3. Data (6 interfaces, 6 impls, 2 validators, 2 platform impls)                                                                                          │
+    >    │ 4. Storage (2 interfaces, 2 impls, 2 platform impls, 1 linker)                                                                                           │
+    >    │ 5. Volume (2 interfaces, 2 impls, 2 platform impls)                                                                                                      │
+    >    │ 6. Build and verify                                                                                                                                      │
+    >    │                                                                                                                                                          │
+    >    │  Saved to root/.cursor/plans/Remove empty leaf factory interfaces-b39c4460.plan.md                                                                       │
+    >    │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+    >    │                                                                                                                                                          │
+    >    │ Ready to build?                                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │  → 1. Yes, build locally (b)                                                                                                                             │
+    >    │    2. No, propose changes (p or Esc)                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >   
+
+    ?   /plan
+    ?   Given that we are not deleting DockerBindMountStorageEntityFactory
+    ?   we should also keep DockerVolumeMountStorageEntityFactory.
+
+
+    >     Good point -- keeping both Docker storage factory interfaces maintains consistency. Let me update the plan.
+    >   ....
+    >   ....
+    >     The plan has been updated. The changes are:
+    >   
+    >     • DockerVolumeMountStorageEntityFactory is now kept (not deleted), for consistency with DockerBindMountStorageEntityFactory
+    >     • Total deletions reduced from 15 to 14 interfaces
+    >     • Storage group reduced from 2 deletions to 1 (only MockSimpleStorageResourceEntityFactory)
+    >     • DockerPlatformImpl field type changes reduced from 7 to 5
+    >     • DockerDataStorageLinkerImpl no longer needs any changes
+    >     • DockerVolumeMountStorageEntityFactoryImpl keeps its existing implements DockerVolumeMountStorageEntityFactory
+
+
+    ?   /plan
+    ?   Please save this plan so that we can come back to it later.
+
+    >     The plan is already saved at /root/.cursor/plans/Remove empty leaf factory interfaces-b39c4460.plan.md. It will persist there for you to return to
+    >     whenever you're ready to implement it.
+
+
+    ?   /plan
+    ?   Can you check the rest of the code base for any remaining Spring related dependencies,
+    ?   apart from ComputeResourceOfferFactoryImpl.
+
+    >   ....
+    >   ....
+    >     There are 3 files in the engine package with remaining Spring dependencies (besides ComputeResourceOfferFactoryImpl):
+    >   
+    >     1. DockerClientFactoryImpl.java (engine/functional/platfom/docker/)
+    >       • Uses @Component and @Profile("docker") -- this is a Spring-managed bean that should move to the spring package, similar to the
+    >         DockerPlatformSettingsImpl pattern you've already applied.
+    >   
+    >     2. SkaoDataResourceValidatorImpl.java (engine/entities/data/skao/)
+    >       • Uses JdbcTemplate, RowMapper, and JdbcClient to query a database for SKAO transfer rate data. This is a deeper dependency -- the validator's logic
+    >         itself uses Spring JDBC for direct SQL queries.
+    >   
+    >     3. MockSkaoDataResourceValidatorImpl.java (engine/entities/data/skao/mock/)
+    >       • Takes a JdbcTemplate as a constructor parameter (passed through from MockPlatformImpl), forwarding it to the parent SkaoDataResourceValidatorImpl.
+    >   
+    >     The DockerClientFactoryImpl case is straightforward -- same interface/impl split pattern used for DockerPlatformSettings. The SKAO validator is more
+    >     interesting since it embeds Spring JDBC usage in business logic rather than just using annotations for DI wiring.
+
+
+    ?   /plan
+    ?   Can you create a plan for splitting DockerClientFactoryImpl, using the same interface/impl split pattern used for DockerPlatformSettings.
+
+    >   ....
+    >   ....
+    >    ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >    │ Plan (rejected)                                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ Move DockerClientFactoryImpl to Spring Package                                                                                                           │
+    >    │                                                                                                                                                          │
+    >    │ Context                                                                                                                                                  │
+    >    │                                                                                                                                                          │
+    >    │ DockerClientFactory (the interface) is already framework-neutral -- it lives in engine.functional.platfom.docker and is used by multiple entity          │
+    >    │ classes. Only DockerClientFactoryImpl has Spring annotations (@Component, @Profile("docker")).                                                           │
+    >    │ This follows the exact same pattern already applied for DockerPlatformSettings/DockerPlatformSettingsImpl.                                               │
+    >    │                                                                                                                                                          │
+    >    │ Changes                                                                                                                                                  │
+    >    │                                                                                                                                                          │
+    >    │ 1. Move DockerClientFactoryImpl to the spring package                                                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ • Source: DockerClientFactoryImpl.java                                                                                                                   │
+    >    │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerClientFactoryImpl.java)     │
+    >    │ • Destination: net.ivoa.calycopis.broker.spring.platfom.docker.DockerClientFactoryImpl                                                                   │
+    >    │ • Change package declaration from engine.functional.platfom.docker to spring.platfom.docker                                                              │
+    >    │ • Add import for net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory                                                          │
+    >    │ • Keep @Component, @Profile("docker"), and all existing logic unchanged                                                                                  │
+    >    │                                                                                                                                                          │
+    >    │ 2. No other changes needed                                                                                                                               │
+    >    │                                                                                                                                                          │
+    >    │ • DockerClientFactory.java                                                                                                                               │
+    >    │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerClientFactory.java) --      │
+    >    │   stays in engine, unchanged                                                                                                                             │
+    >    │ • DockerPlatform.java                                                                                                                                    │
+    >    │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/engine/functional/platfom/docker/DockerPlatform.java) --           │
+    >    │   references DockerClientFactory (the interface), unchanged                                                                                              │
+    >    │ • DockerPlatformImpl.java                                                                                                                                │
+    >    │   (calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/spring/platfom/docker/DockerPlatformImpl.java) -- @Autowired       │
+    >    │   field is typed as DockerClientFactory (the interface), so Spring will still find the @Component impl by interface type. No change needed.              │
+    >    │ • All entity consumers (DockerSimpleComputeResourceEntity, DockerDockerContainerEntity, DockerHttpResourceEntity, DockerVolumeMountStorageEntity,        │
+    >    │   DockerDockerContainerValidatorImpl) reference only the DockerClientFactory interface, unchanged.                                                       │
+    >    └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+    ?   /plan
+    ?   Before we implement this plan. Can you analyse _why_ DockerClientFactoryImpl needs to be a Spring @Component ?
+    ?   Can we implement the same functionality without the Spring annotations.
+    ?   Can DockerPlatformImpl simply create an instance of DockerClientFactoryImpl, without requiring the @Autowired annotation ?
+
+    >   ....
+    >   ....
+    >     Looking at the DockerClientFactoryImpl code again -- it has no injected dependencies at all. No @Autowired fields, no constructor injection, no Spring
+    >     beans used internally. It simply reads environment variables and creates a Docker client using the docker-java library. The @Component and
+    >     @Profile("docker") annotations are only there so Spring discovers it and injects it into DockerPlatformImpl via @Autowired.
+    >   
+    >     There is no reason it needs to be a Spring @Component. DockerPlatformImpl can simply create an instance directly:
+    >   
+    >     private DockerClientFactory dockerClientFactory = new DockerClientFactoryImpl();
+    >   
+    >     Or instantiate it in the initialize() method, consistent with how other factories are created in that class.
+    >   
+    >     The @Profile("docker") annotation was originally used to ensure the bean was only created when the docker profile was active, but that constraint is
+    >     already handled by DockerPlatformImpl itself being annotated @Component @Profile("docker") -- so if the Docker platform isn't active, the factory would
+    >     never be needed anyway.
+    >   
+    >     In short: Yes, DockerPlatformImpl can simply new DockerClientFactoryImpl() directly. The Spring annotations can be removed entirely from
+    >     DockerClientFactoryImpl, making it framework-neutral and leaving it in the engine package with no changes needed to any other file.
+
+    ?   /agent
+    ?   Please remove the Spring annotations from DockerPlatformImpl and update DockerPlatformImpl to
+    ?   simply create a new DockerClientFactoryImpl() directly.
+
+    >   ....
+    >   ....
+    >     Done. Two changes made:
+    >   
+    >     • DockerClientFactoryImpl: Removed @Component, @Profile("docker"), and their Spring imports. The class is now fully framework-neutral.
+    >     • DockerPlatformImpl: Replaced @Autowired private DockerClientFactory with private DockerClientFactory dockerClientFactory = new
+    >       DockerClientFactoryImpl(), creating the instance directly.
 
 
 # -----------------------------------------------------
@@ -1698,19 +1620,15 @@ simply create a new DockerClientFactoryImpl() directly.
 
     Executive decision - delete the Skao classes.
 
-==START==
-The Skao classes were part of an early experiment and are no longer used.
-Please delete the 'broker.engine.entities.data.skao' package.
-==END==
+    ?   The Skao classes were part of an early experiment and are no longer used.
+    ?   Please delete the 'broker.engine.entities.data.skao' package.
 
---START--
-....
-....
-
-  Done. The broker.engine.entities.data.skao package has been deleted (all 12 files in skao/ and skao/mock/), and the references in MockPlatformImpl have
-  been cleaned up -- including the mockSkaoDataResourceEntityFactory field, its construction, the Skao validator registration, and the now-unused
-  JdbcTemplate import and field. The build compiles cleanly.
---END--
+    >   ....
+    >   ....
+    >   
+    >     Done. The broker.engine.entities.data.skao package has been deleted (all 12 files in skao/ and skao/mock/), and the references in MockPlatformImpl have
+    >     been cleaned up -- including the mockSkaoDataResourceEntityFactory field, its construction, the Skao validator registration, and the now-unused
+    >     JdbcTemplate import and field. The build compiles cleanly.
 
 
 # -----------------------------------------------------
