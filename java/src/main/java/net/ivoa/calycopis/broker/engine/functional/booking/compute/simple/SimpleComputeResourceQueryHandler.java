@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2025 University of Manchester.
+ *     Copyright (c) 2026, University of Manchester (http://www.manchester.ac.uk/)
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -14,34 +14,22 @@
  *     GNU General Public License for more details.
  *
  *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *     along with this software. If not, see <http://www.gnu.org/licenses/>.
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: []
  *
  */
 
-package net.ivoa.calycopis.broker.engine.functional.booking.compute;
+package net.ivoa.calycopis.broker.engine.functional.booking.compute.simple;
 
-import net.ivoa.calycopis.broker.engine.functional.booking.ResourceOffer;
+import net.ivoa.calycopis.broker.engine.query.AbstractQueryHandler;
 
 /**
- * Public interface for a compute ResourceOffer.
- *  
+ * 
  */
-public interface ComputeResourceOffer
-extends ResourceOffer
+public interface SimpleComputeResourceQueryHandler
+extends AbstractQueryHandler<SimpleComputeResourceOffer>
     {
-    /**
-     * The total number of CPU cores.
-     *  
-     */
-    public Long getCores();
-
-    /**
-     * The total amount of memory in GiB.
-     *  
-     */
-    public Long getMemory();
-
     }

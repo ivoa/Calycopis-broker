@@ -27,8 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntityFactoryImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 
 /**
  * A DockerSimpleComputeResourceEntityFactory implementation.
@@ -55,8 +56,8 @@ implements DockerSimpleComputeResourceEntityFactory
     @Override
     public DockerSimpleComputeResourceEntity create(
         final SimpleExecutionSessionEntity session,
-        final DockerSimpleComputeResourceValidator.Result result,
-        final ComputeResourceOffer offer
+        final SimpleComputeResourceValidator.Result result,
+        final SimpleComputeResourceOffer offer
         ){
         return this.repository.save(
             new DockerSimpleComputeResourceEntity(

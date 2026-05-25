@@ -44,9 +44,9 @@ import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContain
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
+import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
-import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockMonitorAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockPrepareAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockReleaseAction;

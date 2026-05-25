@@ -36,8 +36,6 @@
 package net.ivoa.calycopis.broker.engine.entities.compute;
 
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
 
@@ -63,11 +61,6 @@ extends Validator<IvoaAbstractComputeResource, AbstractComputeResourceEntity>
     public static interface Result
     extends Validator.Result<IvoaAbstractComputeResource, AbstractComputeResourceEntity> 
         {
-        /**
-         * Build an ComputeResourceEntity based on the validation result.
-         * 
-         */
-        public AbstractComputeResourceEntity build(final SimpleExecutionSessionEntity session, final ComputeResourceOffer offer);
         }
 
     /**
@@ -92,7 +85,7 @@ extends Validator<IvoaAbstractComputeResource, AbstractComputeResourceEntity>
          * Protected constructor with a ResultEnum and IvoaAbstractComputeResource.
          * 
          */
-        public ResultBean(
+        protected ResultBean(
             final ResultEnum result,
             final IvoaAbstractComputeResource object
             ){

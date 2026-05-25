@@ -18,9 +18,6 @@
  *   </meta:licence>
  * </meta:header>
  *
- * Based on
- * https://www.geeksforgeeks.org/spring-boot-jparepository-with-example/
- * https://howtodoinjava.com/spring-boot/spring-boot-jparepository-example/
  *
  */
 package net.ivoa.calycopis.broker.engine.entities.offerset;
@@ -41,7 +38,6 @@ import net.ivoa.calycopis.schema.spring.model.IvoaOfferSetResponse.ResultEnum;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
- * Service for responding to OfferSet requests.
  *
  */
 @Slf4j

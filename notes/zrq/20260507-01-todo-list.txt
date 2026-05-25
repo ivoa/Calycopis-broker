@@ -126,12 +126,15 @@
 
     How many of the JpaRepositories are actually used ?
     I think it might just be the base class AbstractXyz ones.
+    -- done
 
     Get rid of Optional, just return null.
     Or make use of the NoSuchElementException that Optional throws.
 
     Remove the XyzEntity interfaces
+
     Do we need XyzEntityFactory interfaces - we aren't using Autowire any more.
+    -- planned but not implemented
 
     Decide on one pattern for entities and their interfaces:
 

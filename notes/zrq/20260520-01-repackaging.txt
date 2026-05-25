@@ -1690,3 +1690,314 @@ simply create a new DockerClientFactoryImpl() directly.
 --END--
 
 
+# -----------------------------------------------------
+
+    That leaves two cases.
+    * SkaoDataResourceValidatorImpl and MockSkaoDataResourceValidatorImpl
+    * ComputeResourceOfferFactoryImpl
+
+    Executive decision - delete the Skao classes.
+
+==START==
+The Skao classes were part of an early experiment and are no longer used.
+Please delete the 'broker.engine.entities.data.skao' package.
+==END==
+
+--START--
+....
+....
+
+  Done. The broker.engine.entities.data.skao package has been deleted (all 12 files in skao/ and skao/mock/), and the references in MockPlatformImpl have
+  been cleaned up -- including the mockSkaoDataResourceEntityFactory field, its construction, the Skao validator registration, and the now-unused
+  JdbcTemplate import and field. The build compiles cleanly.
+--END--
+
+
+# -----------------------------------------------------
+
+    How to handle ComputeResourceOfferFactoryImpl.
+
+    ResourceOffer
+    ResourceOfferImpl
+
+    ComputeResourceOfferImpl
+    Should contain the properties of SimpleComputeResource
+    replaced by
+    SimpleComputeResourceOffer and SimpleComputeResourceOfferBean
+
+    List<ComputeResourceOffer> generate(
+        final Interval requeststart,
+        final Duration requestduration,
+        final Long requestcores,
+        final Long requestmemory,
+        int offerCount
+        );
+
+    The SQL query is PostgreSQL specific, but not Spring specific.
+    JdbcClient and RowMapper are Spring specific.
+
+        Query + params -> QueryEngine -> List<SimpleComputeResourceOffer>
+
+# -----------------------------------------------------
+
+    Query combines fields from SimpleExecutionSessions and SimpleComputeResources
+    https://github.com/ivoa/Calycopis-broker/issues/291
+
+        SELECT
+            SimpleExecutionSessions.phase AS BlockPhase,
+            SimpleExecutionSessions.available_start_instant_seconds  / :blockstep AS BlockStart,
+            SimpleExecutionSessions.available_duration_seconds / :blockstep AS BlockLength,
+            COALESCE(SimpleComputeResources.maxofferedcores,  SimpleComputeResources.maxrequestedcores)  AS UsedCores,
+            COALESCE(SimpleComputeResources.maxofferedmemory, SimpleComputeResources.maxrequestedmemory) AS UsedMemory
+        FROM
+            SimpleExecutionSessions
+        JOIN
+            AbstractComputeResources
+        ON
+            AbstractComputeResources.session = SimpleExecutionSessions.uuid
+        JOIN
+            SimpleComputeResources
+        ON
+            SimpleComputeResources.uuid = AbstractComputeResources.uuid
+        WHERE
+            SimpleExecutionSessions.phase IN ('OFFERED', 'PREPARING', 'WAITING', 'RUNNING', 'RELEASING')
+
+# -----------------------------------------------------
+
+    Current factory, input params, returns a List<>
+
+        List<ComputeResourceOffer> computeOffers =  platform.getComputeResourceOfferFactory().generate(
+            offersetContext.getStartInterval(),
+            offersetContext.getExecutionDuration(),
+            offersetContext.getTotalMinCores(),
+            offersetContext.getTotalMinMemory(),
+            offerCount
+            );
+
+    Split the timing data and the resource quantities.
+
+        Parameters
+
+                offersetContext.getStartInterval(),
+                offersetContext.getExecutionDuration(),
+                ----
+                offersetContext.getTotalMinCores(),
+                offersetContext.getTotalMinMemory(),
+                offerCount
+
+        List<ComputeResourceOffer>
+
+                public String getName();
+                public Instant getStartTime();
+                public Duration getDuration();
+                    ----
+                public Long getCores();
+                public Long getMemory();
+
+
+# -----------------------------------------------------
+
+    Be specific.
+    Repackaging involves splitting the PostgreSQL and Spring specific parts.
+
+    interface SimpleComputeResourceOfferFactory
+    extends AbstractResourceOfferFactory<SimpleComputeResourceOffer>
+
+    interface AbstractResourceOfferFactory<OfferType extends ResourceOffer>
+        {
+        List<OfferType> generate(
+            String sqlquery,
+            Map<String, Object> parameters
+            );
+        }
+
+# -----------------------------------------------------
+
+    Next step re-design ComputeResourceOfferFactory and ComputeResourceOfferFactoryImpl.
+
+    Update the interface for AbstractResourceOffer
+    ```
+    package net.ivoa.calycopis.broker.engine.functional.booking;
+    interface AbstractResourceOffer
+        {
+    -   public Instant  getStartInstant();
+    +   public Interval getStartInterval();
+        public Duration getDuration();
+        }
+    ```
+
+    Rename ComputeResourceOffer to SimpleComputeResourceOffer
+    Update the interface for SimpleComputeResourceOffer
+    ```
+    package net.ivoa.calycopis.broker.engine.functional.booking.compute.simple;
+    interface SimpleComputeResourceOffer extends ResourceOffer
+        {
+    -   public Long getCores();
+    +   public Long getMinCores();
+    +   public Long getMaxCores();
+    -   public Long getMemory();
+    +   public Long getMinMemory();
+    +   public Long getMaxMemory();
+        }
+    ```
+
+    Create a Bean implementation of SimpleComputeResourceOffer
+    ```
+    package net.ivoa.calycopis.broker.engine.functional.booking.compute.simple;
+    public class SimpleComputeResourceOfferBean
+    implements SimpleComputeResourceOffer
+        {
+        public SimpleComputeResourceOfferBean(
+            ResultSet resultSet,
+            int rowNumber
+            ){
+            ....
+            }
+        }
+
+
+    Create an abstract interface for ResourceOfferGenerator
+    ```
+    package net.ivoa.calycopis.broker.engine.functional.booking.generator;
+    interface AbstractResourceOfferGenerator<OfferType extends AbstractResourceOffer>
+        {
+        public Iterable<OfferType> generate(
+            String sqlquery,
+            Map<String, Object> parameters
+            );
+        }
+    ```
+
+    Create a Spring implementation of ResourceOfferGenerator
+    ```
+    package net.ivoa.calycopis.broker.spring.functional.booking.generator;
+    class AbstractResourceOfferGeneratorImpl<OfferType extends AbstractResourceOffer>
+    implements AbstractResourceOfferGenerator<OfferType>
+        {
+
+        private final JdbcTemplate jdbcTemplate;
+        private final RowMapper<OfferType> rowMapper ;
+
+        protected AbstractResourceOfferGeneratorImpl(
+            final JdbcTemplate jdbcTemplate,
+            final RowMapper<OfferType> rowMapper
+            ){
+            this.jdbcTemplate = jdbcTemplate;
+            this.rowMapper = rowMapper;
+            }
+
+        public Iterable<OfferType> generate(
+            String sqlQuery,
+            Map<String, Object> parameters
+            ){
+
+            // Apply parameters to the query.
+
+            // Execute the query.
+            List<OfferType> list = JdbcClient.create(jdbcTemplate)
+                .sql(sqlQuery)
+                .query(rowMapper)
+                .list();
+
+            return list;
+            }
+
+        }
+    ```
+
+    Create a ResourceOfferGenerator for SimpleComputeResourceOffer
+    ```
+    package net.ivoa.calycopis.broker.spring.booking.compute.simple;
+    class SpringSimpleComputeResourceOfferQueryHandler
+    extends AbstractQueryHandler<SimpleComputeResourceOffer>
+        {
+        public SpringSimpleComputeResourceOfferQueryHandler(
+            final JdbcTemplate jdbcTemplate
+            ){
+            super(
+                jdbcTemplate,
+                new RowMapper<SimpleComputeResourceOffer>()
+                    {
+                    public SimpleComputeResourceOffer mapRow(
+                        ResultSet resultset,
+                        int rownumber
+                        )
+                        throws SQLException
+                        {
+                        return new SimpleComputeResourceOfferBean(
+                            resultSet,
+                            rowNumber
+                            );
+                        }
+                    }
+                );
+            }
+        }
+
+
+    Create an interface for SimpleComputeResourceOfferFactory
+    ```
+    package net.ivoa.calycopis.broker.engine.functional.booking.compute.simple;
+    interface SimpleComputeResourceOfferFactory
+        {
+        public Iterable<SimpleComputeResourceOffer> generate(
+            Interval requestStart
+            Duration requestDuration
+            Long requestMinCores
+            Long requestMemory
+            int requestLimit
+            );
+        }
+    ```
+
+    Create SimpleComputeResourceOfferFactory implementation
+    ```
+    package net.ivoa.calycopis.broker.engine.functional.booking.compute.simple;
+    class SimpleComputeResourceOfferFactoryImpl
+    implements SimpleComputeResourceOfferFactory
+        {
+        private final AbstractResourceOfferGenerator<SimpleComputeResourceOffer> generator;
+
+        public SimpleComputeResourceOfferFactoryImpl(
+            final AbstractResourceOfferGenerator<SimpleComputeResourceOffer> generator
+            ){
+            this.generator = generator;
+            }
+
+        public static final SQL_QUERY = "....."
+
+        public Iterable<SimpleComputeResourceOffer> generate(
+            Interval requestStart
+            Duration requestDuration
+            Long requestMinCores
+            Long requestMemory
+            int requestLimit
+            ){
+
+            Map<String, Object> parameters = new HashMap<String, Object>()
+
+            map.put("....", "....");
+            map.put("....", "....");
+            map.put("....", "....");
+
+            return generator.generate(
+                SQL_QUERY,
+                parameters
+                );
+            }
+        }
+    ```
+
+    ```
+    interface SimpleComputeResourceQueryHandler
+    extends AbstractQueryHandler<SimpleComputeResourceOffer>
+    ```
+
+# -----------------------------------------------------
+
+
+
+
+
+
+

@@ -48,7 +48,7 @@ import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionS
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdater;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactory;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOfferFactory;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOfferFactory;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactory;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingTransactionHandler;
@@ -90,7 +90,7 @@ extends FactoryBase
      * Get the ComputeResourceOfferFactory for this platform.
      *
      */
-    public ComputeResourceOfferFactory getComputeResourceOfferFactory();
+    public SimpleComputeResourceOfferFactory getComputeResourceOfferFactory();
 
     /**
      * Get the ComputeResourceValidatorFactory for this platform.

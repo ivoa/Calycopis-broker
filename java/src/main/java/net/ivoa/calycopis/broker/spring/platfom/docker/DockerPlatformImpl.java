@@ -82,6 +82,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -137,7 +138,8 @@ import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValid
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.docker.DockerSimpleVolumeMountEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.docker.DockerSimpleVolumeMountEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.docker.DockerSimpleVolumeMountValidatorImpl;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOfferFactory;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOfferFactory;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOfferFactoryImpl;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactoryImpl;
@@ -150,6 +152,7 @@ import net.ivoa.calycopis.broker.engine.functional.processing.component.Componen
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequestFactoryImpl;
 import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestFactory;
 import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestFactoryImpl;
+import net.ivoa.calycopis.broker.spring.booking.compute.simple.SpringSimpleComputeResourceOfferQueryHandlerImpl;
 import net.ivoa.calycopis.broker.spring.jpa.SpringAbstractEntityRepositoryWrapper;
 import net.ivoa.calycopis.broker.spring.jpa.SpringComponentProcessingRequestRepository;
 import net.ivoa.calycopis.broker.spring.jpa.SpringComputeResourceEntityRepository;
@@ -292,6 +295,14 @@ implements DockerPlatform
             this.sessionProcessingRequestFactory,
             this.componentProcessingRequestFactory
             );
+
+// Booking
+
+        this.simpleComputeResourceOfferFactory = new SimpleComputeResourceOfferFactoryImpl(
+            new SpringSimpleComputeResourceOfferQueryHandlerImpl(
+                    this.jdbcTemplate
+                    )
+            );
         
         //
         // Register validators with the most specific types first.
@@ -373,11 +384,13 @@ implements DockerPlatform
 // Compute    
     
     @Autowired
-    private ComputeResourceOfferFactory computeResourceOfferFactory;
+    private JdbcTemplate jdbcTemplate ;  
+    private SimpleComputeResourceOfferFactory simpleComputeResourceOfferFactory;
+    
     @Override
-    public ComputeResourceOfferFactory getComputeResourceOfferFactory()
+    public SimpleComputeResourceOfferFactory getComputeResourceOfferFactory()
         {
-        return this.computeResourceOfferFactory;
+        return this.simpleComputeResourceOfferFactory;
         }
     
     @Autowired

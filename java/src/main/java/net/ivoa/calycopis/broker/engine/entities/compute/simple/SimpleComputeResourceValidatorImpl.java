@@ -56,12 +56,11 @@ package net.ivoa.calycopis.broker.engine.entities.compute.simple;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactory;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
@@ -77,7 +76,7 @@ extends AbstractComputeResourceValidatorImpl
 implements SimpleComputeResourceValidator
     {
 
-    private final AbstractComputeResourceEntityFactory entityFactory;
+    private final SimpleComputeResourceEntityFactory entityFactory;
     protected final AbstractVolumeMountValidatorFactory volumeMountValidatorFactory;
 
     /**
@@ -85,7 +84,7 @@ implements SimpleComputeResourceValidator
      * 
      */
     public SimpleComputeResourceValidatorImpl(
-        final AbstractComputeResourceEntityFactory entityFactory,
+        final SimpleComputeResourceEntityFactory entityFactory,
         final AbstractVolumeMountValidatorFactory volumeMountValidatorFactory
         ){
         super();
@@ -187,7 +186,7 @@ implements SimpleComputeResourceValidator
                     validated
                     ){
                     @Override
-                    public AbstractComputeResourceEntity build(final SimpleExecutionSessionEntity session, final ComputeResourceOffer offer)                
+                    public AbstractComputeResourceEntity build(final SimpleExecutionSessionEntity session, final SimpleComputeResourceOffer offer)                
                         {
                         this.entity = SimpleComputeResourceValidatorImpl.this.entityFactory.create(
                             session,

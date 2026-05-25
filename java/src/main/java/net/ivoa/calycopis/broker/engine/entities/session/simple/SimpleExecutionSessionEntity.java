@@ -65,7 +65,7 @@ import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
-import net.ivoa.calycopis.broker.engine.functional.booking.ResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.booking.AbstractResourceOffer;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractOption;
 import net.ivoa.calycopis.schema.spring.model.IvoaScheduleStartDurationInstant;
@@ -125,7 +125,7 @@ implements SimpleExecutionSession
     public SimpleExecutionSessionEntity(
         final OfferSetEntity offerset,
         final OfferSetRequestParserContext context,
-        final ResourceOffer offerblock
+        final AbstractResourceOffer offerblock
         ){
         super(
             offerset,

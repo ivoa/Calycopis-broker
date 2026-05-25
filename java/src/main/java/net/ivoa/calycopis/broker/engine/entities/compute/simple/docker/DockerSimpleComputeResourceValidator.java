@@ -23,12 +23,12 @@
 
 package net.ivoa.calycopis.broker.engine.entities.compute.simple.docker;
 
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidator;
+import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceValidator;
 
 /**
  * 
  */
 public interface DockerSimpleComputeResourceValidator
-extends AbstractComputeResourceValidator
+extends SimpleComputeResourceValidator
     {
     }

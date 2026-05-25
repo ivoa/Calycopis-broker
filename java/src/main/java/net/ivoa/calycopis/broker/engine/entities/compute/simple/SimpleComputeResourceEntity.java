@@ -45,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
@@ -93,7 +93,7 @@ public abstract class SimpleComputeResourceEntity
     protected SimpleComputeResourceEntity(
         final SimpleExecutionSessionEntity session,
         final SimpleComputeResourceValidator.Result result,
-        final ComputeResourceOffer offer
+        final SimpleComputeResourceOffer offer
         ){
         super(
             session,
@@ -109,8 +109,8 @@ public abstract class SimpleComputeResourceEntity
             this.maxrequestedcores = validated.getCores().getMax();
             }
 
-        this.minofferedcores   = offer.getCores();
-        this.maxofferedcores   = offer.getCores();
+        this.minofferedcores   = offer.getMinCores();
+        this.maxofferedcores   = offer.getMaxCores();
 
         if (validated.getMemory() != null)
             {
@@ -118,8 +118,8 @@ public abstract class SimpleComputeResourceEntity
             this.maxrequestedmemory = validated.getMemory().getMax();
             }
 
-        this.minofferedmemory = offer.getMemory();
-        this.maxofferedmemory = offer.getMemory();
+        this.minofferedmemory = offer.getMinMemory();
+        this.maxofferedmemory = offer.getMaxMemory();
         }
 
     @Column(name="minrequestedcores")

@@ -68,7 +68,7 @@ import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinkerBean;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntity;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory;
 import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerPlatform;
@@ -111,7 +111,7 @@ implements DockerSimpleComputeResource
     protected DockerSimpleComputeResourceEntity(
         final SimpleExecutionSessionEntity session,
         final DockerSimpleComputeResourceValidator.Result result,
-        final ComputeResourceOffer offer
+        final SimpleComputeResourceOffer offer
         ){
         super(
             session,

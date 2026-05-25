@@ -122,7 +122,6 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -149,9 +148,6 @@ import net.ivoa.calycopis.broker.engine.entities.data.mock.MockDataStorageLinker
 import net.ivoa.calycopis.broker.engine.entities.data.simple.mock.MockSimpleDataResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.mock.MockSimpleDataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.mock.MockSimpleDataResourceValidatorImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataResourceEntityFactory;
-import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.skao.mock.MockSkaoDataResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactoryImpl;
@@ -163,7 +159,6 @@ import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJup
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJupyterNotebookValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetFactory;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetFactoryImpl;
-import net.ivoa.calycopis.broker.spring.jpa.SpringOfferSetRepository;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParser;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
@@ -182,17 +177,15 @@ import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValid
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.mock.MockSimpleVolumeMountValidatorImpl;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOfferFactory;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOfferFactory;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
+import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactory;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactoryImpl;
-import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestRepository;
-import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestRepositoryWrapper;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingTransactionHandler;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequestFactory;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequestFactoryImpl;
-import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestFactory;
 import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestFactoryImpl;
 import net.ivoa.calycopis.broker.spring.jpa.SpringAbstractEntityRepositoryWrapper;
@@ -200,6 +193,9 @@ import net.ivoa.calycopis.broker.spring.jpa.SpringComponentProcessingRequestRepo
 import net.ivoa.calycopis.broker.spring.jpa.SpringComputeResourceEntityRepository;
 import net.ivoa.calycopis.broker.spring.jpa.SpringDataResourceEntityRepository;
 import net.ivoa.calycopis.broker.spring.jpa.SpringExecutableEntityRepository;
+import net.ivoa.calycopis.broker.spring.jpa.SpringOfferSetRepository;
+import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestRepository;
+import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestRepositoryWrapper;
 import net.ivoa.calycopis.broker.spring.jpa.SpringSessionEntityRepository;
 import net.ivoa.calycopis.broker.spring.jpa.SpringSessionEntityRepositoryWrapper;
 import net.ivoa.calycopis.broker.spring.jpa.SpringSessionProcessingRequestRepository;
@@ -274,11 +270,6 @@ implements MockPlatform
                 )
             );  
         
-        this.mockSkaoDataResourceEntityFactory = new MockSkaoDataResourceEntityFactoryImpl(
-            new SpringAbstractEntityRepositoryWrapper<AbstractDataResourceEntity>(
-                this.springAbstractDataResourceEntityRepository
-                )
-            );
 
         this.mockDataStorageLinker = new MockDataStorageLinkerImpl(
             this.abstractStorageResourceValidatorFactory
@@ -385,17 +376,6 @@ implements MockPlatform
         // each validator now uses exact class matching (getClass() ==) rather
         // than instanceof, registering specific subtypes before their parent
         // types provides defence in depth against future regressions.
-        //
-        // SkaoDataResource extends IvoaDataResource in the type hierarchy,
-        // so the SKAO validator must be registered before the IVOA validator.
-        //
-        this.abstractDataResourceValidatorFactory.addValidator(
-            new MockSkaoDataResourceValidatorImpl(
-                this.jdbcTemplate,
-                this.mockSkaoDataResourceEntityFactory,
-                this.mockDataStorageLinker
-                )
-            );
         this.abstractDataResourceValidatorFactory.addValidator(
             new MockIvoaDataResourceValidatorImpl(
                 this.mockIvoaDataResourceEntityFactory,
@@ -433,11 +413,11 @@ implements MockPlatform
 // Compute    
     
     @Autowired
-    private ComputeResourceOfferFactory computeResourceOfferFactory;
+    private SimpleComputeResourceOfferFactory simpleComputeResourceOfferFactory;
     @Override
-    public ComputeResourceOfferFactory getComputeResourceOfferFactory()
+    public SimpleComputeResourceOfferFactory getComputeResourceOfferFactory()
         {
-        return this.computeResourceOfferFactory;
+        return this.simpleComputeResourceOfferFactory;
         }
     
     @Autowired
@@ -453,15 +433,12 @@ implements MockPlatform
     
 // Data   
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private SpringDataResourceEntityRepository springAbstractDataResourceEntityRepository;
     private MockSimpleDataResourceEntityFactory   mockSimpleDataResourceEntityFactory;
     private MockAmazonS3DataResourceEntityFactory mockAmazonS3DataResourceEntityFactory;
     private MockIvoaDataResourceEntityFactory     mockIvoaDataResourceEntityFactory;
-    private MockSkaoDataResourceEntityFactory     mockSkaoDataResourceEntityFactory;
 
     private AbstractDataResourceValidatorFactory abstractDataResourceValidatorFactory = new AbstractDataResourceValidatorFactoryImpl();
     @Override

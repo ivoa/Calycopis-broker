@@ -29,7 +29,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
@@ -74,7 +74,7 @@ implements SimpleExecutionSessionEntityFactory
     public SimpleExecutionSessionEntity create(
         final OfferSetEntity parent,
         final OfferSetRequestParserContext context,
-        final ComputeResourceOffer offer
+        final SimpleComputeResourceOffer offer
         ){
         return this.repository.save(
             new SimpleExecutionSessionEntity(

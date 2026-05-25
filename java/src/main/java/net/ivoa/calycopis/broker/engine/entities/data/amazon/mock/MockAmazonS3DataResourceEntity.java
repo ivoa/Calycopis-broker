@@ -42,9 +42,9 @@ import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionS
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
+import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
-import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockMonitorAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockPrepareAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockReleaseAction;

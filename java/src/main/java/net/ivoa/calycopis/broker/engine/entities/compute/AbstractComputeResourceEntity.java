@@ -40,7 +40,7 @@ import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEnt
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMount;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
@@ -76,7 +76,7 @@ implements AbstractComputeResource
     protected AbstractComputeResourceEntity(
         final SimpleExecutionSessionEntity session,
         final AbstractComputeResourceValidator.Result result,
-        final ComputeResourceOffer offer
+        final SimpleComputeResourceOffer offer
         ){
         super(
             result.getMeta()
@@ -90,14 +90,14 @@ implements AbstractComputeResource
         // Start preparing before the offer is available.
         // TODO Add available time and preparation time to the offer.
         this.prepareDurationSeconds     = result.getPrepareDuration();
-        this.prepareStartInstantSeconds = offer.getStartTime().getEpochSecond() - result.getPrepareDuration(); 
+        this.prepareStartInstantSeconds = offer.getStartInstant().getEpochSecond() - result.getPrepareDuration(); 
 
         //
         // Available as soon as the preparation is done.
         // TODO Add available time and preparation time to the offer.
         this.availableDurationSeconds      = offer.getDuration().getSeconds();
         this.availableStartDurationSeconds = 0L;
-        this.availableStartInstantSeconds  = offer.getStartTime().getEpochSecond();
+        this.availableStartInstantSeconds  = offer.getStartInstant().getEpochSecond();
 
         //
         // Hard coded 10s release duration.

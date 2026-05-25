@@ -28,7 +28,7 @@ import java.util.UUID;
 
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
@@ -59,7 +59,7 @@ extends FactoryBase
     public SimpleExecutionSessionEntity create(
         final OfferSetEntity parent,
         final OfferSetRequestParserContext context,
-        final ComputeResourceOffer offer
+        final SimpleComputeResourceOffer offer
         );
     
     }

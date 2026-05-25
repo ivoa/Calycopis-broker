@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2025 University of Manchester.
+ *     Copyright (c) 2026, University of Manchester (http://www.manchester.ac.uk/)
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -14,36 +14,37 @@
  *     GNU General Public License for more details.
  *
  *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *     along with this software. If not, see <http://www.gnu.org/licenses/>.
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: []
  *
  */
-
-package net.ivoa.calycopis.broker.engine.functional.booking;
+package net.ivoa.calycopis.broker.engine.functional.booking.compute.simple;
 
 import java.time.Duration;
+
+import org.threeten.extra.Interval;
 
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 
 /**
- * Public interface for a ResourceOffer factory.
- * 
+ * Public interface for a SimpleComputeResourceOffer factory. 
+ *  
  */
-public interface ResourceOfferFactory
+public interface SimpleComputeResourceOfferFactory
 extends FactoryBase
     {
     /**
-     * Get the maximum start range that can be requested.
+     * Generate an Iterable set of offers.
      * 
      */
-    public Duration getMaxStartRange();
-
-    /**
-     * Get the maximum execution duration that can be requested.
-     * 
-     */
-    public Duration getMaxDuration();
-    
+    public Iterable<SimpleComputeResourceOffer> generate(
+        final Interval requestStart,
+        final Duration requestDuration,
+        final Long requestMinCores,
+        final Long requestMemory,
+        final int requestLimit
+        );
     }

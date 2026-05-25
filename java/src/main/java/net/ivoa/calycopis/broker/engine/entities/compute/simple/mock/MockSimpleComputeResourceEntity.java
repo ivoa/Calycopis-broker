@@ -40,13 +40,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
+import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
-import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockMonitorAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockPrepareAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockReleaseAction;
@@ -83,8 +84,8 @@ implements MockSimpleComputeResource
      */
     protected MockSimpleComputeResourceEntity(
         final SimpleExecutionSessionEntity session,
-        final MockSimpleComputeResourceValidator.Result result,
-        final ComputeResourceOffer offer
+        final SimpleComputeResourceValidator.Result result,
+        final SimpleComputeResourceOffer offer
         ){
         super(
             session,
