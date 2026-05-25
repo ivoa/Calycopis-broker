@@ -35,7 +35,7 @@ public interface SimpleComputeResourceEntityFactory
 extends AbstractComputeResourceEntityFactory
     {
     /**
-     * Create a new ComputeResourceEntity based on a Validator Result and resource Offer.
+     * Create a new SimpleComputeResourceEntity based on a Validator Result and resource Offer.
      *
      */
     public SimpleComputeResourceEntity create(
