@@ -43,7 +43,7 @@ import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
  * 
  */
 @Repository
-public interface SpringOfferSetRepository
+public interface SpringOfferSetEntityRepository
 extends SpringAbstractEntityRepository<OfferSetEntity>
     {
     }

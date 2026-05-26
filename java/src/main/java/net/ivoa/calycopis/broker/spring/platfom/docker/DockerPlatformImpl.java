@@ -116,8 +116,8 @@ import net.ivoa.calycopis.broker.engine.entities.executable.docker.docker.Docker
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.docker.DockerDockerContainerEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.docker.DockerDockerContainerValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.JupyterNotebookEntityFactory;
-import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetFactory;
-import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetFactoryImpl;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParser;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
@@ -154,16 +154,16 @@ import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionPro
 import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionProcessingRequestFactoryImpl;
 import net.ivoa.calycopis.broker.spring.booking.compute.simple.SpringSimpleComputeResourceOfferQueryHandlerImpl;
 import net.ivoa.calycopis.broker.spring.jpa.SpringAbstractEntityRepositoryWrapper;
-import net.ivoa.calycopis.broker.spring.jpa.SpringComponentProcessingRequestRepository;
+import net.ivoa.calycopis.broker.spring.jpa.SpringComponentProcessingRequestEntityRepository;
 import net.ivoa.calycopis.broker.spring.jpa.SpringComputeResourceEntityRepository;
 import net.ivoa.calycopis.broker.spring.jpa.SpringDataResourceEntityRepository;
 import net.ivoa.calycopis.broker.spring.jpa.SpringExecutableEntityRepository;
-import net.ivoa.calycopis.broker.spring.jpa.SpringOfferSetRepository;
-import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestRepository;
-import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestRepositoryWrapper;
+import net.ivoa.calycopis.broker.spring.jpa.SpringOfferSetEntityRepository;
+import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestEntityRepository;
+import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestEntityRepositoryWrapper;
 import net.ivoa.calycopis.broker.spring.jpa.SpringSessionEntityRepository;
 import net.ivoa.calycopis.broker.spring.jpa.SpringSessionEntityRepositoryWrapper;
-import net.ivoa.calycopis.broker.spring.jpa.SpringSessionProcessingRequestRepository;
+import net.ivoa.calycopis.broker.spring.jpa.SpringSessionProcessingRequestEntityRepository;
 import net.ivoa.calycopis.broker.spring.jpa.SpringStorageResourceEntityRepository;
 import net.ivoa.calycopis.broker.spring.jpa.SpringVolumeMountEntityRepository;
 
@@ -266,7 +266,7 @@ implements DockerPlatform
 
 // OfferSet
         
-        this.offerSetFactory = new OfferSetFactoryImpl(
+        this.offerSetFactory = new OfferSetEntityFactoryImpl(
             this,
             new SpringAbstractEntityRepositoryWrapper<>(
                 this.springOfferSetRepository
@@ -289,7 +289,7 @@ implements DockerPlatform
             );
 
         this.processingRequestFactory = new ProcessingRequestFactoryImpl(
-            new SpringProcessingRequestRepositoryWrapper(
+            new SpringProcessingRequestEntityRepositoryWrapper(
                 this.springProcessingRequestRepository
                 ),
             this.sessionProcessingRequestFactory,
@@ -508,11 +508,11 @@ implements DockerPlatform
         }
 
     @Autowired
-    private SpringProcessingRequestRepository springProcessingRequestRepository;
+    private SpringProcessingRequestEntityRepository springProcessingRequestRepository;
     @Autowired
-    private SpringComponentProcessingRequestRepository springComponentProcessingRequestRepository;
+    private SpringComponentProcessingRequestEntityRepository springComponentProcessingRequestRepository;
     @Autowired
-    private SpringSessionProcessingRequestRepository springSessionProcessingRequestRepository;
+    private SpringSessionProcessingRequestEntityRepository springSessionProcessingRequestRepository;
 
     // These have to be initialized in the initialize() method because the Autowired repositories are not available at construction time.
     private ProcessingRequestFactory processingRequestFactory;
@@ -528,14 +528,14 @@ implements DockerPlatform
 // OfferSets
     
     @Autowired
-    private SpringOfferSetRepository springOfferSetRepository;
+    private SpringOfferSetEntityRepository springOfferSetRepository;
     
     private OfferSetRequestParser offerSetRequestParser = new OfferSetRequestParserImpl();
    
     // This  has to be initialized in the initialize() method because the Autowired repository is not available at construction time.
-    private OfferSetFactory offerSetFactory;
+    private OfferSetEntityFactory offerSetFactory;
     @Override
-    public OfferSetFactory getOfferSetFactory()
+    public OfferSetEntityFactory getOfferSetEntityFactory()
         {
         return this.offerSetFactory;
         }

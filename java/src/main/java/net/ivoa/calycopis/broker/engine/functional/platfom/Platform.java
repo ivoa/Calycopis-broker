@@ -43,7 +43,7 @@ import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResource
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactory;
-import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetFactory;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdater;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactory;
@@ -129,10 +129,10 @@ extends FactoryBase
     public AbstractDataStorageLinker getDataStorageLinker();
 
     /**
-     * Get the OfferSetFactory for this platform.
-     * 
+     * Get the OfferSetEntityFactory for this platform.
+     *
      */
-    public OfferSetFactory getOfferSetFactory();
+    public OfferSetEntityFactory getOfferSetEntityFactory();
 
     /**
      * Get the ExecutionSessionEntityFactory for this platform.

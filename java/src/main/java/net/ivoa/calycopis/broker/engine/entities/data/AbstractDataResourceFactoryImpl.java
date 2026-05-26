@@ -34,6 +34,7 @@ import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
  * 
  */
 @Slf4j
+@Deprecated
 public abstract class AbstractDataResourceFactoryImpl
 extends FactoryBaseImpl
 implements AbstractDataResourceEntityFactory

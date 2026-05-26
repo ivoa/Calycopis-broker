@@ -33,14 +33,14 @@ public interface ComponentProcessingRequestFactory
 extends FactoryBase
     {
 
-    public ComponentProcessingRequestEntityImpl createPrepareComponentRequest(final LifecycleComponentEntity component);
+    public ComponentProcessingRequestEntity createPrepareComponentRequest(final LifecycleComponentEntity component);
 
-    public ComponentProcessingRequestEntityImpl createMonitorComponentRequest(final LifecycleComponentEntity component);
+    public ComponentProcessingRequestEntity createMonitorComponentRequest(final LifecycleComponentEntity component);
 
-    public ComponentProcessingRequestEntityImpl createReleaseComponentRequest(final LifecycleComponentEntity component);
+    public ComponentProcessingRequestEntity createReleaseComponentRequest(final LifecycleComponentEntity component);
 
-    public ComponentProcessingRequestEntityImpl createCancelComponentRequest(final LifecycleComponentEntity component);
+    public ComponentProcessingRequestEntity createCancelComponentRequest(final LifecycleComponentEntity component);
 
-    public ComponentProcessingRequestEntityImpl createFailComponentRequest(final LifecycleComponentEntity component);
+    public ComponentProcessingRequestEntity createFailComponentRequest(final LifecycleComponentEntity component);
     
     }

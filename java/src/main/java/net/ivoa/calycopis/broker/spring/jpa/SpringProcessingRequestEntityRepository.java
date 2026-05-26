@@ -50,7 +50,7 @@ import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestE
  * 
  */
 @Repository
-public interface SpringProcessingRequestRepository
+public interface SpringProcessingRequestEntityRepository
 extends SpringAbstractEntityRepository<ProcessingRequestEntity>
     {
 

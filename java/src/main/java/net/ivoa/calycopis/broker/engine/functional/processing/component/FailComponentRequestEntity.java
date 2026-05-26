@@ -44,7 +44,7 @@ import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
     strategy = InheritanceType.JOINED
     )
 public class FailComponentRequestEntity
-extends ComponentProcessingRequestEntityImpl
+extends ComponentProcessingRequestEntity
 implements ComponentProcessingRequest
     {
 

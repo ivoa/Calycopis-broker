@@ -20,7 +20,7 @@
  *
  * AIMetrics: [
  *     {
- *     "timestamp": "2026-05-20T14:00:00",
+ *     "timestamp": "2026-05-21T10:54:00",
  *     "name": "Cursor CLI",
  *     "version": "2026.02.13-41ac335",
  *     "model": "Claude 4.6 Opus (Thinking)",
@@ -35,15 +35,46 @@
 
 package net.ivoa.calycopis.broker.spring.jpa;
 
-import org.springframework.stereotype.Repository;
+import java.util.Optional;
+import java.util.UUID;
 
-import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequestEntityImpl;
+import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
+import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestEntity;
+import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestRepositoryBase;
 
 /**
  * 
  */
-@Repository
-public interface SpringComponentProcessingRequestRepository
-extends SpringAbstractEntityRepository<ComponentProcessingRequestEntityImpl>
+public class SpringProcessingRequestEntityRepositoryWrapper
+extends FactoryBaseImpl
+implements ProcessingRequestRepositoryBase
     {
+
+    private final SpringProcessingRequestEntityRepository inner;
+
+    /**
+     * 
+     */
+    public SpringProcessingRequestEntityRepositoryWrapper(final SpringProcessingRequestEntityRepository inner)
+        {
+        this.inner = inner;
+        }
+
+    @Override
+    public Optional<ProcessingRequestEntity> findById(UUID uuid)
+        {
+        return inner.findById(uuid);
+        }
+
+    @Override
+    public <ActualType extends ProcessingRequestEntity> ActualType save(ActualType entity)
+        {
+        return inner.save(entity);
+        }
+
+    @Override
+    public void delete(ProcessingRequestEntity entity)
+        {
+        inner.delete(entity);
+        }
     }

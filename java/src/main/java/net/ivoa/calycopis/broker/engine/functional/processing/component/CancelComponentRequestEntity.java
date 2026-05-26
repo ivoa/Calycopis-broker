@@ -45,7 +45,7 @@ import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
     )
 @Deprecated
 public class CancelComponentRequestEntity
-extends ComponentProcessingRequestEntityImpl
+extends ComponentProcessingRequestEntity
 implements ComponentProcessingRequest
     {
 

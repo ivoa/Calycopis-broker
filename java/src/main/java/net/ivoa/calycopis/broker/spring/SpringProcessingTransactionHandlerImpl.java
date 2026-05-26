@@ -48,7 +48,7 @@ import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestE
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingService;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingServiceImpl;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingTransactionHandler;
-import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestRepository;
+import net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestEntityRepository;
 
 /**
  * Spring-specific implementation of ProcessingTransactionHandler.
@@ -62,7 +62,7 @@ implements ProcessingTransactionHandler
     {
 
     @Autowired
-    private SpringProcessingRequestRepository requestRepository;
+    private SpringProcessingRequestEntityRepository requestRepository;
 
     /**
      * 

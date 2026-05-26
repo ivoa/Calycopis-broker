@@ -47,19 +47,19 @@ extends FactoryBaseImpl
 implements ComponentProcessingRequestFactory
     {
 
-    private final AbstractEntityRepository<ComponentProcessingRequestEntityImpl> repository;
+    private final AbstractEntityRepository<ComponentProcessingRequestEntity> repository;
     
     /**
      * Public constructor used by our Platform.
      * 
      */
-    public ComponentProcessingRequestFactoryImpl(final AbstractEntityRepository<ComponentProcessingRequestEntityImpl> repository)
+    public ComponentProcessingRequestFactoryImpl(final AbstractEntityRepository<ComponentProcessingRequestEntity> repository)
         {
         this.repository = repository;
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createPrepareComponentRequest(LifecycleComponentEntity component)
+    public ComponentProcessingRequestEntity createPrepareComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new PrepareComponentRequestEntity(
@@ -69,7 +69,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createMonitorComponentRequest(LifecycleComponentEntity component)
+    public ComponentProcessingRequestEntity createMonitorComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new MonitorComponentRequestEntity(
@@ -79,7 +79,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createReleaseComponentRequest(LifecycleComponentEntity component)
+    public ComponentProcessingRequestEntity createReleaseComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new ReleaseComponentRequestEntity(
@@ -89,7 +89,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createCancelComponentRequest(LifecycleComponentEntity component)
+    public ComponentProcessingRequestEntity createCancelComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new CancelComponentRequestEntity(
@@ -99,7 +99,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createFailComponentRequest(LifecycleComponentEntity component)
+    public ComponentProcessingRequestEntity createFailComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new FailComponentRequestEntity(

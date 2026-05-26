@@ -28,6 +28,7 @@ import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 /**
  * 
  */
+@Deprecated
 public interface AbstractDataResourceFactory
 extends FactoryBase
     {

@@ -48,7 +48,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 @Inheritance(
     strategy = InheritanceType.JOINED
     )
-public abstract class ComponentProcessingRequestEntityImpl
+public abstract class ComponentProcessingRequestEntity
 extends ProcessingRequestEntity
 implements ComponentProcessingRequest
     {
@@ -60,14 +60,14 @@ implements ComponentProcessingRequest
         protected URI componentKind;
         protected UUID componentUuid;
 
-        public ComponentNotFoundException(final ComponentProcessingRequestEntityImpl request)
+        public ComponentNotFoundException(final ComponentProcessingRequestEntity request)
             {
             super(message(request));
             this.componentKind = request.componentKind;
             this.componentUuid = request.componentUuid;
             }
 
-        public static String message(final ComponentProcessingRequestEntityImpl request)
+        public static String message(final ComponentProcessingRequestEntity request)
             {
             return String.format(
                 "Unable to find component [%s][%s] for processing request [%s]",
@@ -78,12 +78,12 @@ implements ComponentProcessingRequest
             }
         }
 
-    protected ComponentProcessingRequestEntityImpl()
+    protected ComponentProcessingRequestEntity()
         {
         super();
         }
 
-    protected ComponentProcessingRequestEntityImpl(final LifecycleComponentEntity component)
+    protected ComponentProcessingRequestEntity(final LifecycleComponentEntity component)
         {
         this(
             ComponentProcessingRequest.KIND,
@@ -91,7 +91,7 @@ implements ComponentProcessingRequest
             );
         }
 
-    protected ComponentProcessingRequestEntityImpl(final URI kind, final LifecycleComponentEntity component)
+    protected ComponentProcessingRequestEntity(final URI kind, final LifecycleComponentEntity component)
         {
         super(kind);
         this.componentKind = component.getKind();

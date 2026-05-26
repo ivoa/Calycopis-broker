@@ -60,7 +60,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
     strategy = InheritanceType.JOINED
     )
 public class PrepareComponentRequestEntity
-extends ComponentProcessingRequestEntityImpl
+extends ComponentProcessingRequestEntity
 implements ComponentProcessingRequest
     {
 

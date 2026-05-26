@@ -37,7 +37,7 @@ package net.ivoa.calycopis.broker.engine.entities.data.amazon.mock;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
@@ -57,7 +57,7 @@ import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockReleaseAc
     name = "mockamazons3dataresources"
     )
 public class MockAmazonS3DataResourceEntity
-extends AmazonS3DataResourceEntityImpl
+extends AmazonS3DataResourceEntity
 implements MockAmazonS3DataResource
     {
 

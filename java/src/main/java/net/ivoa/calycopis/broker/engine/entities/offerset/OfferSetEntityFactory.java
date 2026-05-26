@@ -35,7 +35,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
 /**
  *
  */
-public interface OfferSetFactory
+public interface OfferSetEntityFactory
     extends FactoryBase
     {
     

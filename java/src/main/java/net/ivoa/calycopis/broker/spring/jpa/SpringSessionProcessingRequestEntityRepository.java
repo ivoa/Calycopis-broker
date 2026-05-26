@@ -43,7 +43,7 @@ import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionPro
  * 
  */
 @Repository
-public interface SpringSessionProcessingRequestRepository
+public interface SpringSessionProcessingRequestEntityRepository
 extends SpringAbstractEntityRepository<SessionProcessingRequestEntity>
     {
     }

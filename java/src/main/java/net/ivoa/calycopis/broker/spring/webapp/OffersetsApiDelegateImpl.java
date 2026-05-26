@@ -75,7 +75,7 @@ public class OffersetsApiDelegateImpl
     @Override
     public ResponseEntity<IvoaOfferSetResponse> offerSetGet(final UUID uuid)
         {
-        final Optional<OfferSetEntity> found = this.platform.getOfferSetFactory().select(
+        final Optional<OfferSetEntity> found = this.platform.getOfferSetEntityFactory().select(
             uuid
             );
         if (found.isPresent())
@@ -98,7 +98,7 @@ public class OffersetsApiDelegateImpl
     public ResponseEntity<IvoaOfferSetResponse> offerSetPost(
         @RequestBody IvoaExecutionRequest request
         ){
-        OfferSetEntity entity = this.platform.getOfferSetFactory().create(
+        OfferSetEntity entity = this.platform.getOfferSetEntityFactory().create(
             request
             );
         IvoaOfferSetResponse response = entity.makeBean(

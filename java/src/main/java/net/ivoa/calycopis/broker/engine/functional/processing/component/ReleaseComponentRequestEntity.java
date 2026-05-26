@@ -48,7 +48,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
     strategy = InheritanceType.JOINED
     )
 public class ReleaseComponentRequestEntity
-extends ComponentProcessingRequestEntityImpl
+extends ComponentProcessingRequestEntity
 implements ComponentProcessingRequest
     {
 

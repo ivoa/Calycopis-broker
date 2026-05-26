@@ -41,9 +41,9 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
  *
  */
 @Slf4j
-public class OfferSetFactoryImpl
+public class OfferSetEntityFactoryImpl
     extends FactoryBaseImpl
-    implements OfferSetFactory
+    implements OfferSetEntityFactory
     {
 
     private final Platform platform;
@@ -55,7 +55,7 @@ public class OfferSetFactoryImpl
      * Public constructor used by our Platform.
      * 
      */
-    public OfferSetFactoryImpl(
+    public OfferSetEntityFactoryImpl(
         final Platform platform,
         final AbstractEntityRepository<OfferSetEntity> offersetRepository,
         final OfferSetRequestParser offersetParser

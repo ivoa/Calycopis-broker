@@ -137,7 +137,7 @@ public class SessionsApiDelegateImpl
         log.debug("directExecutionPost(IvoaExecutionRequest)");
         //
         // Process the request to create a new execution session.
-        SimpleExecutionSessionEntity entity = platform.getOfferSetFactory().direct(request);
+        SimpleExecutionSessionEntity entity = platform.getOfferSetEntityFactory().direct(request);
         log.debug("Session entity [{}][{}][{}]", entity.getUuid(), entity.getPhase(), entity.getClass().getSimpleName());
 
         IvoaAbstractExecutionSession bean = entity.makeBean(

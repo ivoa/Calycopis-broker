@@ -52,7 +52,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaS3DataResource;
 @Table(
     name = "s3dataresources"
     )
-public abstract class AmazonS3DataResourceEntityImpl
+public abstract class AmazonS3DataResourceEntity
 extends AbstractDataResourceEntity
 implements AmazonS3DataResource
     {
@@ -67,7 +67,7 @@ implements AmazonS3DataResource
      * Protected constructor for JPA entities.
      *
      */
-    protected AmazonS3DataResourceEntityImpl()
+    protected AmazonS3DataResourceEntity()
         {
         super();
         }
@@ -76,7 +76,7 @@ implements AmazonS3DataResource
      * Protected constructor used by derived classes.
      *
      */
-    protected AmazonS3DataResourceEntityImpl(
+    protected AmazonS3DataResourceEntity(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntity storage,
         final AmazonS3DataResourceValidator.Result result
