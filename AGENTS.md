@@ -148,57 +148,109 @@ This project implements the IVOA Execution Broker service.
  * The Calycopis-broker project uses Python client classes generated from the schema for testing.
  * The Python project for the Python client classes is available at `/calycopis/Calycopis-schema/github-zrq/codegen/python/client/build/`
 
+## Package architecture
+
+The Java source code is split into two top-level package trees under
+`net.ivoa.calycopis.broker`:
+
+### `engine/` — Framework-neutral domain logic
+
+Contains interfaces, JPA entity classes, factory interfaces, validator interfaces,
+and processing logic. Uses `jakarta.persistence.*` (Jakarta EE standard) annotations
+for persistence but has **zero** Spring Framework imports (`org.springframework.*`).
+
+ * `engine/entities/` — Domain interfaces and JPA entity classes.
+   * `engine/entities/component/` — Base types: `Component`, `ComponentEntity`, `LifecycleComponent`, `LifecycleComponentEntity`.
+   * `engine/entities/<concept>/` — Each resource type (compute, storage, data, executable, volume, session, offerset, message).
+   * `engine/entities/<concept>/simple/` — Schema-type tier (e.g. `SimpleComputeResource`).
+   * `engine/entities/<concept>/simple/<platform>/` — Platform-specific entity subclasses (e.g. `mock/`, `docker/`).
+ * `engine/functional/` — Cross-cutting functional logic.
+   * `engine/functional/factory/` — `FactoryBase` / `FactoryBaseImpl`.
+   * `engine/functional/platfom/` — `Platform` interface and per-platform interfaces (`MockPlatform`, `DockerPlatform`).
+   * `engine/functional/processing/` — Processing loop, `ProcessingAction`, `ProcessingRequest` entities, `ProcessingService`.
+   * `engine/functional/validator/` — Validator base interfaces and `ValidatorFactory`.
+   * `engine/functional/booking/` — Resource booking logic.
+ * `engine/util/` — Utilities (`URIBuilder`, `ListWrapper`, etc.).
+ * `engine/webapp/` — Web-layer abstractions shared across frameworks.
+
+### `spring/` — Spring-specific implementations
+
+Contains all classes that depend on the Spring Framework (`org.springframework.*`).
+These are the concrete wiring that connects the domain logic to Spring Boot's
+dependency injection, transaction management, scheduling, and web layer.
+
+ * `spring/webapp/` — API delegate implementations (`OffersetsApiDelegateImpl`, `SessionsApiDelegateImpl`), the `@SpringBootApplication` class, and servlet configuration.
+ * `spring/jpa/` — All Spring Data `@Repository` interfaces (centralised in one package rather than co-located with entities).
+ * `spring/platfom/mock/` — `MockPlatformImpl` (`@Component`, `@Profile("mock")`).
+ * `spring/platfom/docker/` — `DockerPlatformImpl` (`@Component`, `@Profile("docker")`).
+ * `spring/processing/` — `TestProcessingSerivceImpl` with `@Scheduled` loop.
+ * `spring/booking/` — Booking service Spring `@Component` implementations.
+ * `spring/query/` — Query service Spring `@Component` implementations.
+
+### Design rationale
+
+Spring Framework annotations are isolated in `spring/` so that the domain logic in
+`engine/` could, in principle, be reused with a different DI/web framework. JPA
+annotations remain in `engine/` because they are part of the Jakarta EE standard and
+not Spring-specific.
+
 ## Design patterns
 
 ### Three-tier Entity/Factory/Validator/Repository pattern
 
 Every domain concept (compute, storage, data, executable, volume, session) follows a
-three-tier inheritance pattern with consistent file roles at each tier. The tiers map
-to the package structure under `net.ivoa.calycopis.datamodel.<concept>/`:
+three-tier inheritance pattern with consistent file roles at each tier. The entity
+interfaces, JPA entity classes, factory interfaces, and validator interfaces live in
+`engine/entities/<concept>/`. The Spring-specific wiring (repositories, `@Component`
+factories, `@Component` validators) lives in `spring/jpa/` and the platform
+implementation packages.
 
-<concept>/                          ← Tier 1: Abstract base
-<concept>/simple/                   ← Tier 2: Schema type (e.g. SimpleComputeResource)
-<concept>/simple/mock/              ← Tier 3: Platform-specific implementation
+```
+engine/entities/<concept>/                 ← Tier 1: Abstract base
+engine/entities/<concept>/simple/          ← Tier 2: Schema type (e.g. SimpleComputeResource)
+engine/entities/<concept>/simple/<platform>/ ← Tier 3: Platform-specific entity subclass
+spring/jpa/                                ← Repositories for all entities (centralised)
+```
 
-**Tier 1 – Abstract base** (`<concept>/`)
+**Tier 1 – Abstract base** (`engine/entities/<concept>/`)
 Defines the polymorphic root for a family of types. Files:
-| File | Role |
-|------|------|
-| `Abstract<Concept>.java` | Public interface extending `LifecycleComponent`. Defines `WEBAPP_PATH` and domain-specific getters. |
-| `Abstract<Concept>Entity.java` | JPA `@Entity` with `@Inheritance(JOINED)`. Abstract base class holding the session reference and common persistence fields. |
-| `Abstract<Concept>EntityFactory.java` | Factory interface for creating new entities from validation results and for selecting an exiting on based on its identifier. |
-| `Abstract<Concept>EntityFactoryImpl.java` | Abstract factory implementation (extends `FactoryBaseImpl`). |
-| `Abstract<Concept>EntityRepository.java` | Spring `@Repository` interface extending `LifecycleComponentEntityRepository`. |
-| `Abstract<Concept>Validator.java` | Validator interface extending `Validator<IvoaType, EntityType>`. Contains a nested `Result` interface and `ResultBean` class. |
-| `Abstract<Concept>ValidatorImpl.java` | Abstract validator implementation (extends `AbstractValidatorImpl`). |
-| `Abstract<Concept>ValidatorFactory.java` | Combines `Validator` and `ValidatorFactory` — acts as a chain-of-responsibility dispatcher. |
-| `Abstract<Concept>ValidatorFactoryImpl.java` | Spring `@Component` that iterates registered validators until one of them returns `ACCEPTED` or `FAILED`. |
+| File | Package | Role |
+|------|---------|------|
+| `Abstract<Concept>.java` | `engine/entities/<concept>/` | Public interface extending `LifecycleComponent`. Defines `WEBAPP_PATH` and domain-specific getters. |
+| `Abstract<Concept>Entity.java` | `engine/entities/<concept>/` | JPA `@Entity` with `@Inheritance(JOINED)`. Abstract base class holding the session reference and common persistence fields. |
+| `Abstract<Concept>EntityFactory.java` | `engine/entities/<concept>/` | Factory interface for creating new entities from validation results and for selecting an existing one based on its identifier. |
+| `Abstract<Concept>EntityFactoryImpl.java` | `engine/entities/<concept>/` | Abstract factory implementation (extends `FactoryBaseImpl`). |
+| `Abstract<Concept>Validator.java` | `engine/entities/<concept>/` | Validator interface extending `Validator<IvoaType, EntityType>`. Contains a nested `Result` interface and `ResultBean` class. |
+| `Abstract<Concept>ValidatorImpl.java` | `engine/entities/<concept>/` | Abstract validator implementation (extends `AbstractValidatorImpl`). |
+| `Abstract<Concept>ValidatorFactory.java` | `engine/entities/<concept>/` | Combines `Validator` and `ValidatorFactory` — acts as a chain-of-responsibility dispatcher. |
+| `Abstract<Concept>ValidatorFactoryImpl.java` | `engine/entities/<concept>/` | Iterates registered validators until one returns `ACCEPTED` or `FAILED`. |
+| `Spring<Concept>EntityRepository.java` | `spring/jpa/` | Spring `@Repository` interface extending `SpringAbstractEntityRepository`. |
 
-**Tier 2 – Schema type** (`<concept>/simple/`)
+**Tier 2 – Schema type** (`engine/entities/<concept>/simple/`)
 A concrete type from the OpenAPI schema (e.g. `SimpleComputeResource`). Files:
-| File | Role |
-|------|------|
-| `Simple<Concept>.java` | Interface extending `Abstract<Concept>`. Defines `TYPE_DISCRIMINATOR` URI and type-specific getters. |
-| `Simple<Concept>Entity.java` | JPA `@Entity` with `@DiscriminatorValue`. Adds type-specific `@Column` fields. Still abstract — leaves platform-specific methods (like
-`getPrepareAction`) unimplemented. |
-| `Simple<Concept>EntityFactory.java` | Factory interface extending the abstract factory. |
-| `Simple<Concept>EntityFactoryImpl.java` | Abstract factory implementation. |
-| `Simple<Concept>Validator.java` | Validator interface extending the abstract validator. |
-| `Simple<Concept>ValidatorImpl.java` | Validates the specific Ivoa type using exact class matching (`getClass() ==`, not `instanceof`). Creates a `ResultBean` with a `build()` method
-that delegates to the entity factory. |
+| File | Package | Role |
+|------|---------|------|
+| `Simple<Concept>.java` | `engine/entities/<concept>/simple/` | Interface extending `Abstract<Concept>`. Defines `TYPE_DISCRIMINATOR` URI and type-specific getters. |
+| `Simple<Concept>Entity.java` | `engine/entities/<concept>/simple/` | JPA `@Entity` with `@DiscriminatorValue`. Adds type-specific `@Column` fields. Still abstract — leaves platform-specific methods (like `getPrepareAction`) unimplemented. |
+| `Simple<Concept>EntityFactory.java` | `engine/entities/<concept>/simple/` | Factory interface extending the abstract factory. |
+| `Simple<Concept>EntityFactoryImpl.java` | `engine/entities/<concept>/simple/` | Abstract factory implementation. |
+| `Simple<Concept>Validator.java` | `engine/entities/<concept>/simple/` | Validator interface extending the abstract validator. |
+| `Simple<Concept>ValidatorImpl.java` | `engine/entities/<concept>/simple/` | Validates the specific Ivoa type using exact class matching (`getClass() ==`, not `instanceof`). Creates a `ResultBean` with a `build()` method that delegates to the entity factory. |
 
-**Tier 3 – Platform implementation** (`<concept>/simple/mock/`)
-A concrete, instantiable implementation for a specific platform (currently `mock`).
-This is the tier where classes become non-abstract. Files:
-| File | Role |
-|------|------|
-| `Mock<Concept>.java` | Interface extending `Simple<Concept>`. |
-| `Mock<Concept>Entity.java` | Concrete JPA `@Entity`. Implements platform-specific behavior (e.g. `getPrepareAction`). |
-| `Mock<Concept>EntityFactory.java` | Factory interface with a `create()` method taking the mock-specific validator result. |
-| `Mock<Concept>EntityFactoryImpl.java` | Concrete `@Component` factory. Receives the `@Repository` via `@Autowired` and calls `repository.save(new MockEntity(...))`. |
-| `Mock<Concept>EntityRepository.java` | Concrete `@Repository` for the mock entity. |
-| `Mock<Concept>Validator.java` | Validator interface extending the schema-type validator. |
-| `Mock<Concept>ValidatorImpl.java` | Concrete `@Component` validator. Registered with the `ValidatorFactory` at startup. |
+**Tier 3 – Platform implementation** (`engine/entities/<concept>/simple/<platform>/`)
+A concrete, instantiable implementation for a specific platform (e.g. `mock`, `docker`).
+This is the tier where entity classes become non-abstract. The entity subclass lives
+in `engine/entities/` while the Spring `@Component` factory and validator implementations
+that wire it into the application context also live here.
+| File | Package | Role |
+|------|---------|------|
+| `<Platform><Concept>.java` | `engine/entities/<concept>/simple/<platform>/` | Interface extending `Simple<Concept>`. |
+| `<Platform><Concept>Entity.java` | `engine/entities/<concept>/simple/<platform>/` | Concrete JPA `@Entity`. Implements platform-specific behavior (e.g. `getPrepareAction`). |
+| `<Platform><Concept>EntityFactory.java` | `engine/entities/<concept>/simple/<platform>/` | Factory interface with a `create()` method taking the platform-specific validator result. |
+| `<Platform><Concept>EntityFactoryImpl.java` | `engine/entities/<concept>/simple/<platform>/` | Concrete `@Component` factory. Receives the repository via `@Autowired` and calls `repository.save()`. |
+| `<Platform><Concept>EntityRepository.java` | `engine/entities/<concept>/simple/<platform>/` | Concrete `@Repository` for the platform entity. |
+| `<Platform><Concept>Validator.java` | `engine/entities/<concept>/simple/<platform>/` | Validator interface extending the schema-type validator. |
+| `<Platform><Concept>ValidatorImpl.java` | `engine/entities/<concept>/simple/<platform>/` | Concrete `@Component` validator. Registered with the `ValidatorFactory` at startup. |
 
 ### How the pieces connect at runtime
 1. **Request arrives** → `OfferSetRequestParser` extracts each component (executable, compute, storage, etc.)
@@ -212,22 +264,21 @@ and persists it via the repository.
 
 ### Adding a new platform implementation
 To add a new platform (e.g. `docker`):
-1. Create package `functional.platfom.docker/`.
-2. Create the 2 files following the mock pattern for the interface and the implementation.
-3. The implementation starts as a copy of the mock platform, with DockerPlatform and DockerPlatformImpl using the same validators and factories as the Mock platform.
-4. Then create the package `datamodel/compute/simple/docker/`.
-5. Create the 7 files following the mock pattern: interface, entity, factory interface, factory impl, repository, validator interface, validator impl.
-6. The entity class is the only non-trivial one — implement `getPrepareAction()` with real logic to connect to the Docker platform and run a container.
-7. The factory impl is a `@Component` that `@Autowired` receives the repository and calls `repository.save()`.
-8. The validator impl is a `@Component` that registers itself with the `ValidatorFactory` at startup.
-9. Update the DockerPlatform and DockerPlatformImpl to register and use the new classes from `datamodel/compute/simple/docker/`.
+1. Create the platform interface in `engine/functional/platfom/docker/` (e.g. `DockerPlatform.java`).
+2. Create the Spring `@Component` implementation in `spring/platfom/docker/` (e.g. `DockerPlatformImpl.java`), following the mock pattern. The implementation starts as a copy of the mock platform, using the same validators and factories.
+3. Create the platform-specific entity subclass package at `engine/entities/<concept>/simple/docker/` (e.g. `engine/entities/compute/simple/docker/`).
+4. Create the 7 files following the mock pattern: interface, entity, factory interface, factory impl, repository, validator interface, validator impl.
+5. The entity class is the only non-trivial one — implement `getPrepareAction()` with real logic to connect to the platform and run a container.
+6. The factory impl is a `@Component` that receives the repository via `@Autowired` and calls `repository.save()`.
+7. The validator impl is a `@Component` that registers itself with the `ValidatorFactory` at startup.
+8. Update the `DockerPlatformImpl` in `spring/platfom/docker/` to register and use the new classes.
 
 ### Adding a new resource type
 To add an entirely new resource type (e.g. `gpu`):
-1. Create package `datamodel/gpu/`.
-2. Create the abstract tier files following the compute pattern.
-3. Create `datamodel/gpu/simple/` with the schema-type tier.
-4. Create `datamodel/gpu/simple/mock/` with the platform tier.
+1. Create the abstract tier package at `engine/entities/gpu/` with the abstract tier files following the compute pattern.
+2. Create `engine/entities/gpu/simple/` with the schema-type tier files.
+3. Create `engine/entities/gpu/simple/mock/` with the platform-specific entity, factory, and validator files.
+4. Add a Spring `@Repository` interface to `spring/jpa/` for the new entity.
 5. Add a corresponding `ValidatorFactory` and wire it into `OfferSetRequestParser`.
 6. Add the new component to `ExecutionRequestComponents` / `SimpleExecutionComponents` in the schema.
 
