@@ -1084,20 +1084,20 @@ EOF
     ?   Please confirm that this makes sense.
 
     >     Yes, that makes sense. The order is:
-    >   
+    >
     >     1. Group 1a + 1b -- Migrate OfferSetRepository and MessageEntityRepository to the spring package using the established wrapper pattern.
     >     2. Group 1c -- Migrate ProcessingRequestRepository with its custom query methods (neutral interface + Spring repo + wrapper).
     >     3. Group 2 -- Move the 6 webapp classes (AmbleckApplication, ServletInitializer, SessionsApiDelegateImpl, OffersetsApiDelegateImpl, BaseDelegateImpl,
     >        YamlConverter) to the spring package.
     >     4. Group 4 -- SKIP (configuration and infrastructure classes left for later).
     >     5. Group 3 -- Move the 3 platform/processing impl classes (DockerPlatformImpl, MockPlatformImpl, TestProcessingSerivceImpl) to the spring package.
-    >   
+    >
     >     After steps 1-3 and 5 are complete, all JPA repositories will be in the spring package, so @EnableJpaRepositories can be restricted back to just
     >     "net.ivoa.calycopis.broker.spring".
-    >   
+    >
     >     The only Spring dependencies remaining in the engine package will be the 5 Group 4 classes (settings, Docker client factory, JDBC-based
     >     implementations), which you'll handle individually later.
-    >   
+    >
     >     Shall I start implementing?
 
     ?   yes
@@ -1111,19 +1111,19 @@ EOF
     >       ☒ Move 6 webapp classes to spring.webapp package
     >       ☒ Move 3 platform/processing impl classes to spring package
     >       ☒ Restrict @EnableJpaRepositories back to spring package only
-    >   
+    >
     >     All tasks are complete. The project builds and the service starts successfully. Here's a summary of what was done:
-    >   
+    >
     >     Group 1a -- OfferSetRepository:
     >     • Created SpringOfferSetRepository in the spring package
     >     • Updated OfferSetFactoryImpl to use the neutral AbstractEntityRepository<OfferSetEntity>
     >     • Updated both platform impls to autowire SpringOfferSetRepository and wrap it
     >     • Deleted the old OfferSetRepository from the engine package
-    >   
+    >
     >     Group 1b -- MessageEntityRepository:
     >     • Created SpringMessageEntityRepository (extends JpaRepository<MessageEntity, Long> directly since it uses Long IDs)
     >     • Deleted the old MessageEntityRepository from the engine package
-    >   
+    >
     >     Group 1c -- ProcessingRequestRepository:
     >     • Created ProcessingRequestRepositoryBase neutral interface (extends AbstractEntityRepository + delete())
     >     • Created SpringProcessingRequestRepository with all custom @Query methods
@@ -1132,16 +1132,16 @@ EOF
     >     • Updated SpringProcessingTransactionHandlerImpl to use SpringProcessingRequestRepository
     >     • Updated both platform impls to autowire and wrap accordingly
     >     • Deleted the old ProcessingRequestRepository from the engine package
-    >   
+    >
     >     Group 2 -- Webapp classes:
     >     • Moved all 5 classes (AmbleckApplication, ServletInitializer, BaseDelegateImpl, SessionsApiDelegateImpl, OffersetsApiDelegateImpl) from engine.webapp
     >       to spring.webapp
-    >   
+    >
     >     Group 3 -- Platform/processing implementations:
     >     • Moved DockerPlatformImpl to spring.platfom.docker
     >     • Moved MockPlatformImpl to spring.platfom.mock
     >     • Moved TestProcessingSerivceImpl to spring.processing
-    >   
+    >
     >     Final step:
     >     • Restricted @EnableJpaRepositories to scan only net.ivoa.calycopis.broker.spring -- no JPA repositories remain in the engine package.
 
@@ -1155,20 +1155,20 @@ EOF
     >   ....
     >   ....
     >     Everything works. Here's a summary of what was done:
-    >   
+    >
     >     Moved 15 files from net.ivoa.calycopis.broker.spring to net.ivoa.calycopis.broker.spring.jpa:
-    >   
+    >
     >     • Base interfaces: SpringAbstractEntityRepository, SpringAbstractEntityRepository
     >     • Concrete repositories: SpringComputeResourceEntityRepository, SpringDataResourceEntityRepository, SpringExecutableEntityRepository,
     >       SpringStorageResourceEntityRepository, SpringVolumeMountEntityRepository, SpringSessionEntityRepository, SpringComponentProcessingRequestRepository,
     >       SpringSessionProcessingRequestRepository, SpringOfferSetRepository, SpringMessageEntityRepository, SpringProcessingRequestRepository
     >     • Wrappers: SpringAbstractEntityRepositoryWrapper, SpringSessionEntityRepositoryWrapper, SpringProcessingRequestRepositoryWrapper
-    >   
+    >
     >     Updated imports in 3 consumer files:
     >     • DockerPlatformImpl (13 imports)
     >     • MockPlatformImpl (13 imports)
     >     • SpringProcessingTransactionHandlerImpl (1 import added)
-    >   
+    >
     >     The @EnableJpaRepositories("net.ivoa.calycopis.broker.spring") scan scope still covers the new spring.jpa sub-package, so no change was needed there.
     >     Build compiles and service starts successfully.
 
@@ -1179,14 +1179,14 @@ EOF
     >   ....
     >   ....
     >    Build succeeds. Here's what was done:
-    >   
+    >
     >     • Created DockerPlatformSettings interface in engine.functional.platfom.docker with the getHelperImage() method
     >     • Created DockerPlatformSettingsImpl in spring.platfom.docker with @Component and @ConfigurationProperties(prefix = "broker.docker"), implementing the
     >       interface
     >     • Updated DockerPlatform interface to return DockerPlatformSettings instead of DockerSettings
     >     • Updated DockerPlatformImpl to autowire DockerPlatformSettingsImpl and return DockerPlatformSettings
     >     • Deleted the old DockerSettings class
-    >   
+    >
     >     The consumer in DockerHttpResourceEntity already accesses settings through dockerPlatform.getDockerSettings().getHelperImage(), which works unchanged
     >     since DockerPlatformSettings exposes getHelperImage().
 
@@ -1196,7 +1196,7 @@ EOF
     >   ....
     >   ....
     >     Build succeeds. Here's what was done:
-    >   
+    >
     >     • Created MockPlatformSettings interface in engine.functional.platfom.mock with the 6 convenience methods (getPrepareDelayMillis(),
     >       getMonitorDelayMillis(), getMonitorCount(), getReleaseDelayMillis(), getCancelDelayMillis(), getFailDelayMillis())
     >     • Created MockPlatformSettingsImpl in spring.platfom.mock with @Component and @ConfigurationProperties(prefix = "broker.mock-entities"), implementing
@@ -1215,7 +1215,7 @@ EOF
     >   ....
     >     All imports are only between deprecated repository files themselves -- no non-deprecated code imports any of them. These 31 files form a self-contained,
     >      entirely unused inheritance tree:
-    >   
+    >
     >     ComponentEntityRepository (not deprecated, but only used by deprecated code)
     >       └── LifecycleComponentEntityRepository (@Deprecated)
     >             ├── AbstractStorageResourceEntityRepository
@@ -1247,7 +1247,7 @@ EOF
     >             ├── DockerDockerContainerEntityRepository
     >             ├── MockDockerContainerEntityRepository
     >             └── MockJupyterNotebookEntityRepository
-    >   
+    >
     >     All 31 files (30 deprecated + ComponentEntityRepository) are only referenced by each other. None are imported by any active code. They are all safe to
     >     delete.
 
@@ -1272,46 +1272,46 @@ EOF
     >   ....
     >   ....
     >     ────────────────────────────────────────
-    >   
+    >
     >     Cost/Benefit Analysis: Removing Leaf Factory Interfaces
-    >   
+    >
     >     The current structure (3-level hierarchy)
-    >   
+    >
     >     LifecycleComponentEntityFactory<T>          (base - defines getKind(), select())
     >       └── AbstractComputeResourceEntityFactory  (mid-level - adds create() method)
     >             └── SimpleComputeResourceEntityFactory    (mid-level - empty)
     >                   ├── DockerSimpleComputeResourceEntityFactory  (LEAF - empty)
     >                   └── MockSimpleComputeResourceEntityFactory    (LEAF - empty)
-    >   
+    >
     >     This pattern repeats across all entity domains (compute, data, executable, storage, volume). The leaf interfaces (e.g.,
     >     DockerSimpleComputeResourceEntityFactory, MockDockerContainerEntityFactory) are uniformly empty -- they add zero methods to their parents.
-    >   
+    >
     >     Who references what
-    >   
+    >
     >     There are three categories of interfaces:
-    >   
+    >
     >     1. Base/abstract interfaces (LifecycleComponentEntityFactory, AbstractComputeResourceEntityFactory, AbstractDataResourceEntityFactory,
     >        AbstractStorageResourceEntityFactory): Define the contract methods. Referenced by abstract validators (e.g., SimpleVolumeMountValidatorImpl takes
     >        AbstractDataResourceEntityFactory and AbstractStorageResourceEntityFactory as constructor parameters). These must stay.
-    >   
+    >
     >     2. Mid-level interfaces (SimpleComputeResourceEntityFactory, DockerContainerEntityFactory, SimpleStorageResourceEntityFactory, etc.): Also empty, but
     >        some are used as parameter types in Platform interfaces (e.g., DockerPlatform.getDockerContainerEntityFactory() returns DockerContainerEntityFactory).
     >         These are more nuanced -- some serve as useful abstraction points, others don't.
-    >   
+    >
     >     3. Leaf interfaces (e.g., DockerSimpleComputeResourceEntityFactory, MockDockerContainerEntityFactory): All empty. Referenced only as field types in the
     >        platform impls and constructor parameter types in platform-specific validators. These are the candidates for removal.
-    >   
+    >
     >     Benefits of removing the leaf interfaces
-    >   
+    >
     >     • Eliminates ~20 empty files that add no methods and exist solely as type markers originally needed for @Autowired discrimination.
     >     • Simplifies navigation -- developers no longer need to trace through an empty interface to reach the implementation.
     >     • Reduces conceptual overhead -- the distinction between DockerSimpleComputeResourceEntityFactory (empty interface) and
     >       DockerSimpleComputeResourceEntityFactoryImpl (the real class) is no longer meaningful.
     >     • Aligns with the new architecture -- factories are now manually instantiated in Platform impls, not auto-wired, so the type discrimination reason is
     >       gone.
-    >   
+    >
     >     Costs and risks
-    >   
+    >
     >     • Moderate scope: ~20 leaf interface files to delete, ~20 impl files to rename, and updates to every consumer (platform impls, validators, linkers).
     >       Roughly 40-50 files touched.
     >     • Rename is not atomic in Java: Renaming DockerSimpleComputeResourceEntityFactoryImpl to DockerSimpleComputeResourceEntityFactory means the impl class
@@ -1322,15 +1322,15 @@ EOF
     >       or Docker variant.
     >     • No functional risk: Since all leaf interfaces are empty and their only consumers are internal, the rename is purely mechanical with no behavioral
     >       change.
-    >   
+    >
     >     Recommendation
-    >   
+    >
     >     The leaf interfaces are good candidates for removal. The cost is moderate (mechanical changes across ~40-50 files) but the benefit is a cleaner, more
     >     honest codebase where you're no longer maintaining empty interfaces that exist for a purpose (Spring autowiring) that no longer applies.
-    >   
+    >
     >     I would not recommend also removing the mid-level interfaces in the same pass. Some of them (like DockerContainerEntityFactory) serve as abstraction points
     >      in the Platform interface and validators, providing a useful level of indirection between the abstract factory and the platform-specific impl.
-    >   
+    >
     >     The work could be done incrementally by entity domain (compute, then executable, then data, etc.) to keep each change reviewable.
 
 
@@ -1482,7 +1482,7 @@ EOF
     >    │    2. No, propose changes (p or Esc)                                                                                                                     │
     >    │                                                                                                                                                          │
     >    └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-    >   
+    >
 
     ?   /plan
     ?   Given that we are not deleting DockerBindMountStorageEntityFactory
@@ -1493,7 +1493,7 @@ EOF
     >   ....
     >   ....
     >     The plan has been updated. The changes are:
-    >   
+    >
     >     • DockerVolumeMountStorageEntityFactory is now kept (not deleted), for consistency with DockerBindMountStorageEntityFactory
     >     • Total deletions reduced from 15 to 14 interfaces
     >     • Storage group reduced from 2 deletions to 1 (only MockSimpleStorageResourceEntityFactory)
@@ -1516,18 +1516,18 @@ EOF
     >   ....
     >   ....
     >     There are 3 files in the engine package with remaining Spring dependencies (besides ComputeResourceOfferFactoryImpl):
-    >   
+    >
     >     1. DockerClientFactoryImpl.java (engine/functional/platfom/docker/)
     >       • Uses @Component and @Profile("docker") -- this is a Spring-managed bean that should move to the spring package, similar to the
     >         DockerPlatformSettingsImpl pattern you've already applied.
-    >   
+    >
     >     2. SkaoDataResourceValidatorImpl.java (engine/entities/data/skao/)
     >       • Uses JdbcTemplate, RowMapper, and JdbcClient to query a database for SKAO transfer rate data. This is a deeper dependency -- the validator's logic
     >         itself uses Spring JDBC for direct SQL queries.
-    >   
+    >
     >     3. MockSkaoDataResourceValidatorImpl.java (engine/entities/data/skao/mock/)
     >       • Takes a JdbcTemplate as a constructor parameter (passed through from MockPlatformImpl), forwarding it to the parent SkaoDataResourceValidatorImpl.
-    >   
+    >
     >     The DockerClientFactoryImpl case is straightforward -- same interface/impl split pattern used for DockerPlatformSettings. The SKAO validator is more
     >     interesting since it embeds Spring JDBC usage in business logic rather than just using annotations for DI wiring.
 
@@ -1585,17 +1585,17 @@ EOF
     >     Looking at the DockerClientFactoryImpl code again -- it has no injected dependencies at all. No @Autowired fields, no constructor injection, no Spring
     >     beans used internally. It simply reads environment variables and creates a Docker client using the docker-java library. The @Component and
     >     @Profile("docker") annotations are only there so Spring discovers it and injects it into DockerPlatformImpl via @Autowired.
-    >   
+    >
     >     There is no reason it needs to be a Spring @Component. DockerPlatformImpl can simply create an instance directly:
-    >   
+    >
     >     private DockerClientFactory dockerClientFactory = new DockerClientFactoryImpl();
-    >   
+    >
     >     Or instantiate it in the initialize() method, consistent with how other factories are created in that class.
-    >   
+    >
     >     The @Profile("docker") annotation was originally used to ensure the bean was only created when the docker profile was active, but that constraint is
     >     already handled by DockerPlatformImpl itself being annotated @Component @Profile("docker") -- so if the Docker platform isn't active, the factory would
     >     never be needed anyway.
-    >   
+    >
     >     In short: Yes, DockerPlatformImpl can simply new DockerClientFactoryImpl() directly. The Spring annotations can be removed entirely from
     >     DockerClientFactoryImpl, making it framework-neutral and leaving it in the engine package with no changes needed to any other file.
 
@@ -1606,7 +1606,7 @@ EOF
     >   ....
     >   ....
     >     Done. Two changes made:
-    >   
+    >
     >     • DockerClientFactoryImpl: Removed @Component, @Profile("docker"), and their Spring imports. The class is now fully framework-neutral.
     >     • DockerPlatformImpl: Replaced @Autowired private DockerClientFactory with private DockerClientFactory dockerClientFactory = new
     >       DockerClientFactoryImpl(), creating the instance directly.
@@ -1625,7 +1625,7 @@ EOF
 
     >   ....
     >   ....
-    >   
+    >
     >     Done. The broker.engine.entities.data.skao package has been deleted (all 12 files in skao/ and skao/mock/), and the references in MockPlatformImpl have
     >     been cleaned up -- including the mockSkaoDataResourceEntityFactory field, its construction, the Skao validator registration, and the now-unused
     >     JdbcTemplate import and field. The build compiles cleanly.
@@ -1913,8 +1913,15 @@ EOF
 
 # -----------------------------------------------------
 
+==START==
+  /quit
+==END==
 
+--START--
+  To resume this session: agent --resume=b39c4460-4e5f-4dec-8c1b-b487150aa67c
+--END--
 
+# -----------------------------------------------------
 
 
 

@@ -1,0 +1,775 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Stress test our service ...
+
+    Result:
+
+        Work in progress ...
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Start another terminal and run our Python tests.
+#[user@desktop]
+
+    podman exec \
+        --tty \
+        --interactive \
+            calycopis-dev \
+                bash
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+            pushd docker
+                for i in {1..100}
+                do
+                    echo ""
+                    echo "Loop [${i}]"
+                    pytest test_docker_stress.py
+                done
+            popd
+        popd
+    popd
+
+
+--START--
+....
+....
+--END--
+
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+
+--START--
+....
+....
+....
+....
+2026-05-26 14:19:56 DEBUG scheduling-1 DockerSimpleComputeResourceEntity process() Image [ghcr.io/zarquan/heliophorus-cantliei:sha-c9572b0] found in local cache
+2026-05-26 14:19:56 DEBUG scheduling-1 DockerSimpleComputeResourceEntity createAndStartContainer() Creating Docker container from image [ghcr.io/zarquan/heliophorus-cantliei:sha-c9572b0]
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x00007fab5bc5316c, pid=22887, tid=22933
+#
+# JRE version: OpenJDK Runtime Environment (Red_Hat-26.0.0.0.35-2) (26.0+35) (build 26+35)
+# Java VM: OpenJDK 64-Bit Server VM (Red_Hat-26.0.0.0.35-2) (26+35, mixed mode, emulated-client, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, linux-amd64)
+# Problematic frame:
+# V  [libjvm.so+0xa6f16c]  Klass::external_name() const+0xc
+#
+# Core dump will be written. Default location: Determined by the following: "/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h" (alternatively, falling back to /calycopis/Calycopis-broker/github-zrq/java/core.22887)
+#
+# An error report file with more information is saved as:
+# /calycopis/Calycopis-broker/github-zrq/java/hs_err_pid22887.log
+[31646.470s][warning][os] Loading hsdis library failed
+#
+# If you would like to submit a bug report, please visit:
+#   https://bugzilla.redhat.com/enter_bug.cgi?product=Fedora&component=java-latest-openjdk&version=42
+#
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  08:47 h
+[INFO] Finished at: 2026-05-26T14:20:07Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.5.4:run (default-cli) on project calycopis-broker: Process terminated with exit code: 134 -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+--END--
+
+
+
+
+
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+
+    for i in {1..100}
+    do
+        echo ""
+        echo "Loop [${i}]"
+        pytest test_docker_stress.py -v -s
+    done
+
+--START--
+....
+....
+....
+....
+Loop [1]
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /calycopis/Calycopis-broker/github-zrq/tests/python/docker
+collected 1 item
+
+test_docker_stress.py::TestStress::test_concurrent_sessions
+======================================================================
+Stress test: 100 concurrent sessions, 5s container pause
+======================================================================
+
+[Phase 1] Submitting 100 offer requests...
+    ... 25/100 submitted
+    ... 50/100 submitted
+    ... 75/100 submitted
+    ... 100/100 submitted
+    Submitted 100/100 offers in 10.3s (0 errors)
+
+[Phase 2] Accepting 100 offers...
+    Accepted 100/100 sessions in 0.9s
+
+[Phase 3] Tracking 100 sessions (poll every 5.0s, timeout 900.0s)...
+
+    Time  Poll  Done/100   Progress
+  -----------------------------------
+      0s     1     0/100   ACCE:100
+      5s     2     0/100   ACCE:100
+     11s     3     0/100   ACCE:100
+     16s     4     0/100   ACCE:100
+     22s     5     0/100   ACCE:100
+     27s     6     0/100   ACCE:100
+     32s     7     0/100   ACCE:100
+     38s     8     0/100   ACCE:100
+     43s     9     0/100   ACCE:100
+     49s    10     0/100   ACCE:100
+     54s    11     0/100   ACCE:100
+     59s    12     0/100   ACCE:100
+     65s    13     0/100   ACCE:100
+     70s    14     0/100   ACCE:39 | PREP:61
+     76s    15     0/100   PREP:100
+     81s    16     0/100   PREP:100
+     87s    17     0/100   PREP:100
+     92s    18     0/100   PREP:100
+     98s    19     0/100   PREP:100
+    103s    20     0/100   PREP:100
+    108s    21     0/100   PREP:100
+    114s    22     0/100   PREP:100
+    119s    23     0/100   PREP:100
+    125s    24     0/100   PREP:100
+    130s    25     0/100   PREP:100
+    135s    26     0/100   PREP:100
+    141s    27     0/100   PREP:100
+    146s    28     0/100   PREP:100
+    151s    29     0/100   PREP:100
+    157s    30     0/100   PREP:100
+    162s    31     0/100   PREP:100
+    168s    32     0/100   PREP:100
+    173s    33     0/100   PREP:99 | AVAI:1
+    178s    34     0/100   PREP:80 | AVAI:20
+    184s    35     0/100   PREP:49 | AVAI:51
+    189s    36     0/100   PREP:17 | AVAI:83
+    195s    37     0/100   AVAI:100
+    200s    38     0/100   AVAI:100
+    206s    39     0/100   AVAI:78 | RELE:22
+    211s    40     0/100   AVAI:49 | RELE:51
+    217s    41     0/100   AVAI:26 | RELE:74
+    222s    42     0/100   AVAI:3 | RELE:97
+    227s    43     0/100   RELE:100
+    233s    44    10/100   RELE:90 | COMP:10
+    238s    45    60/100   RELE:40 | COMP:60
+    244s    46   100/100   COMP:100
+
+======================================================================
+RESULTS
+======================================================================
+
+  Requested:         100
+  Submitted:         100
+  Accepted:          100
+  Completed:         100
+  Failed:            0
+  Cancelled:         0
+  Still active:      0
+  Submit errors:     0
+
+  Timing:
+    Submit phase:      10.3s
+    Accept phase:       0.9s
+    Tracking phase:   243.7s
+    Total:            254.9s
+
+  Lifecycle duration (ACCEPTED -> terminal):
+    Min:              233.6s
+    Max:              244.0s
+    Mean:             240.3s
+    P50:              239.1s
+    P90:              243.8s
+    P99:              244.0s
+
+======================================================================
+PASSED
+
+======================== 1 passed in 255.30s (0:04:15) =========================
+
+Loop [2]
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /calycopis/Calycopis-broker/github-zrq/tests/python/docker
+collected 1 item
+
+test_docker_stress.py::TestStress::test_concurrent_sessions
+======================================================================
+Stress test: 100 concurrent sessions, 5s container pause
+======================================================================
+
+[Phase 1] Submitting 100 offer requests...
+    ... 25/100 submitted
+    ... 50/100 submitted
+    ... 75/100 submitted
+    ... 100/100 submitted
+    Submitted 100/100 offers in 8.0s (0 errors)
+
+[Phase 2] Accepting 100 offers...
+    Accepted 100/100 sessions in 0.8s
+
+[Phase 3] Tracking 100 sessions (poll every 5.0s, timeout 900.0s)...
+
+    Time  Poll  Done/100   Progress
+  -----------------------------------
+      0s     1     0/100   ACCE:90 | PREP:10
+      6s     2     0/100   PREP:100
+     11s     3     0/100   PREP:100
+     16s     4     0/100   PREP:100
+     22s     5     0/100   PREP:100
+     27s     6     0/100   PREP:100
+     33s     7     0/100   PREP:100
+     38s     8     0/100   PREP:100
+     43s     9     0/100   PREP:100
+     49s    10     0/100   PREP:100
+     54s    11     0/100   PREP:100
+     59s    12     0/100   PREP:100
+     65s    13     0/100   PREP:92 | AVAI:8
+     70s    14     0/100   PREP:67 | AVAI:33
+     76s    15     0/100   PREP:36 | AVAI:64
+     81s    16     0/100   AVAI:92 | RELE:8
+     87s    17     0/100   AVAI:53 | RELE:47
+     92s    18     0/100   AVAI:28 | RELE:72
+     98s    19     0/100   RELE:100
+    103s    20     9/100   RELE:91 | COMP:9
+    108s    21    34/100   RELE:66 | COMP:34
+    114s    22    72/100   RELE:28 | COMP:72
+    119s    23   100/100   COMP:100
+
+======================================================================
+RESULTS
+======================================================================
+
+  Requested:         100
+  Submitted:         100
+  Accepted:          100
+  Completed:         100
+  Failed:            0
+  Cancelled:         0
+  Still active:      0
+  Submit errors:     0
+
+  Timing:
+    Submit phase:       8.0s
+    Accept phase:       0.8s
+    Tracking phase:   119.6s
+    Total:            128.4s
+
+  Lifecycle duration (ACCEPTED -> terminal):
+    Min:              103.5s
+    Max:              120.3s
+    Mean:             113.7s
+    P50:              114.3s
+    P90:              120.2s
+    P99:              120.3s
+
+======================================================================
+PASSED
+
+======================== 1 passed in 128.81s (0:02:08) =========================
+
+Loop [3]
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /calycopis/Calycopis-broker/github-zrq/tests/python/docker
+collected 1 item
+
+test_docker_stress.py::TestStress::test_concurrent_sessions
+======================================================================
+Stress test: 100 concurrent sessions, 5s container pause
+======================================================================
+
+[Phase 1] Submitting 100 offer requests...
+    ... 25/100 submitted
+    ... 50/100 submitted
+    ... 75/100 submitted
+    ... 100/100 submitted
+    Submitted 100/100 offers in 8.4s (0 errors)
+
+[Phase 2] Accepting 100 offers...
+    Accepted 100/100 sessions in 1.4s
+
+[Phase 3] Tracking 100 sessions (poll every 5.0s, timeout 900.0s)...
+
+    Time  Poll  Done/100   Progress
+  -----------------------------------
+      0s     1     0/100   ACCE:89 | PREP:11
+      6s     2     0/100   ACCE:23 | PREP:77
+     11s     3     0/100   PREP:99 | AVAI:1
+     17s     4     0/100   PREP:98 | AVAI:2
+     22s     5     0/100   PREP:98 | AVAI:2
+     28s     6     0/100   PREP:97 | AVAI:3
+     34s     7     0/100   PREP:96 | AVAI:4
+     39s     8     0/100   PREP:92 | AVAI:8
+     45s     9     0/100   PREP:71 | AVAI:27 | RELE:2
+     50s    10     0/100   PREP:46 | AVAI:50 | RELE:4
+     56s    11     0/100   PREP:45 | AVAI:40 | RELE:15
+     61s    12     2/100   PREP:45 | AVAI:23 | RELE:30 | COMP:2
+     67s    13     2/100   PREP:45 | AVAI:19 | RELE:34 | COMP:2
+     72s    14     2/100   PREP:45 | AVAI:16 | RELE:37 | COMP:2
+     77s    15     2/100   PREP:45 | AVAI:13 | RELE:40 | COMP:2
+     83s    16     3/100   PREP:45 | AVAI:7 | RELE:45 | COMP:3
+     89s    17     4/100   PREP:45 | RELE:51 | COMP:4
+     94s    18    11/100   PREP:33 | AVAI:12 | RELE:44 | COMP:11
+    100s    19    25/100   AVAI:45 | RELE:30 | COMP:25
+    105s    20    55/100   AVAI:21 | RELE:24 | COMP:55
+    111s    21    55/100   RELE:45 | COMP:55
+    116s    22    58/100   RELE:42 | COMP:58
+    121s    23   100/100   COMP:100
+
+======================================================================
+RESULTS
+======================================================================
+
+  Requested:         100
+  Submitted:         100
+  Accepted:          100
+  Completed:         100
+  Failed:            0
+  Cancelled:         0
+  Still active:      0
+  Submit errors:     0
+
+  Timing:
+    Submit phase:       8.4s
+    Accept phase:       1.4s
+    Tracking phase:   121.4s
+    Total:            131.2s
+
+  Lifecycle duration (ACCEPTED -> terminal):
+    Min:               62.8s
+    Max:              121.8s
+    Mean:             110.3s
+    P50:              106.4s
+    P90:              121.7s
+    P99:              121.8s
+
+======================================================================
+PASSED
+
+======================== 1 passed in 131.61s (0:02:11) =========================
+
+Loop [4]
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /calycopis/Calycopis-broker/github-zrq/tests/python/docker
+collected 1 item
+
+test_docker_stress.py::TestStress::test_concurrent_sessions
+======================================================================
+Stress test: 100 concurrent sessions, 5s container pause
+======================================================================
+
+[Phase 1] Submitting 100 offer requests...
+    ... 25/100 submitted
+    ... 50/100 submitted
+    ... 75/100 submitted
+    ... 100/100 submitted
+    Submitted 100/100 offers in 7.9s (0 errors)
+
+[Phase 2] Accepting 100 offers...
+    Accepted 100/100 sessions in 1.0s
+
+[Phase 3] Tracking 100 sessions (poll every 5.0s, timeout 900.0s)...
+
+    Time  Poll  Done/100   Progress
+  -----------------------------------
+      0s     1     0/100   ACCE:94 | PREP:6
+      6s     2     0/100   PREP:100
+     11s     3     0/100   PREP:100
+     17s     4     0/100   PREP:100
+     22s     5     0/100   PREP:100
+     28s     6     0/100   PREP:100
+     33s     7     0/100   PREP:100
+     39s     8     0/100   PREP:100
+     44s     9     0/100   PREP:100
+     50s    10     0/100   PREP:100
+     55s    11     0/100   PREP:100
+     61s    12     0/100   PREP:100
+     66s    13     0/100   PREP:100
+     72s    14     0/100   PREP:100
+     77s    15     0/100   PREP:100
+     82s    16     0/100   PREP:100
+     88s    17     0/100   PREP:100
+     93s    18     0/100   PREP:100
+     98s    19     0/100   PREP:85 | AVAI:15
+    104s    20     0/100   PREP:44 | AVAI:56
+    109s    21     0/100   AVAI:90 | RELE:10
+    115s    22     0/100   AVAI:52 | RELE:48
+    120s    23     0/100   AVAI:22 | RELE:78
+    126s    24     0/100   RELE:100
+    131s    25     6/100   RELE:94 | COMP:6
+    137s    26    24/100   RELE:76 | COMP:24
+    142s    27    77/100   RELE:23 | COMP:77
+    147s    28   100/100   COMP:100
+
+======================================================================
+RESULTS
+======================================================================
+
+  Requested:         100
+  Submitted:         100
+  Accepted:          100
+  Completed:         100
+  Failed:            0
+  Cancelled:         0
+  Still active:      0
+  Submit errors:     0
+
+  Timing:
+    Submit phase:       7.9s
+    Accept phase:       1.0s
+    Tracking phase:   147.5s
+    Total:            156.4s
+
+  Lifecycle duration (ACCEPTED -> terminal):
+    Min:              131.3s
+    Max:              147.7s
+    Mean:             142.3s
+    P50:              142.8s
+    P90:              147.6s
+    P99:              147.7s
+
+======================================================================
+PASSED
+
+======================== 1 passed in 156.80s (0:02:36) =========================
+
+Loop [5]
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /calycopis/Calycopis-broker/github-zrq/tests/python/docker
+collected 1 item
+
+test_docker_stress.py::TestStress::test_concurrent_sessions
+======================================================================
+Stress test: 100 concurrent sessions, 5s container pause
+======================================================================
+
+[Phase 1] Submitting 100 offer requests...
+    ... 25/100 submitted
+    ... 50/100 submitted
+    ... 75/100 submitted
+    ... 100/100 submitted
+    Submitted 100/100 offers in 8.0s (0 errors)
+
+[Phase 2] Accepting 100 offers...
+    Accepted 100/100 sessions in 0.9s
+
+[Phase 3] Tracking 100 sessions (poll every 5.0s, timeout 900.0s)...
+
+    Time  Poll  Done/100   Progress
+  -----------------------------------
+      0s     1     0/100   ACCE:91 | PREP:9
+      5s     2     0/100   PREP:100
+     11s     3     0/100   PREP:100
+     16s     4     0/100   PREP:100
+     22s     5     0/100   PREP:100
+     27s     6     0/100   PREP:100
+     32s     7     0/100   PREP:100
+     38s     8     0/100   PREP:100
+     43s     9     0/100   PREP:100
+     49s    10     0/100   PREP:100
+     54s    11     0/100   PREP:100
+     60s    12     0/100   PREP:100
+     65s    13     0/100   PREP:86 | AVAI:14
+     71s    14     0/100   PREP:61 | AVAI:39
+     76s    15     0/100   PREP:26 | AVAI:74
+     82s    16     0/100   AVAI:78 | RELE:22
+     87s    17     0/100   AVAI:48 | RELE:52
+     92s    18     0/100   AVAI:21 | RELE:79
+     98s    19     0/100   RELE:100
+    103s    20    12/100   RELE:88 | COMP:12
+    109s    21    41/100   RELE:59 | COMP:41
+    114s    22    83/100   RELE:17 | COMP:83
+    119s    23   100/100   COMP:100
+
+======================================================================
+RESULTS
+======================================================================
+
+  Requested:         100
+  Submitted:         100
+  Accepted:          100
+  Completed:         100
+  Failed:            0
+  Cancelled:         0
+  Still active:      0
+  Submit errors:     0
+
+  Timing:
+    Submit phase:       8.0s
+    Accept phase:       0.9s
+    Tracking phase:   119.4s
+    Total:            128.3s
+
+  Lifecycle duration (ACCEPTED -> terminal):
+    Min:              103.9s
+    Max:              120.1s
+    Mean:             112.7s
+    P50:              114.3s
+    P90:              120.0s
+    P99:              120.1s
+
+======================================================================
+PASSED
+
+======================== 1 passed in 128.62s (0:02:08) =========================
+
+Loop [6]
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /calycopis/Calycopis-broker/github-zrq/tests/python/docker
+collected 1 item
+
+test_docker_stress.py::TestStress::test_concurrent_sessions
+======================================================================
+Stress test: 100 concurrent sessions, 5s container pause
+======================================================================
+
+[Phase 1] Submitting 100 offer requests...
+    ... 25/100 submitted
+    ... 50/100 submitted
+    ... 75/100 submitted
+    ... 100/100 submitted
+    Submitted 100/100 offers in 8.1s (0 errors)
+
+[Phase 2] Accepting 100 offers...
+    Accepted 100/100 sessions in 0.9s
+
+[Phase 3] Tracking 100 sessions (poll every 5.0s, timeout 900.0s)...
+
+    Time  Poll  Done/100   Progress
+  -----------------------------------
+      0s     1     0/100   ACCE:90 | PREP:10
+      5s     2     0/100   ACCE:24 | PREP:76
+     11s     3     0/100   PREP:99 | AVAI:1
+     16s     4     0/100   PREP:99 | AVAI:1
+     21s     5     0/100   PREP:98 | AVAI:2
+     27s     6     0/100   PREP:98 | AVAI:2
+     32s     7     0/100   PREP:97 | AVAI:3
+     38s     8     0/100   PREP:96 | AVAI:4
+     43s     9     0/100   PREP:95 | AVAI:5
+     48s    10     0/100   PREP:94 | AVAI:6
+     54s    11     0/100   PREP:78 | AVAI:21 | RELE:1
+     59s    12     0/100   PREP:49 | AVAI:48 | RELE:3
+     65s    13     0/100   PREP:27 | AVAI:67 | RELE:6
+     70s    14     1/100   PREP:27 | AVAI:57 | RELE:15 | COMP:1
+     76s    15     1/100   PREP:27 | AVAI:53 | RELE:19 | COMP:1
+     81s    16     1/100   PREP:27 | AVAI:45 | RELE:27 | COMP:1
+     86s    17     3/100   PREP:27 | AVAI:21 | RELE:49 | COMP:3
+     92s    18     4/100   PREP:27 | RELE:69 | COMP:4
+     97s    19     6/100   PREP:24 | AVAI:3 | RELE:67 | COMP:6
+    103s    20    21/100   AVAI:27 | RELE:52 | COMP:21
+    108s    21    73/100   AVAI:22 | RELE:5 | COMP:73
+    113s    22    73/100   RELE:27 | COMP:73
+    119s    23    97/100   RELE:3 | COMP:97
+    124s    24   100/100   COMP:100
+
+======================================================================
+RESULTS
+======================================================================
+
+  Requested:         100
+  Submitted:         100
+  Accepted:          100
+  Completed:         100
+  Failed:            0
+  Cancelled:         0
+  Still active:      0
+  Submit errors:     0
+
+  Timing:
+    Submit phase:       8.1s
+    Accept phase:       0.9s
+    Tracking phase:   123.7s
+    Total:            132.7s
+
+  Lifecycle duration (ACCEPTED -> terminal):
+    Min:               71.4s
+    Max:              123.7s
+    Mean:             109.6s
+    P50:              108.7s
+    P90:              118.8s
+    P99:              123.7s
+
+======================================================================
+PASSED
+
+======================== 1 passed in 133.02s (0:02:13) =========================
+
+Loop [7]
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /calycopis/Calycopis-broker/github-zrq/tests/python/docker
+collected 1 item
+
+test_docker_stress.py::TestStress::test_concurrent_sessions
+======================================================================
+Stress test: 100 concurrent sessions, 5s container pause
+======================================================================
+
+[Phase 1] Submitting 100 offer requests...
+    ... 25/100 submitted
+    ... 50/100 submitted
+    ... 75/100 submitted
+    ... 100/100 submitted
+    Submitted 100/100 offers in 7.7s (0 errors)
+
+[Phase 2] Accepting 100 offers...
+    Accepted 100/100 sessions in 0.9s
+
+[Phase 3] Tracking 100 sessions (poll every 5.0s, timeout 900.0s)...
+
+    Time  Poll  Done/100   Progress
+  -----------------------------------
+      0s     1     0/100   ACCE:91 | PREP:9
+      6s     2     0/100   PREP:100
+     11s     3     0/100   PREP:100
+     16s     4     0/100   PREP:100
+     22s     5     0/100   PREP:100
+     27s     6     0/100   PREP:100
+     33s     7     0/100   PREP:100
+     38s     8     0/100   PREP:100
+     44s     9     0/100   PREP:100
+     49s    10     0/100   PREP:100
+     55s    11     0/100   PREP:100
+     60s    12     0/100   PREP:100
+     65s    13     0/100   PREP:100
+     71s    14     0/100   PREP:100
+     76s    15     0/100   PREP:100
+     82s    16     0/100   PREP:100
+     87s    17     0/100   PREP:100
+     92s    18     0/100   PREP:100
+     98s    19     0/100   PREP:88 | AVAI:12
+    103s    20     0/100   PREP:45 | AVAI:55
+    109s    21     0/100   PREP:2 | AVAI:98
+    114s    22     0/100   AVAI:58 | RELE:42
+    120s    23     0/100   AVAI:23 | RELE:77
+    125s    24     0/100   AVAI:1 | RELE:99
+    131s    25     4/100   RELE:96 | COMP:4
+    136s    26    18/100   RELE:82 | COMP:18
+    142s    27    69/100   RELE:31 | COMP:69
+    147s    28   100/100   COMP:100
+
+======================================================================
+RESULTS
+======================================================================
+
+  Requested:         100
+  Submitted:         100
+  Accepted:          100
+  Completed:         100
+  Failed:            0
+  Cancelled:         0
+  Still active:      0
+  Submit errors:     0
+
+  Timing:
+    Submit phase:       7.7s
+    Accept phase:       0.9s
+    Tracking phase:   147.1s
+    Total:            155.7s
+
+  Lifecycle duration (ACCEPTED -> terminal):
+    Min:              131.5s
+    Max:              147.9s
+    Mean:             142.6s
+    P50:              142.2s
+    P90:              147.7s
+    P99:              147.9s
+
+======================================================================
+PASSED
+
+======================== 1 passed in 156.02s (0:02:36) =========================
+
+Loop [8]
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /calycopis/Calycopis-broker/github-zrq/tests/python/docker
+collected 1 item
+
+test_docker_stress.py::TestStress::test_concurrent_sessions
+======================================================================
+Stress test: 100 concurrent sessions, 5s container pause
+======================================================================
+
+[Phase 1] Submitting 100 offer requests...
+    ... 25/100 submitted
+    ... 50/100 submitted
+    ... 75/100 submitted
+    ... 100/100 submitted
+    Submitted 100/100 offers in 7.9s (0 errors)
+
+[Phase 2] Accepting 100 offers...
+    Accepted 100/100 sessions in 0.9s
+
+[Phase 3] Tracking 100 sessions (poll every 5.0s, timeout 900.0s)...
+
+    Time  Poll  Done/100   Progress
+  -----------------------------------
+      0s     1     0/100   ACCE:90 | PREP:10
+      5s     2     0/100   PREP:100
+     11s     3     0/100   PREP:100
+     16s     4     0/100   PREP:100
+     22s     5     0/100   PREP:100
+     27s     6     0/100   PREP:100
+     32s     7     0/100   PREP:100
+     38s     8     0/100   PREP:100
+
+

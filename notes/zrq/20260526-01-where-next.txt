@@ -1,0 +1,293 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Figure out where next.
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+
+    We have isolated the Spring specific code into separate Java packages.
+
+    Data model classes generated from the OpenAPI schema.
+
+        net.ivoa.calycopis.schema
+        net.ivoa.calycopis.schema.spring
+        net.ivoa.calycopis.schema.spring.model
+
+        net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
+        net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataLinkItem;
+        net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataResource;
+        net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataResourceBlock;
+        net.ivoa.calycopis.schema.spring.model.IvoaIvoaObsCoreItem;
+
+    Server side entities
+
+        net.ivoa.calycopis.broker
+        net.ivoa.calycopis.broker.engine
+        net.ivoa.calycopis.broker.engine.entities
+
+    Abstract data resources
+
+        net.ivoa.calycopis.broker.engine.entities.data
+        net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResource
+        net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity
+        net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityFactory
+        net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityFactoryImpl
+
+        net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceFactory      <-- why ?
+        net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceFactoryImpl  <-- why ?
+
+        net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator
+        net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorImpl
+        net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactory
+        net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactoryImpl
+
+    Simple data resources
+
+        net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResource
+        net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntity
+        net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntityFactory
+        net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntityFactoryImpl
+        net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceValidator
+        net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceValidatorImpl
+
+    Docker data resources
+
+        net.ivoa.calycopis.broker.engine.entities.data.simple.docker
+        net.ivoa.calycopis.broker.engine.entities.data.simple.docker.DockerSimpleDataResource
+        net.ivoa.calycopis.broker.engine.entities.data.simple.docker.DockerSimpleDataResourceEntityFactory
+        net.ivoa.calycopis.broker.engine.entities.data.simple.docker.DockerSimpleDataResourceEntityFactoryImpl
+
+        net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResource
+        net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceEntity
+        net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceEntityFactory
+        net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceEntityFactoryImpl
+        net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceValidator
+        net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceValidatorImpl
+
+    Abstract platform
+
+        net.ivoa.calycopis.broker.engine.functional.platfom
+        net.ivoa.calycopis.broker.engine.functional.platfom.Platform
+
+    Docker platform
+
+        net.ivoa.calycopis.broker.engine.functional.platfom.docker
+        net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory
+        net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactoryImpl
+        net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerPlatform
+        net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerPlatformSettings
+
+    Resource booking
+
+        net.ivoa.calycopis.broker.engine.functional.booking
+        net.ivoa.calycopis.broker.engine.functional.booking.AbstractResourceOffer
+        net.ivoa.calycopis.broker.engine.functional.booking.AbstractResourceOfferBean
+
+        net.ivoa.calycopis.broker.engine.functional.booking.compute.simple
+        net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer
+        net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOfferBean
+        net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOfferFactory
+        net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOfferFactoryImpl
+        net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceQuery
+        net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceQueryHandler
+
+    Lifecycle processing
+
+        net.ivoa.calycopis.broker.engine.functional.processing
+        net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction
+        net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequest
+        net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestEntity
+        net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestException
+        net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactory
+        net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactoryImpl
+        net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestRepositoryBase
+        net.ivoa.calycopis.broker.engine.functional.processing.ProcessingService
+        net.ivoa.calycopis.broker.engine.functional.processing.ProcessingServiceImpl
+        net.ivoa.calycopis.broker.engine.functional.processing.ProcessingTransactionHandler
+
+
+# -----------------------------------------------------
+
+    TODO Should the schema classes have an additional openapi step ?
+    Are we also going to generate the classes from the vodlm model ?
+
+        net.ivoa.calycopis.schema
+        net.ivoa.calycopis.schema.openapi
+        net.ivoa.calycopis.schema.openapi.spring
+        net.ivoa.calycopis.schema.openapi.spring.model
+
+        net.ivoa.calycopis.schema
+        net.ivoa.calycopis.schema.vodml
+        net.ivoa.calycopis.schema.vodml.spring
+        net.ivoa.calycopis.schema.vodml.spring.model
+
+    Can we remove the 'functional' step in the server side packages.
+
+        net.ivoa.calycopis.broker.engine.booking
+        net.ivoa.calycopis.broker.engine.platfom
+        net.ivoa.calycopis.broker.engine.processing
+
+    If we remove the 'functional' step, do we also remove the 'entities' step ?
+
+        net.ivoa.calycopis.broker.engine.data
+        net.ivoa.calycopis.broker.engine.data.simple
+
+    Do we add a 'docker' step for the Docker implementation ?
+
+        net.ivoa.calycopis.broker.engine.docker
+        net.ivoa.calycopis.broker.engine.docker.data
+        net.ivoa.calycopis.broker.engine.docker.data.simple
+        net.ivoa.calycopis.broker.engine.docker.data.simple.file
+        net.ivoa.calycopis.broker.engine.docker.data.simple.file.DockerFileResource
+
+        net.ivoa.calycopis.broker.engine.docker.platform
+
+    This would help with the eventual goal of separating out the Docker
+    implementation into a 'plugin' package.
+
+    BUT then there are the Spring classes.
+
+        net.ivoa.calycopis.broker.spring.booking
+        net.ivoa.calycopis.broker.spring.booking.compute
+        net.ivoa.calycopis.broker.spring.booking.compute/simple
+        net.ivoa.calycopis.broker.spring.booking.compute/simple/SpringSimpleComputeResourceOfferQueryHandlerImpl.java
+
+        net.ivoa.calycopis.broker.spring.jpa
+        net.ivoa.calycopis.broker.spring.jpa.SpringAbstractEntityRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringAbstractEntityRepositoryWrapper.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringComputeResourceEntityRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringDataResourceEntityRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringExecutableEntityRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringStorageResourceEntityRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringVolumeMountEntityRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringSessionEntityRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringSessionEntityRepositoryWrapper.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringComponentProcessingRequestRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringSessionProcessingRequestRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringOfferSetRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringMessageEntityRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestRepository.java
+        net.ivoa.calycopis.broker.spring.jpa.SpringProcessingRequestRepositoryWrapper.java
+
+    and the Spring Mock classes
+
+        net.ivoa.calycopis.broker.spring.platfom.mock
+        net.ivoa.calycopis.broker.spring.platfom.mock/MockPlatformImpl.java
+        net.ivoa.calycopis.broker.spring.platfom.mock/MockPlatformSettingsImpl.java
+
+    and the Spring Docker classes
+
+        net.ivoa.calycopis.broker.spring.platfom
+        net.ivoa.calycopis.broker.spring.platfom.docker
+        net.ivoa.calycopis.broker.spring.platfom.docker/DockerPlatformImpl.java
+        net.ivoa.calycopis.broker.spring.platfom.docker/DockerPlatformSettingsImpl.java
+
+    the Spring webapp classes
+
+        net.ivoa.calycopis.broker.spring.webapp
+        net.ivoa.calycopis.broker.spring.webapp/AmbleckApplication.java
+        net.ivoa.calycopis.broker.spring.webapp/ServletInitializer.java
+        net.ivoa.calycopis.broker.spring.webapp/BaseDelegateImpl.java
+        net.ivoa.calycopis.broker.spring.webapp/SessionsApiDelegateImpl.java
+        net.ivoa.calycopis.broker.spring.webapp/OffersetsApiDelegateImpl.java
+        net.ivoa.calycopis.broker.spring.webapp/YamlConverter.java
+
+    and the misc Spring classes ...
+
+        net.ivoa.calycopis.broker.spring.processing
+        net.ivoa.calycopis.broker.spring.processing/TestProcessingSerivceImpl.java
+
+        net.ivoa.calycopis.broker.spring.query
+        net.ivoa.calycopis.broker.spring.query/SpringAbstractQueryHandler.java
+
+        net.ivoa.calycopis.broker.spring.SpringProcessingTransactionHandlerImpl.java
+
+# -----------------------------------------------------
+
+    Separating the engine implementation packages.
+
+        net.ivoa.calycopis.broker.engine.booking
+        net.ivoa.calycopis.broker.engine.compute
+        net.ivoa.calycopis.broker.engine.data
+        net.ivoa.calycopis.broker.engine.storage
+        net.ivoa.calycopis.broker.engine.volume
+        net.ivoa.calycopis.broker.engine.platfom
+        net.ivoa.calycopis.broker.engine.processing
+
+# -----------------------------------------------------
+
+    Separating the Spring implementation packages.
+
+        net.ivoa.calycopis.broker.spring.booking
+        net.ivoa.calycopis.broker.spring.jpa
+        net.ivoa.calycopis.broker.spring.platfom
+        net.ivoa.calycopis.broker.spring.processing
+        net.ivoa.calycopis.broker.spring.query
+        net.ivoa.calycopis.broker.spring.webapp
+
+# -----------------------------------------------------
+
+    Separating the docker implementation packages.
+
+        net.ivoa.calycopis.broker.engine.docker
+        net.ivoa.calycopis.broker.engine.docker.data
+        net.ivoa.calycopis.broker.engine.docker.data.simple
+        net.ivoa.calycopis.broker.engine.docker.data.simple.file
+        net.ivoa.calycopis.broker.engine.docker.data.simple.file.DockerFileResource
+
+        net.ivoa.calycopis.broker.spring.docker
+        net.ivoa.calycopis.broker.spring.docker.platfom
+        net.ivoa.calycopis.broker.spring.docker.platfom.DockerPlatformImpl.java
+        net.ivoa.calycopis.broker.spring.docker.platfom.DockerPlatformSettingsImpl.java
+
+    OR keep the same package structure and add docker specific sub-packages
+
+        net.ivoa.calycopis.broker.engine.data
+        net.ivoa.calycopis.broker.engine.data.simple
+        net.ivoa.calycopis.broker.engine.data.simple.docker
+        net.ivoa.calycopis.broker.engine.data.simple.docker.file
+        net.ivoa.calycopis.broker.engine.data.simple.docker.file.DockerFileResource
+
+        net.ivoa.calycopis.broker.spring
+        net.ivoa.calycopis.broker.spring.platfom
+        net.ivoa.calycopis.broker.spring.platfom.docker
+        net.ivoa.calycopis.broker.spring.platfom.docker.DockerPlatformImpl.java
+        net.ivoa.calycopis.broker.spring.platfom.docker.DockerPlatformSettingsImpl.java
+
+# -----------------------------------------------------
+
+    Yes, there are a lot of things we could do to the packaging.
+    Do we do that in this branch, or merge this one and do it in a new branch.
+    Do we do the api classes now, or later ?
+
+    Other things that might be more important.
+    Like auth/auth ?
+
