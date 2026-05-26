@@ -329,4 +329,62 @@ Yes, please proceed with simple renames 1..9
 --END--
 
 
+==START==
+Did you update the file headers, as specified in the project rules ?
+==END==
+
+--START--
+  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ … Thought for 3.3s                                                                                                                                       │
+  │ The user is asking about the file headers. According to the AGENTS.md coding conventions:                                                                │
+  │                                                                                                                                                          │
+  │ 1. agents/licence-header.mdc — GPL licence header that must be added to all new source files.                                                            │
+  │ 2. agents/copyright-year.mdc — Copyright year in the licence header must be updated to the current year when a file is modified.                         │
+  │ 3. agents/ai-metrics.mdc — AIMetrics block must be added or updated in file headers for all created or modified files.                                   │
+  │                                                                                                                                                          │
+  │ I need to read those rule files and then update all the files I modified. Let me first read the rule files to understand exactly what's required.        │
+  │  ctrl+o to collapse                                                                                                                                      │
+  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  No, I missed that. Let me read the header rules and update all modified files.
+....
+....
+  $ cd /calycopis/Calycopis-broker/github-zrq && git status 258ms
+    On branch 20260515-zrq-repackaging
+    Your branch is ahead of 'origin/20260515-zrq-repackaging' by 3 commits.
+      (use "git push" to publish your local commits)
+    nothing to commit, working tree clean
+     ctrl+o to collapse
+
+  The changes have already been committed (3 commits ahead). Let me check what files were modified across those commits.
+
+  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ … Thought for 1.6s                                                                                                                                       │
+  │ Let me look at which of these are Java files that I actually modified (the ones from my rename operations). I need to ignore the notes/ and AGENTS.md    │
+  │ files, and also files that were part of prior commits but not mine. Let me check what's in my commits specifically.                                      │
+  │  ctrl+o to collapse                                                                                                                                      │
+  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+....
+....
+  Let me see which commits are mine (the rename ones).
+
+  $ cd /calycopis/Calycopis-broker/github-zrq && git log --oneline -5 300ms
+    45b6ead Notes ...
+    b4dcd1a Updating class names to conform to naming conventions
+    62e0890 Updating the AGENTS file
+    af41b40 format-notes
+    342ed67 Splitting ComputeOffer, adding ResourceQuery and QueryHandler, and moving Spring specific parts into a separate package.
+     ctrl+o to collapse
+
+  So commit b4dcd1a is the rename commit and 62e0890 is the AGENTS.md update. The changes are already committed but without header updates. I need to
+  update the headers now for the Java files I modified. Let me get the list of Java files from the rename commit.
+....
+....
+....
+....
+  Build compiles cleanly. All file headers have been updated with:
+  • Copyright year set to 2026
+  • AIMetrics entry added with timestamp 2026-05-26T16:50:00, contribution value of 2% (reflecting the small rename changes)
+--END--
+
 
