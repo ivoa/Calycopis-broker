@@ -21,14 +21,14 @@
  *
  */
 
-package net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http;
+package net.ivoa.calycopis.broker.engine.entities.data.simple.docker.stop;
 
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.DockerSimpleDataResource;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceValidator;
 
 /**
  * 
  */
-public interface DockerHttpResource
-extends DockerSimpleDataResource
+public interface DockerSimpleDataStopValidator
+extends SimpleDataResourceValidator
     {
     }

@@ -71,16 +71,16 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 @Table(
     name = "dockerhttpdataresources"
     )
-public class DockerHttpResourceEntity
+public class DockerSimpleDataHttpResourceEntity
 extends SimpleDataResourceEntity
-implements DockerHttpResource
+implements DockerSimpleDataHttpResource
     {
     
     /**
      * Protected constructor for JPA entities.
      * 
      */
-    protected DockerHttpResourceEntity()
+    protected DockerSimpleDataHttpResourceEntity()
         {
         super();
         }
@@ -89,10 +89,10 @@ implements DockerHttpResource
      * Protected constructor used by our factory.
      * 
      */
-    protected DockerHttpResourceEntity(
+    protected DockerSimpleDataHttpResourceEntity(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntity storage,
-        final DockerHttpResourceValidator.Result result
+        final DockerSimpleDataHttpResourceValidator.Result result
         ){
         super(
             session,

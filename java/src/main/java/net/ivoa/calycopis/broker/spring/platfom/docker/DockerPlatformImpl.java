@@ -112,12 +112,12 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceValidatorImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerHttpResourceEntityFactory;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerHttpResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerHttpResourceValidatorImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerSimpleDataHttpResourceEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerSimpleDataHttpResourceEntityFactoryImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerSimpleDataHttpResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.link.DockerDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.link.DockerDataStorageLinkerImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.stop.DockerStopResourceValidatorImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.stop.DockerSimpleDataStopValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactoryImpl;
@@ -225,7 +225,7 @@ implements DockerPlatform
                 )
             );    
 
-        this.dockerHttpResourceEntityFactory = new DockerHttpResourceEntityFactoryImpl(
+        this.dockerSimpleDataHttpResourceEntityFactory = new DockerSimpleDataHttpResourceEntityFactoryImpl(
             new SpringAbstractEntityRepositoryWrapper<AbstractDataResourceEntity>(
                 this.springAbstractDataResourceEntityRepository
                 )
@@ -341,20 +341,20 @@ implements DockerPlatform
             );
         
         this.abstractDataResourceValidatorFactory.addValidator(
-            new DockerHttpResourceValidatorImpl(
-                this.dockerHttpResourceEntityFactory,
+            new DockerSimpleDataHttpResourceValidatorImpl(
+                this.dockerSimpleDataHttpResourceEntityFactory,
                 this.dataStorageLinker
                 )
             );
         
         this.abstractDataResourceValidatorFactory.addValidator(
-            new DockerStopResourceValidatorImpl()
+            new DockerSimpleDataStopValidatorImpl()
             );
 
         this.abstractVolumeMountValidatorFactory.addValidator(
             new DockerSimpleVolumeMountValidatorImpl(
                 this.dockerVolumeMountEntityFactory,
-                (AbstractDataResourceEntityFactory) this.dockerHttpResourceEntityFactory,
+                (AbstractDataResourceEntityFactory) this.dockerSimpleDataHttpResourceEntityFactory,
                 (AbstractStorageResourceEntityFactory) this.dockerVolumeMountStorageResourceEntityFactory
                 )
             );
@@ -366,7 +366,7 @@ implements DockerPlatform
         
         // We probably only need to register one of these, because it searches the abstract base class repository.
         this.registerFactory(this.dockerFileResourceEntityFactory);
-        this.registerFactory(this.dockerHttpResourceEntityFactory);
+        this.registerFactory(this.dockerSimpleDataHttpResourceEntityFactory);
 
         // We probably only need to register one of these, because it searches the abstract base class repository.
         this.registerFactory(this.dockerBindMountStorageResourceEntityFactory);
@@ -420,7 +420,7 @@ implements DockerPlatform
     private SpringDataResourceEntityRepository springAbstractDataResourceEntityRepository;
 
     private DockerFileResourceEntityFactory dockerFileResourceEntityFactory ;
-    private DockerHttpResourceEntityFactory dockerHttpResourceEntityFactory ;
+    private DockerSimpleDataHttpResourceEntityFactory dockerSimpleDataHttpResourceEntityFactory ;
 
     private AbstractDataResourceValidatorFactory abstractDataResourceValidatorFactory = new AbstractDataResourceValidatorFactoryImpl();
     @Override

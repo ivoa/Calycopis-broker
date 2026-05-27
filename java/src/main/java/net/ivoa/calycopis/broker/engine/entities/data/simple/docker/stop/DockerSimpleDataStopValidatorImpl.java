@@ -36,12 +36,12 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleDataResource;
  *  
  */
 @Slf4j
-public class DockerStopResourceValidatorImpl
+public class DockerSimpleDataStopValidatorImpl
 extends SimpleDataResourceValidatorImpl
-implements DockerStopResourceValidator
+implements DockerSimpleDataStopValidator
     {
 
-    public DockerStopResourceValidatorImpl()
+    public DockerSimpleDataStopValidatorImpl()
         {
         super(null, null);
         }
