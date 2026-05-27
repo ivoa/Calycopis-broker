@@ -64,7 +64,7 @@ import net.ivoa.calycopis.broker.engine.functional.processing.session.SessionPro
  */
 @Slf4j
 @Service
-public class TestProcessingSerivceImpl
+public class SpringProcessingServiceImpl
 extends ProcessingServiceImpl
 implements ProcessingService
     {
@@ -74,7 +74,7 @@ implements ProcessingService
      *
      */
     @Autowired
-    public TestProcessingSerivceImpl(final Platform platform)
+    public SpringProcessingServiceImpl(final Platform platform)
         {
         super(
             platform,

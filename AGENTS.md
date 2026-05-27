@@ -183,7 +183,7 @@ dependency injection, transaction management, scheduling, and web layer.
  * `spring/jpa/` — All Spring Data `@Repository` interfaces (centralised in one package rather than co-located with entities).
  * `spring/platfom/mock/` — `MockPlatformImpl` (`@Component`, `@Profile("mock")`).
  * `spring/platfom/docker/` — `DockerPlatformImpl` (`@Component`, `@Profile("docker")`).
- * `spring/processing/` — `TestProcessingSerivceImpl` with `@Scheduled` loop.
+ * `spring/processing/` — `SpringProcessingServiceImpl` with `@Scheduled` loop.
  * `spring/booking/` — Booking service Spring `@Component` implementations.
  * `spring/query/` — Query service Spring `@Component` implementations.
 
