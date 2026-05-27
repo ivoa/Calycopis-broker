@@ -41,7 +41,7 @@ import jakarta.persistence.Table;
     name = "sessionconnectors"
     )
 public class SimpleSessionConnectorEntity
-implements SimpleSessionConnector
+implements SimpleExecutionSessionConnector
     {
     @Id
     @GeneratedValue

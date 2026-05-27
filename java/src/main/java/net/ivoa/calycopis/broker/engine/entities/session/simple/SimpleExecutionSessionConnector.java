@@ -26,7 +26,7 @@ package net.ivoa.calycopis.broker.engine.entities.session.simple;
 /**
  * 
  */
-public interface SimpleSessionConnector
+public interface SimpleExecutionSessionConnector
     {
     public String getType();
     
