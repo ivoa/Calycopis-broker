@@ -62,6 +62,7 @@ import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionS
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactory;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
+import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleComputeResource;
@@ -142,7 +143,7 @@ implements SimpleComputeResourceValidator
         IvoaSimpleComputeResource validated = new IvoaSimpleComputeResource()
             .kind(SimpleComputeResource.TYPE_DISCRIMINATOR)
             .meta(
-                makeMeta(
+                ValidatorTools.makeMeta(
                     requested.getMeta(),
                     context
                     )

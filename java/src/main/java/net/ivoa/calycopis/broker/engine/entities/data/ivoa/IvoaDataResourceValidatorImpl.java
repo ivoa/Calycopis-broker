@@ -65,6 +65,7 @@ import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserC
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
+import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataLinkItem;
 import net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataResource;
@@ -135,7 +136,7 @@ implements IvoaDataResourceValidator
         IvoaIvoaDataResource validated = new IvoaIvoaDataResource()
             .kind(IvoaDataResource.TYPE_DISCRIMINATOR)
             .meta(
-                makeMeta(
+                ValidatorTools.makeMeta(
                     requested.getMeta(),
                     context
                     )

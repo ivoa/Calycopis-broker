@@ -35,8 +35,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecycleStartDurationInstant;
  *  
  */
 @Slf4j
-public abstract class AbstractValidatorImpl<ObjectType, EntityType extends ComponentEntity>
-extends ValidatorBase
+public abstract class AbstractValidator<ObjectType, EntityType extends ComponentEntity>
 implements Validator<ObjectType, EntityType>
     {
 

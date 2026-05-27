@@ -47,8 +47,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 

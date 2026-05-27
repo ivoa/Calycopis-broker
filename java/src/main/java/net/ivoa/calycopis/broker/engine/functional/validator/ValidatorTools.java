@@ -25,17 +25,15 @@ package net.ivoa.calycopis.broker.engine.functional.validator;
 import java.util.Map;
 import java.util.UUID;
 
-import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
 
 /**
- * Base class for Validatior implementations.
- * Provides a set of tools.
+ * Provides a set of tools for validators to use.
+ * 
  *  
  */
-@Slf4j
-public abstract class ValidatorBase
+public interface ValidatorTools
     {
 
     /**
@@ -74,7 +72,7 @@ public abstract class ValidatorBase
      * Validate a metadata block.
      * 
      */
-    public IvoaComponentMetadata makeMeta(
+    public static IvoaComponentMetadata makeMeta(
         final IvoaComponentMetadata requested,
         final OfferSetRequestParserContext context
         ){
@@ -100,7 +98,7 @@ public abstract class ValidatorBase
      * Null-safe UUID toString.
      * 
      */
-    public String string(final UUID uuid)
+    public static String string(final UUID uuid)
         {
         if (null != uuid)
             {
@@ -121,7 +119,7 @@ public abstract class ValidatorBase
      * Check for a bad value.
      * 
      */
-    public boolean isBadValueCheck(
+    public static boolean isBadValueCheck(
         final String requested,
         final OfferSetRequestParserContext context
         ){
@@ -136,7 +134,7 @@ public abstract class ValidatorBase
      * Check for a bad value.
      * 
      */
-    public boolean notBadValueCheck(
+    public static boolean notBadValueCheck(
         final String requested,
         final OfferSetRequestParserContext context
         ){
@@ -151,7 +149,7 @@ public abstract class ValidatorBase
      * Check for a bad value.
      * 
      */
-    public boolean isBadValueCheck(
+    public static boolean isBadValueCheck(
         final String requested,
         final String trigger,
         final OfferSetRequestParserContext context
@@ -167,7 +165,7 @@ public abstract class ValidatorBase
      * Check for a bad value.
      * 
      */
-    public boolean notBadValueCheck(
+    public static boolean notBadValueCheck(
         final String requested,
         final String trigger,
         final OfferSetRequestParserContext context
@@ -199,43 +197,4 @@ public abstract class ValidatorBase
             return success ;
             }
         }
-
-    /**
-     * 
-    @Deprecated 
-    public boolean setPrepareDuration(
-        final OfferSetRequestParserContext context,
-        final IvoaComponentSchedule schedule ,
-        final Long seconds
-        ){
-        log.debug("setPrepareDuration [{}]", this.getClass().getSimpleName());
-
-        if (null == seconds)
-            {
-            log.error("Null prepare duration");
-            return false ;
-            }
-        else {
-            log.debug("Checking the prepare schedule.");
-            if (schedule.getPreparing() != null)
-                {
-                log.error("Prepare schedule already set [{}]", schedule.getPreparing().getDuration());
-                return false ;
-                }
-            
-            log.debug("Creating the prepare schedule.");
-            IvoaScheduleDurationInstant preparing = new IvoaScheduleDurationInstant(); 
-            schedule.setPreparing(
-                preparing
-                );
-            Duration duration = Duration.ofSeconds(
-                seconds
-                );
-            preparing.setDuration(
-                duration.toString()
-                );
-            return true ;
-            }
-        }
-     */
     }

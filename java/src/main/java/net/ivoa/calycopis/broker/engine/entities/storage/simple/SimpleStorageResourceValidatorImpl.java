@@ -51,6 +51,7 @@ import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
+import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleStorageResource;
 
@@ -115,7 +116,7 @@ implements SimpleStorageResourceValidator
         IvoaSimpleStorageResource validated = new IvoaSimpleStorageResource()
             .kind(SimpleStorageResource.TYPE_DISCRIMINATOR)
             .meta(
-                makeMeta(
+                ValidatorTools.makeMeta(
                     requested.getMeta(),
                     context
                     )

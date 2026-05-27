@@ -62,6 +62,7 @@ import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserC
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
+import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaS3DataResource;
 
@@ -130,7 +131,7 @@ implements AmazonS3DataResourceValidator
         IvoaS3DataResource validated = new IvoaS3DataResource()
             .kind(AmazonS3DataResource.TYPE_DISCRIMINATOR)
             .meta(
-                makeMeta(
+                ValidatorTools.makeMeta(
                     requested.getMeta(),
                     context
                     )
@@ -228,16 +229,16 @@ implements AmazonS3DataResourceValidator
 
         boolean success = true ;
 
-        String endpoint = trim(
+        String endpoint = ValidatorTools.trim(
             requested.getEndpoint()
             );
-        String template = trim(
+        String template = ValidatorTools.trim(
             requested.getTemplate()
             );
-        String bucket = trim(
+        String bucket = ValidatorTools.trim(
             requested.getBucket()
             );
-        String object = trim(
+        String object = ValidatorTools.trim(
             requested.getObject()
             );
 

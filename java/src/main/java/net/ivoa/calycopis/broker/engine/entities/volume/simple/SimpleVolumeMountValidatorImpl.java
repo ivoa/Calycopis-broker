@@ -56,6 +56,7 @@ import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorImpl;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
+import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
 import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleVolumeMount;
@@ -121,7 +122,7 @@ implements SimpleVolumeMountValidator
         IvoaSimpleVolumeMount validated = new IvoaSimpleVolumeMount()
            .kind(SimpleVolumeMount.TYPE_DISCRIMINATOR)
            .meta(
-                makeMeta(
+               ValidatorTools.makeMeta(
                     requested.getMeta(),
                     context
                     )

@@ -23,14 +23,14 @@
 
 package net.ivoa.calycopis.broker.engine.entities.executable;
 
-import net.ivoa.calycopis.broker.engine.functional.validator.AbstractValidatorImpl;
+import net.ivoa.calycopis.broker.engine.functional.validator.AbstractValidator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
 
 /**
  * 
  */
 public abstract class AbstractExecutableValidatorImpl
-extends AbstractValidatorImpl<IvoaAbstractExecutable, AbstractExecutableEntity>
+extends AbstractValidator<IvoaAbstractExecutable, AbstractExecutableEntity>
 implements AbstractExecutableValidator
     {
     }

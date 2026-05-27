@@ -51,6 +51,7 @@ import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableVa
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
+import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
 import net.ivoa.calycopis.schema.spring.model.IvoaJupyterNotebook;
 
@@ -113,7 +114,7 @@ implements JupyterNotebookValidator
         IvoaJupyterNotebook validated = new IvoaJupyterNotebook()
             .kind(JupyterNotebook.TYPE_DISCRIMINATOR)
             .meta(
-                makeMeta(
+                ValidatorTools.makeMeta(
                     requested.getMeta(),
                     context
                     )
@@ -193,7 +194,7 @@ implements JupyterNotebookValidator
 
         boolean success = true ;
 
-        String location = notEmpty(
+        String location = ValidatorTools.notEmpty(
             requested
             );
         if ((location == null) || (location.isEmpty()))
