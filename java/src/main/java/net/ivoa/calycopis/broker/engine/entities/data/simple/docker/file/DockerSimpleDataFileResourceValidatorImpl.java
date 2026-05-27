@@ -33,17 +33,17 @@ import net.ivoa.calycopis.schema.spring.model.IvoaSimpleDataResource;
  * 
  */
 @Slf4j
-public class DockerFileResourceValidatorImpl 
+public class DockerSimpleDataFileResourceValidatorImpl 
 extends SimpleDataResourceValidatorImpl
-implements DockerFileResourceValidator
+implements DockerSimpleDataFileResourceValidator
     {
     
     /**
      * Public constructor used by our Platform.
      * 
      */
-    public DockerFileResourceValidatorImpl(
-        final DockerFileResourceEntityFactory entityFactory,
+    public DockerSimpleDataFileResourceValidatorImpl(
+        final DockerSimpleDataFileResourceEntityFactory entityFactory,
         final AbstractDataStorageLinker storageLinker)
         {
         super(

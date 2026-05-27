@@ -35,16 +35,16 @@ import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource
  * 
  */
 @Slf4j
-public class DockerFileResourceEntityFactoryImpl
+public class DockerSimpleDataFileResourceEntityFactoryImpl
 extends DockerSimpleDataResourceEntityFactoryImpl
-implements DockerFileResourceEntityFactory
+implements DockerSimpleDataFileResourceEntityFactory
     {
 
     /**
      * Public constructor used by our Platform.
      * 
      */
-    public DockerFileResourceEntityFactoryImpl(
+    public DockerSimpleDataFileResourceEntityFactoryImpl(
         final AbstractEntityRepository<AbstractDataResourceEntity> repository
         ){
         super(
@@ -53,13 +53,13 @@ implements DockerFileResourceEntityFactory
         }
 
     @Override
-    public DockerFileResourceEntity create(
+    public DockerSimpleDataFileResourceEntity create(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntity storage,
         final AbstractDataResourceValidator.Result result
         ){
         return this.repository.save(
-            new DockerFileResourceEntity(
+            new DockerSimpleDataFileResourceEntity(
                 session,
                 storage,
                 result

@@ -109,9 +109,9 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataStorageLinker;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceEntityFactory;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerFileResourceValidatorImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerSimpleDataFileResourceEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerSimpleDataFileResourceEntityFactoryImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file.DockerSimpleDataFileResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerSimpleDataHttpResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerSimpleDataHttpResourceEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.http.DockerSimpleDataHttpResourceValidatorImpl;
@@ -219,7 +219,7 @@ implements DockerPlatform
             );
 
 // Data
-        this.dockerFileResourceEntityFactory = new DockerFileResourceEntityFactoryImpl(
+        this.dockerSimpleDataFileResourceEntityFactory = new DockerSimpleDataFileResourceEntityFactoryImpl(
             new SpringAbstractEntityRepositoryWrapper<AbstractDataResourceEntity>(
                 this.springAbstractDataResourceEntityRepository
                 )
@@ -334,8 +334,8 @@ implements DockerPlatform
             );
 
         this.abstractDataResourceValidatorFactory.addValidator(
-            new DockerFileResourceValidatorImpl(
-                this.dockerFileResourceEntityFactory,
+            new DockerSimpleDataFileResourceValidatorImpl(
+                this.dockerSimpleDataFileResourceEntityFactory,
                 this.dataStorageLinker
                 )
             );
@@ -365,7 +365,7 @@ implements DockerPlatform
       //this.registerFactory(this.jupyterNotebookEntityFactory);
         
         // We probably only need to register one of these, because it searches the abstract base class repository.
-        this.registerFactory(this.dockerFileResourceEntityFactory);
+        this.registerFactory(this.dockerSimpleDataFileResourceEntityFactory);
         this.registerFactory(this.dockerSimpleDataHttpResourceEntityFactory);
 
         // We probably only need to register one of these, because it searches the abstract base class repository.
@@ -419,7 +419,7 @@ implements DockerPlatform
     @Autowired
     private SpringDataResourceEntityRepository springAbstractDataResourceEntityRepository;
 
-    private DockerFileResourceEntityFactory dockerFileResourceEntityFactory ;
+    private DockerSimpleDataFileResourceEntityFactory dockerSimpleDataFileResourceEntityFactory ;
     private DockerSimpleDataHttpResourceEntityFactory dockerSimpleDataHttpResourceEntityFactory ;
 
     private AbstractDataResourceValidatorFactory abstractDataResourceValidatorFactory = new AbstractDataResourceValidatorFactoryImpl();

@@ -56,16 +56,16 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 @Table(
     name = "dockerfiledataresources"
     )
-public class DockerFileResourceEntity
+public class DockerSimpleDataFileResourceEntity
 extends SimpleDataResourceEntity
-implements DockerFileResource
+implements DockerSimpleDataFileResource
     {
 
     /**
      * Protected constructor for JPA entities.
      * 
      */
-    protected DockerFileResourceEntity()
+    protected DockerSimpleDataFileResourceEntity()
         {
         super();
         }
@@ -74,10 +74,10 @@ implements DockerFileResource
      * Protected constructor used by our factory.
      * 
      */
-    protected DockerFileResourceEntity(
+    protected DockerSimpleDataFileResourceEntity(
         final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceEntity storage,
-        final DockerFileResourceValidator.Result result
+        final DockerSimpleDataFileResourceValidator.Result result
         ){
         super(
             session,

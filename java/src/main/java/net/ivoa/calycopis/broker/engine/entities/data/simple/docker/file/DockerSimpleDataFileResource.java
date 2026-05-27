@@ -28,7 +28,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.DockerSimple
 /**
  * 
  */
-public interface DockerFileResource
+public interface DockerSimpleDataFileResource
 extends DockerSimpleDataResource
     {
     }

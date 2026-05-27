@@ -23,12 +23,12 @@
 
 package net.ivoa.calycopis.broker.engine.entities.data.simple.docker.file;
 
-import net.ivoa.calycopis.broker.engine.entities.data.simple.docker.DockerSimpleDataResourceEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceValidator;
 
 /**
  * 
  */
-public interface DockerFileResourceEntityFactory
-extends DockerSimpleDataResourceEntityFactory
+public interface DockerSimpleDataFileResourceValidator
+extends SimpleDataResourceValidator
     {
     }
