@@ -28,6 +28,16 @@
  *       "value": 70,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-27T06:10:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 1,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -54,10 +64,10 @@ import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceE
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
-import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinkerBean;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
-import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory;
-import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerPlatform;
+import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinkerImpl;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.docker.DockerClientFactory;
+import net.ivoa.calycopis.broker.engine.functional.platform.docker.DockerPlatform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
@@ -155,7 +165,7 @@ implements DockerSimpleDataHttpResource
                 };
             }
 
-        final DockerStorageLinkerBean volumeLinker = new DockerStorageLinkerBean("/data", AccessMode.rw);
+        final DockerStorageLinkerImpl volumeLinker = new DockerStorageLinkerImpl("/data", AccessMode.rw);
         ((AbstractStorageResourceEntity) storage).link(volumeLinker);
         final String volumeName = volumeLinker.getSourcePath();
         if (volumeName == null || volumeName.isEmpty())

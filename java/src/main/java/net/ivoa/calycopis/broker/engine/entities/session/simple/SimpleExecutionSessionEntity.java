@@ -28,6 +28,16 @@
  *       "value": 3,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-27T06:10:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 1,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -241,16 +251,16 @@ implements SimpleExecutionSession
         cascade = CascadeType.ALL,
         orphanRemoval = true
         )
-    List<SimpleSessionConnectorEntity> connectors = new ArrayList<SimpleSessionConnectorEntity>();
+    List<SimpleExecutionSessionConnectorEntity> connectors = new ArrayList<SimpleExecutionSessionConnectorEntity>();
 
     @Override
-    public List<SimpleSessionConnectorEntity> getConnectors()
+    public List<SimpleExecutionSessionConnectorEntity> getConnectors()
         {
         return connectors;
         }
 
     @Override
-    public void addConnector(final SimpleSessionConnectorEntity connector)
+    public void addConnector(final SimpleExecutionSessionConnectorEntity connector)
         {
         connectors.add(
             connector
@@ -261,7 +271,7 @@ implements SimpleExecutionSession
     public void addConnector(String type, String protocol, String location)
         {
         this.addConnector(
-            new SimpleSessionConnectorEntity(
+            new SimpleExecutionSessionConnectorEntity(
                 this,
                 type,
                 protocol,
@@ -628,7 +638,7 @@ implements SimpleExecutionSession
                 );
             }
 
-        for (SimpleSessionConnectorEntity connector : this.getConnectors())
+        for (SimpleExecutionSessionConnectorEntity connector : this.getConnectors())
             {
             IvoaSimpleSessionConnector accessor = new IvoaSimpleSessionConnector();
             accessor.setKind(connector.getType());

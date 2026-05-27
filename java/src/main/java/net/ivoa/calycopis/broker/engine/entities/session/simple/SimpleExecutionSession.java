@@ -28,6 +28,16 @@
  *       "value": 3,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-27T06:10:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 1,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -109,13 +119,13 @@ extends AbstractExecutionSession
      * Get a list of the connectors.
      *
      */
-    public List<SimpleSessionConnectorEntity> getConnectors();
+    public List<SimpleExecutionSessionConnectorEntity> getConnectors();
 
     /**
      * Add a new connector.
      *
      */
-    public void addConnector(final SimpleSessionConnectorEntity connector);
+    public void addConnector(final SimpleExecutionSessionConnectorEntity connector);
 
     /**
      * Add a new connector.

@@ -58,7 +58,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.schema.spring.api.OffersetsApiDelegate;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
 import net.ivoa.calycopis.schema.spring.model.IvoaOfferSetResponse;

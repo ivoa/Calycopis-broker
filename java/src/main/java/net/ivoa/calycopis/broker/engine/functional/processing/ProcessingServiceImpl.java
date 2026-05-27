@@ -39,7 +39,7 @@ import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 
 /**
  * 

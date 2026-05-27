@@ -53,7 +53,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingService;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingServiceImpl;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;

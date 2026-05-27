@@ -166,7 +166,7 @@ for persistence but has **zero** Spring Framework imports (`org.springframework.
    * `engine/entities/<concept>/simple/<platform>/` — Platform-specific entity subclasses (e.g. `mock/`, `docker/`).
  * `engine/functional/` — Cross-cutting functional logic.
    * `engine/functional/factory/` — `FactoryBase` / `FactoryBaseImpl`.
-   * `engine/functional/platfom/` — `Platform` interface and per-platform interfaces (`MockPlatform`, `DockerPlatform`).
+   * `engine/functional/platform/` — `Platform` interface and per-platform interfaces (`MockPlatform`, `DockerPlatform`).
    * `engine/functional/processing/` — Processing loop, `ProcessingAction`, `ProcessingRequest` entities, `ProcessingService`.
    * `engine/functional/validator/` — Validator base interfaces and `ValidatorFactory`.
    * `engine/functional/booking/` — Resource booking logic.
@@ -181,8 +181,8 @@ dependency injection, transaction management, scheduling, and web layer.
 
  * `spring/webapp/` — API delegate implementations (`OffersetsApiDelegateImpl`, `SessionsApiDelegateImpl`), the `@SpringBootApplication` class, and servlet configuration.
  * `spring/jpa/` — All Spring Data `@Repository` interfaces (centralised in one package rather than co-located with entities).
- * `spring/platfom/mock/` — `MockPlatformImpl` (`@Component`, `@Profile("mock")`).
- * `spring/platfom/docker/` — `DockerPlatformImpl` (`@Component`, `@Profile("docker")`).
+ * `spring/platform/mock/` — `MockPlatformImpl` (`@Component`, `@Profile("mock")`).
+ * `spring/platform/docker/` — `DockerPlatformImpl` (`@Component`, `@Profile("docker")`).
  * `spring/processing/` — `SpringProcessingServiceImpl` with `@Scheduled` loop.
  * `spring/booking/` — Booking service Spring `@Component` implementations.
  * `spring/query/` — Query service Spring `@Component` implementations.
@@ -264,14 +264,14 @@ and persists it via the repository.
 
 ### Adding a new platform implementation
 To add a new platform (e.g. `docker`):
-1. Create the platform interface in `engine/functional/platfom/docker/` (e.g. `DockerPlatform.java`).
-2. Create the Spring `@Component` implementation in `spring/platfom/docker/` (e.g. `DockerPlatformImpl.java`), following the mock pattern. The implementation starts as a copy of the mock platform, using the same validators and factories.
+1. Create the platform interface in `engine/functional/platform/docker/` (e.g. `DockerPlatform.java`).
+2. Create the Spring `@Component` implementation in `spring/platform/docker/` (e.g. `DockerPlatformImpl.java`), following the mock pattern. The implementation starts as a copy of the mock platform, using the same validators and factories.
 3. Create the platform-specific entity subclass package at `engine/entities/<concept>/simple/docker/` (e.g. `engine/entities/compute/simple/docker/`).
 4. Create the 7 files following the mock pattern: interface, entity, factory interface, factory impl, repository, validator interface, validator impl.
 5. The entity class is the only non-trivial one — implement `getPrepareAction()` with real logic to connect to the platform and run a container.
 6. The factory impl is a `@Component` that receives the repository via `@Autowired` and calls `repository.save()`.
 7. The validator impl is a `@Component` that registers itself with the `ValidatorFactory` at startup.
-8. Update the `DockerPlatformImpl` in `spring/platfom/docker/` to register and use the new classes.
+8. Update the `DockerPlatformImpl` in `spring/platform/docker/` to register and use the new classes.
 
 ### Adding a new resource type
 To add an entirely new resource type (e.g. `gpu`):

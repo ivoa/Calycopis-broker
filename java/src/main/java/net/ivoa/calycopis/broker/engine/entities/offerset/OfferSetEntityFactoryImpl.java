@@ -44,7 +44,7 @@ import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityReposit
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
 import net.ivoa.calycopis.schema.spring.model.IvoaOfferSetResponse.ResultEnum;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;

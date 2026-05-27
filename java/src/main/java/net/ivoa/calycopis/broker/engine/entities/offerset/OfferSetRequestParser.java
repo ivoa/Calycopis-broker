@@ -22,7 +22,7 @@
 package net.ivoa.calycopis.broker.engine.entities.offerset;
 
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
 
 /**

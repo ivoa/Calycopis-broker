@@ -29,7 +29,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractUpdate;
 import net.ivoa.calycopis.schema.spring.model.IvoaEnumValueUpdate;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;

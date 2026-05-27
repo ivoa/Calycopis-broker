@@ -33,7 +33,7 @@ import com.github.dockerjava.api.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerPlatform;
+import net.ivoa.calycopis.broker.engine.functional.platform.docker.DockerPlatform;
 import net.ivoa.calycopis.schema.spring.model.IvoaDockerContainer;
 import net.ivoa.calycopis.schema.spring.model.IvoaDockerImageSpec;
 

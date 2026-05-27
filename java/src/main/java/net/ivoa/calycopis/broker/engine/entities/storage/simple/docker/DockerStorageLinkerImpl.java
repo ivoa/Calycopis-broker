@@ -38,6 +38,16 @@
  *       "value": 5,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-27T06:10:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 1,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -58,7 +68,7 @@ import com.github.dockerjava.api.model.Volume;
  * the storage entity (via setSourcePath).
  *
  */
-public class DockerStorageLinkerBean
+public class DockerStorageLinkerImpl
 implements DockerStorageLinker
     {
 
@@ -66,7 +76,7 @@ implements DockerStorageLinker
     private final AccessMode accessMode;
     private String sourcePath;
 
-    public DockerStorageLinkerBean(
+    public DockerStorageLinkerImpl(
         final String containerPath,
         final AccessMode accessMode
         ){

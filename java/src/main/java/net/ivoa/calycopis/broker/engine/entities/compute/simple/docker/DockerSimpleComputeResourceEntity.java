@@ -28,6 +28,16 @@
  *       "value": 40,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-27T06:10:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 1,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -65,13 +75,13 @@ import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContain
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource;
-import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinkerBean;
+import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerStorageLinkerImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
-import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerClientFactory;
-import net.ivoa.calycopis.broker.engine.functional.platfom.docker.DockerPlatform;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.docker.DockerClientFactory;
+import net.ivoa.calycopis.broker.engine.functional.platform.docker.DockerPlatform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
@@ -266,7 +276,7 @@ implements DockerSimpleComputeResource
                             {
                             accessMode = AccessMode.ro;
                             }
-                        DockerStorageLinkerBean linkerBean = new DockerStorageLinkerBean(
+                        DockerStorageLinkerImpl linkerBean = new DockerStorageLinkerImpl(
                             containerPath,
                             accessMode
                             );

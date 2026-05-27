@@ -43,9 +43,9 @@ import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeRes
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
-import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatform;
-import net.ivoa.calycopis.broker.engine.functional.platfom.mock.MockPlatformSettings;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.mock.MockPlatform;
+import net.ivoa.calycopis.broker.engine.functional.platform.mock.MockPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockMonitorAction;
