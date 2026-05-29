@@ -36,355 +36,345 @@
 # Ask Cursor to tidy up the code.
 #[root@calycopis-dev]
 
-==START==
-/plan
-Regarding the project at `/calycopis/Calycopis-broker/github-zrq`.
-The code base has been refactored to move all of the classes with Spring specific
-annotations and dependencies into a separate set of Java packages
-at `net.ivoa.calycopis.broker.spring.*`.
-Can you create a plan for updating the project AGENTS.md file to reflect this.
-==END==
+    ?   /plan
+    ?   Regarding the project at `/calycopis/Calycopis-broker/github-zrq`.
+    ?   The code base has been refactored to move all of the classes with Spring specific
+    ?   annotations and dependencies into a separate set of Java packages
+    ?   at `net.ivoa.calycopis.broker.spring.*`.
+    ?   Can you create a plan for updating the project AGENTS.md file to reflect this.
 
---START--
-....
-....
- ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
- │ Suggested Plan                                                                                                                                           │
- │                                                                                                                                                          │
- │ Update AGENTS.md to Reflect Package Refactoring                                                                                                          │
- │                                                                                                                                                          │
- │ What Changed                                                                                                                                             │
- │                                                                                                                                                          │
- │ The codebase has been refactored from a flat net.ivoa.calycopis.datamodel.<concept>/ structure into a two-package architecture:                          │
- │ • net.ivoa.calycopis.broker.engine.* — Framework-neutral domain logic. Contains interfaces, JPA entity classes, factory interfaces, validator            │
- │   interfaces, and processing logic. Uses jakarta.persistence.* annotations but has zero Spring Framework imports (org.springframework.*).                │
- │ • net.ivoa.calycopis.broker.spring.* — Spring-specific implementations. Contains @Repository interfaces, @Service/@Component beans, @Autowired           │
- │   wiring, @Transactional boundaries, API delegates, and platform configuration.                                                                          │
- │                                                                                                                                                          │
- │ Sections of AGENTS.md to Update                                                                                                                          │
- │                                                                                                                                                          │
- │ 1. Three-tier pattern description (lines 153-201)                                                                                                        │
- │                                                                                                                                                          │
- │ The current text says the tiers map to net.ivoa.calycopis.datamodel.<concept>/ — this package path no longer exists. The description also mixes Spring   │
- │  annotations (@Component, @Autowired, @Repository) into Tier 3 files without noting that these live in a separate package tree.                          │
- │ Update to: Explain that each concept's files are split across the two package trees:                                                                     │
- │ • engine/entities/<concept>/ — interfaces, entity classes, factory interfaces, validator interfaces                                                      │
- │ • spring/jpa/ — Spring @Repository interfaces for all entities                                                                                           │
- │ • spring/platfom/<platform>/ — Spring @Component factory and validator implementations                                                                   │
- │                                                                                                                                                          │
- │ 2. "Adding a new platform implementation" (lines 214-223)                                                                                                │
- │                                                                                                                                                          │
- │ Currently references functional.platfom.docker/ and datamodel/compute/simple/docker/ which are outdated paths.                                           │
- │ Update to: Reference the correct paths:                                                                                                                  │
- │ • engine/functional/platfom/docker/ for the platform interface                                                                                           │
- │ • spring/platfom/docker/ for the Spring @Component implementation                                                                                        │
- │ • engine/entities/compute/simple/docker/ for entity/factory/validator interfaces                                                                         │
- │ • spring/jpa/ for any new repository (or note repositories are centralised there)                                                                        │
- │                                                                                                                                                          │
- │ 3. "Adding a new resource type" (lines 226-232)                                                                                                          │
- │                                                                                                                                                          │
- │ References datamodel/gpu/ — should be engine/entities/gpu/.                                                                                              │
- │                                                                                                                                                          │
- │ 4. New section: Package architecture overview                                                                                                            │
- │                                                                                                                                                          │
- │ Add a new section before "Design patterns" explaining the two-package split, its rationale, and what belongs where.                                      │
- │                                                                                                                                                          │
- │ Proposed New Content                                                                                                                                     │
- │                                                                                                                                                          │
- │ New section: "Package architecture"                                                                                                                      │
- │                                                                                                                                                          │
- │ To be inserted before "Design patterns" (~line 151), describing:                                                                                         │
- │ • engine/ sub-packages:                                                                                                                                  │
- │   • engine/entities/ — domain interfaces and JPA entity classes (Component, LifecycleComponent, and all resource types)                                  │
- │   • engine/entities/component/ — base Component/ComponentEntity/LifecycleComponent/LifecycleComponentEntity                                              │
- │   • engine/entities/<concept>/ — each resource type's interfaces and entities                                                                            │
- │   • engine/functional/ — cross-cutting functional logic                                                                                                  │
- │   • engine/functional/factory/ — FactoryBase/FactoryBaseImpl                                                                                             │
- │   • engine/functional/platfom/ — Platform interface and platform-specific interfaces                                                                     │
- │   • engine/functional/processing/ — processing loop, actions, request entities                                                                           │
- │   • engine/functional/validator/ — validator base interfaces                                                                                             │
- │   • engine/functional/booking/ — resource booking logic                                                                                                  │
- │   • engine/util/ — utilities (URIBuilder, etc.)                                                                                                          │
- │   • engine/webapp/ — web-layer abstractions (if any)                                                                                                     │
- │ • spring/ sub-packages:                                                                                                                                  │
- │   • spring/webapp/ — API delegates, application class, servlet config                                                                                    │
- │   • spring/jpa/ — all Spring Data @Repository interfaces                                                                                                 │
- │   • spring/platfom/mock/ — MockPlatformImpl (@Component)                                                                                                 │
- │   • spring/platfom/docker/ — DockerPlatformImpl (@Component)                                                                                             │
- │   • spring/processing/ — TestProcessingSerivceImpl with @Scheduled                                                                                       │
- │   • spring/booking/ — booking service Spring implementations                                                                                             │
- │   • spring/query/ — query service Spring implementations                                                                                                 │
- │ • Design rationale: Spring Framework annotations are isolated in spring/ so that the domain logic in engine/ could, in principle, be reused with a       │
- │   different DI/web framework. JPA annotations remain in engine/ because they are Jakarta EE standard (not Spring-specific).                              │
- │                                                                                                                                                          │
- │ Updated three-tier pattern                                                                                                                               │
- │                                                                                                                                                          │
- │ Update the tier descriptions to use the correct paths and clarify which files live in engine/ vs spring/:                                                │
- │ • Tier 1 & 2 interfaces/entities → engine/entities/<concept>/                                                                                            │
- │ • Tier 3 Spring wiring (repositories, @Component factories, @Component validators) → spring/jpa/ and registered via Spring component scanning            │
- │ • Platform implementations (MockPlatformImpl, DockerPlatformImpl) → spring/platfom/<platform>/                                                           │
- │                                                                                                                                                          │
- │ File to Edit                                                                                                                                             │
- │                                                                                                                                                          │
- │ AGENTS.md (/calycopis/Calycopis-broker/github-zrq/AGENTS.md) — lines ~151-232 primarily, plus adding the new "Package architecture" section.             │
- │                                                                                                                                                          │
- │  Saved to root/.cursor/plans/Update AGENTSmd packages-e0232013.plan.md                                                                                   │
- │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
- │                                                                                                                                                          │
- │ Ready to build?                                                                                                                                          │
- │                                                                                                                                                          │
- │  → 1. Yes, build locally (b)                                                                                                                             │
- │    2. No, propose changes (p or Esc)                                                                                                                     │
- │                                                                                                                                                          │
- └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
---END--
+    >   ....
+    >   ....
+    >    ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >    │ Suggested Plan                                                                                                                                           │
+    >    │                                                                                                                                                          │
+    >    │ Update AGENTS.md to Reflect Package Refactoring                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ What Changed                                                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ The codebase has been refactored from a flat net.ivoa.calycopis.datamodel.<concept>/ structure into a two-package architecture:                          │
+    >    │ • net.ivoa.calycopis.broker.engine.* — Framework-neutral domain logic. Contains interfaces, JPA entity classes, factory interfaces, validator            │
+    >    │   interfaces, and processing logic. Uses jakarta.persistence.* annotations but has zero Spring Framework imports (org.springframework.*).                │
+    >    │ • net.ivoa.calycopis.broker.spring.* — Spring-specific implementations. Contains @Repository interfaces, @Service/@Component beans, @Autowired           │
+    >    │   wiring, @Transactional boundaries, API delegates, and platform configuration.                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ Sections of AGENTS.md to Update                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ 1. Three-tier pattern description (lines 153-201)                                                                                                        │
+    >    │                                                                                                                                                          │
+    >    │ The current text says the tiers map to net.ivoa.calycopis.datamodel.<concept>/ — this package path no longer exists. The description also mixes Spring   │
+    >    │  annotations (@Component, @Autowired, @Repository) into Tier 3 files without noting that these live in a separate package tree.                          │
+    >    │ Update to: Explain that each concept's files are split across the two package trees:                                                                     │
+    >    │ • engine/entities/<concept>/ — interfaces, entity classes, factory interfaces, validator interfaces                                                      │
+    >    │ • spring/jpa/ — Spring @Repository interfaces for all entities                                                                                           │
+    >    │ • spring/platfom/<platform>/ — Spring @Component factory and validator implementations                                                                   │
+    >    │                                                                                                                                                          │
+    >    │ 2. "Adding a new platform implementation" (lines 214-223)                                                                                                │
+    >    │                                                                                                                                                          │
+    >    │ Currently references functional.platfom.docker/ and datamodel/compute/simple/docker/ which are outdated paths.                                           │
+    >    │ Update to: Reference the correct paths:                                                                                                                  │
+    >    │ • engine/functional/platfom/docker/ for the platform interface                                                                                           │
+    >    │ • spring/platfom/docker/ for the Spring @Component implementation                                                                                        │
+    >    │ • engine/entities/compute/simple/docker/ for entity/factory/validator interfaces                                                                         │
+    >    │ • spring/jpa/ for any new repository (or note repositories are centralised there)                                                                        │
+    >    │                                                                                                                                                          │
+    >    │ 3. "Adding a new resource type" (lines 226-232)                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ References datamodel/gpu/ — should be engine/entities/gpu/.                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ 4. New section: Package architecture overview                                                                                                            │
+    >    │                                                                                                                                                          │
+    >    │ Add a new section before "Design patterns" explaining the two-package split, its rationale, and what belongs where.                                      │
+    >    │                                                                                                                                                          │
+    >    │ Proposed New Content                                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ New section: "Package architecture"                                                                                                                      │
+    >    │                                                                                                                                                          │
+    >    │ To be inserted before "Design patterns" (~line 151), describing:                                                                                         │
+    >    │ • engine/ sub-packages:                                                                                                                                  │
+    >    │   • engine/entities/ — domain interfaces and JPA entity classes (Component, LifecycleComponent, and all resource types)                                  │
+    >    │   • engine/entities/component/ — base Component/ComponentEntity/LifecycleComponent/LifecycleComponentEntity                                              │
+    >    │   • engine/entities/<concept>/ — each resource type's interfaces and entities                                                                            │
+    >    │   • engine/functional/ — cross-cutting functional logic                                                                                                  │
+    >    │   • engine/functional/factory/ — FactoryBase/FactoryBaseImpl                                                                                             │
+    >    │   • engine/functional/platfom/ — Platform interface and platform-specific interfaces                                                                     │
+    >    │   • engine/functional/processing/ — processing loop, actions, request entities                                                                           │
+    >    │   • engine/functional/validator/ — validator base interfaces                                                                                             │
+    >    │   • engine/functional/booking/ — resource booking logic                                                                                                  │
+    >    │   • engine/util/ — utilities (URIBuilder, etc.)                                                                                                          │
+    >    │   • engine/webapp/ — web-layer abstractions (if any)                                                                                                     │
+    >    │ • spring/ sub-packages:                                                                                                                                  │
+    >    │   • spring/webapp/ — API delegates, application class, servlet config                                                                                    │
+    >    │   • spring/jpa/ — all Spring Data @Repository interfaces                                                                                                 │
+    >    │   • spring/platfom/mock/ — MockPlatformImpl (@Component)                                                                                                 │
+    >    │   • spring/platfom/docker/ — DockerPlatformImpl (@Component)                                                                                             │
+    >    │   • spring/processing/ — TestProcessingSerivceImpl with @Scheduled                                                                                       │
+    >    │   • spring/booking/ — booking service Spring implementations                                                                                             │
+    >    │   • spring/query/ — query service Spring implementations                                                                                                 │
+    >    │ • Design rationale: Spring Framework annotations are isolated in spring/ so that the domain logic in engine/ could, in principle, be reused with a       │
+    >    │   different DI/web framework. JPA annotations remain in engine/ because they are Jakarta EE standard (not Spring-specific).                              │
+    >    │                                                                                                                                                          │
+    >    │ Updated three-tier pattern                                                                                                                               │
+    >    │                                                                                                                                                          │
+    >    │ Update the tier descriptions to use the correct paths and clarify which files live in engine/ vs spring/:                                                │
+    >    │ • Tier 1 & 2 interfaces/entities → engine/entities/<concept>/                                                                                            │
+    >    │ • Tier 3 Spring wiring (repositories, @Component factories, @Component validators) → spring/jpa/ and registered via Spring component scanning            │
+    >    │ • Platform implementations (MockPlatformImpl, DockerPlatformImpl) → spring/platfom/<platform>/                                                           │
+    >    │                                                                                                                                                          │
+    >    │ File to Edit                                                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ AGENTS.md (/calycopis/Calycopis-broker/github-zrq/AGENTS.md) — lines ~151-232 primarily, plus adding the new "Package architecture" section.             │
+    >    │                                                                                                                                                          │
+    >    │  Saved to root/.cursor/plans/Update AGENTSmd packages-e0232013.plan.md                                                                                   │
+    >    │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+    >    │                                                                                                                                                          │
+    >    │ Ready to build?                                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │  → 1. Yes, build locally (b)                                                                                                                             │
+    >    │    2. No, propose changes (p or Esc)                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
---START--
-....
-....
-  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-  │ calycopis/Calycopis-broker/github-zrq/AGENTS.md +4 -4                                                                                                    │
-  │                                                                                                                                                          │
-  │                                                                                                                                                          │
-  │   ### Adding a new resource type                                                                                                                         │
-  │   To add an entirely new resource type (e.g. `gpu`):                                                                                                     │
-  │ - 1. Create package `datamodel/gpu/`.                                                                                                                    │
-  │ - 2. Create the abstract tier files following the compute pattern.                                                                                       │
-  │ - 3. Create `datamodel/gpu/simple/` with the schema-type tier.                                                                                           │
-  │ - 4. Create `datamodel/gpu/simple/mock/` with the platform tier.                                                                                         │
-  │ + 1. Create the abstract tier package at `engine/entities/gpu/` with the abstract tier files following the compute pa ...                                │
-  │ + 2. Create `engine/entities/gpu/simple/` with the schema-type tier files.                                                                               │
-  │ + 3. Create `engine/entities/gpu/simple/mock/` with the platform-specific entity, factory, and validator files.                                          │
-  │ + 4. Add a Spring `@Repository` interface to `spring/jpa/` for the new entity.                                                                           │
-  │   5. Add a corresponding `ValidatorFactory` and wire it into `OfferSetRequestParser`.                                                                    │
-  │  … truncated (2 more lines) · ctrl+r to review                                                                                                           │
-  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-    To-do All done
-    ☒ Add new 'Package architecture' section to AGENTS.md describing the engine/ vs spring/ split, sub-packages, and design rationale
-    ☒ Update the three-tier pattern description to reference correct package paths (engine/entities/ and spring/jpa/) and clarify which files belong where
-    ☒ Update 'Adding a new platform implementation' instructions with correct paths under engine/ and spring/
-    ☒ Update 'Adding a new resource type' instructions with correct paths under engine/entities/
-
-  All four tasks are complete. Let me verify the final state of the updated sections by reading the relevant portion of the file.
-
-    Read calycopis/Calycopis-broker/github-zrq/AGENTS.md lines 151-285
-
-  All four updates are complete. Here's a summary of the changes made to AGENTS.md:
-
-  1. Added "Package architecture" section (lines 151-195) — describes the engine/ vs spring/ split, lists all sub-packages in each tree, and explains the
-     design rationale.
-
-  2. Updated the three-tier pattern description (lines 199-253) — replaced the obsolete net.ivoa.calycopis.datamodel.<concept>/ references with the correct
-      engine/entities/<concept>/ and spring/jpa/ paths, added a "Package" column to all tier tables, and renamed Tier 3 from mock-specific to generic
-     <Platform> naming.
-
-  3. Updated "Adding a new platform implementation" (lines 265-274) — corrected paths to reference engine/functional/platfom/, spring/platfom/, and
-     engine/entities/<concept>/simple/<platform>/.
-
-  4. Updated "Adding a new resource type" (lines 276-283) — corrected paths to reference engine/entities/ and added the step for creating a repository in
-     spring/jpa/.
---END--
+    >   ....
+    >   ....
+    >     ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >     │ calycopis/Calycopis-broker/github-zrq/AGENTS.md +4 -4                                                                                                    │
+    >     │                                                                                                                                                          │
+    >     │                                                                                                                                                          │
+    >     │   ### Adding a new resource type                                                                                                                         │
+    >     │   To add an entirely new resource type (e.g. `gpu`):                                                                                                     │
+    >     │ - 1. Create package `datamodel/gpu/`.                                                                                                                    │
+    >     │ - 2. Create the abstract tier files following the compute pattern.                                                                                       │
+    >     │ - 3. Create `datamodel/gpu/simple/` with the schema-type tier.                                                                                           │
+    >     │ - 4. Create `datamodel/gpu/simple/mock/` with the platform tier.                                                                                         │
+    >     │ + 1. Create the abstract tier package at `engine/entities/gpu/` with the abstract tier files following the compute pa ...                                │
+    >     │ + 2. Create `engine/entities/gpu/simple/` with the schema-type tier files.                                                                               │
+    >     │ + 3. Create `engine/entities/gpu/simple/mock/` with the platform-specific entity, factory, and validator files.                                          │
+    >     │ + 4. Add a Spring `@Repository` interface to `spring/jpa/` for the new entity.                                                                           │
+    >     │   5. Add a corresponding `ValidatorFactory` and wire it into `OfferSetRequestParser`.                                                                    │
+    >     │  … truncated (2 more lines) · ctrl+r to review                                                                                                           │
+    >     └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >   
+    >       To-do All done
+    >       ☒ Add new 'Package architecture' section to AGENTS.md describing the engine/ vs spring/ split, sub-packages, and design rationale
+    >       ☒ Update the three-tier pattern description to reference correct package paths (engine/entities/ and spring/jpa/) and clarify which files belong where
+    >       ☒ Update 'Adding a new platform implementation' instructions with correct paths under engine/ and spring/
+    >       ☒ Update 'Adding a new resource type' instructions with correct paths under engine/entities/
+    >   
+    >     All four tasks are complete. Let me verify the final state of the updated sections by reading the relevant portion of the file.
+    >   
+    >       Read calycopis/Calycopis-broker/github-zrq/AGENTS.md lines 151-285
+    >   
+    >     All four updates are complete. Here's a summary of the changes made to AGENTS.md:
+    >   
+    >     1. Added "Package architecture" section (lines 151-195) — describes the engine/ vs spring/ split, lists all sub-packages in each tree, and explains the
+    >        design rationale.
+    >   
+    >     2. Updated the three-tier pattern description (lines 199-253) — replaced the obsolete net.ivoa.calycopis.datamodel.<concept>/ references with the correct
+    >         engine/entities/<concept>/ and spring/jpa/ paths, added a "Package" column to all tier tables, and renamed Tier 3 from mock-specific to generic
+    >        <Platform> naming.
+    >   
+    >     3. Updated "Adding a new platform implementation" (lines 265-274) — corrected paths to reference engine/functional/platfom/, spring/platfom/, and
+    >        engine/entities/<concept>/simple/<platform>/.
+    >   
+    >     4. Updated "Adding a new resource type" (lines 276-283) — corrected paths to reference engine/entities/ and added the step for creating a repository in
+    >        spring/jpa/.
 
 
-==START==
-Can you check for any classes that do not conform to the patterns described in the AGENTS.md file.
-For example `AmazonS3DataResourceEntityImpl` should probably be `AmazonS3DataResourceEntity` to follow the pattern established by the other entity classes.
-==END==
+    ?   Can you check for any classes that do not conform to the patterns described in the AGENTS.md file.
+    ?   For example `AmazonS3DataResourceEntityImpl` should probably be `AmazonS3DataResourceEntity` to follow the pattern established by the other entity classes.
 
---START--
-....
-....
+    >   ....
+    >   ....
+    >   
+    >     Here's the complete audit of naming pattern violations against the patterns described in AGENTS.md:
+    >   
+    >     ────────────────────────────────────────
+    >   
+    >     Classes with EntityImpl suffix (should be Entity)
+    >   
+    >     These use EntityImpl where the established pattern uses just Entity:
+    >   
+    >     ┌──────────────────────────────────────────────────────────────────────────────────┬───────────────────────────────────────┐
+    >     │ File                                                                             │ Expected Name                         │
+    >     ├──────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────┤
+    >     │ engine/entities/data/amazon/AmazonS3DataResourceEntityImpl.java                  │ AmazonS3DataResourceEntity.java       │
+    >     │ engine/functional/processing/component/ComponentProcessingRequestEntityImpl.java │ ComponentProcessingRequestEntity.java │
+    >     └──────────────────────────────────────────────────────────────────────────────────┴───────────────────────────────────────┘
+    >   
+    >     The session equivalent (SessionProcessingRequestEntity.java) correctly uses Entity without Impl.
+    >   
+    >     ────────────────────────────────────────
+    >   
+    >     Repositories missing Entity in the name
+    >   
+    >     In spring/jpa/, most repositories follow Spring<Concept>EntityRepository.java, but these don't:
+    >   
+    >     ┌─────────────────────────────────────────────────┬───────────────────────────────────────────────────────┐
+    >     │ File                                            │ Expected Name                                         │
+    >     ├─────────────────────────────────────────────────┼───────────────────────────────────────────────────────┤
+    >     │ SpringProcessingRequestRepository.java          │ SpringProcessingRequestEntityRepository.java          │
+    >     │ SpringProcessingRequestRepositoryWrapper.java   │ SpringProcessingRequestEntityRepositoryWrapper.java   │
+    >     │ SpringOfferSetRepository.java                   │ SpringOfferSetEntityRepository.java                   │
+    >     │ SpringSessionProcessingRequestRepository.java   │ SpringSessionProcessingRequestEntityRepository.java   │
+    >     │ SpringComponentProcessingRequestRepository.java │ SpringComponentProcessingRequestEntityRepository.java │
+    >     └─────────────────────────────────────────────────┴───────────────────────────────────────────────────────┘
+    >   
+    >     ────────────────────────────────────────
+    >   
+    >     Factory missing Entity in the name
+    >   
+    >     ┌───────────────────────────────────────────────────┬────────────────────────────────┐
+    >     │ File                                              │ Expected Name                  │
+    >     ├───────────────────────────────────────────────────┼────────────────────────────────┤
+    >     │ engine/entities/offerset/OfferSetFactory.java     │ OfferSetEntityFactory.java     │
+    >     │ engine/entities/offerset/OfferSetFactoryImpl.java │ OfferSetEntityFactoryImpl.java │
+    >     └───────────────────────────────────────────────────┴────────────────────────────────┘
+    >   
+    >     There are also AbstractDataResourceFactory.java / AbstractDataResourceFactoryImpl.java in engine/entities/data/ which exist alongside the correctly-named
+    >     AbstractDataResourceEntityFactory.java / AbstractDataResourceEntityFactoryImpl.java — these may be duplicates or serve a different purpose.
+    >   
+    >     ────────────────────────────────────────
+    >   
+    >     Contradictory abstract + Impl naming
+    >   
+    >     ┌────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >     │ File                               │ Issue                                                                                                               │
+    >     ├────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+    >     │ engine/functional/validator/Abstra │ An Abstract prefix on a class with Impl suffix is contradictory — abstract classes aren't full implementations. The │
+    >     │ ctValidatorImpl.java               │ same package has ValidatorBase.java using a different convention.                                                   │
+    >     └────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >   
+    >     ────────────────────────────────────────
+    >   
+    >     Sub-concept names diverging from parent concept
+    >   
+    >     These files use a different concept name than their parent package would suggest:
+    >   
+    >     ┌──────────────────────────┬──────────────────────────────┬─────────────────────────────────────────────────────────────┐
+    >     │ Location                 │ Files                        │ Issue                                                       │
+    >     ├──────────────────────────┼──────────────────────────────┼─────────────────────────────────────────────────────────────┤
+    >     │ data/simple/docker/file/ │ DockerFileResource*          │ Concept is FileResource, not DataResource                   │
+    >     │ data/simple/docker/http/ │ DockerHttpResource*          │ Concept is HttpResource, not DataResource                   │
+    >     │ data/simple/docker/stop/ │ DockerStopResourceValidator* │ Only has validators, no entity                              │
+    >     │ session/simple/          │ SimpleSessionConnector*      │ Concept is SessionConnector, diverges from ExecutionSession │
+    >     └──────────────────────────┴──────────────────────────────┴─────────────────────────────────────────────────────────────┘
+    >   
+    >     These may be intentional specialisations, but they don't follow the standard tier naming.
+    >   
+    >     ────────────────────────────────────────
+    >   
+    >     Summary of clear-cut renames
+    >   
+    >     The most straightforward fixes (simple renames that would bring conformance):
+    >   
+    >     1. AmazonS3DataResourceEntityImpl.java → AmazonS3DataResourceEntity.java
+    >     2. ComponentProcessingRequestEntityImpl.java → ComponentProcessingRequestEntity.java
+    >     3. SpringOfferSetRepository.java → SpringOfferSetEntityRepository.java
+    >     4. SpringProcessingRequestRepository.java → SpringProcessingRequestEntityRepository.java
+    >     5. SpringProcessingRequestRepositoryWrapper.java → SpringProcessingRequestEntityRepositoryWrapper.java
+    >     6. SpringSessionProcessingRequestRepository.java → SpringSessionProcessingRequestEntityRepository.java
+    >     7. SpringComponentProcessingRequestRepository.java → SpringComponentProcessingRequestEntityRepository.java
+    >     8. OfferSetFactory.java → OfferSetEntityFactory.java
+    >     9. OfferSetFactoryImpl.java → OfferSetEntityFactoryImpl.java
+    >   
+    >     Would you like me to proceed with any of these renames?
 
-  Here's the complete audit of naming pattern violations against the patterns described in AGENTS.md:
+    ?   Yes, please proceed with simple renames 1..9
 
-  ────────────────────────────────────────
-
-  Classes with EntityImpl suffix (should be Entity)
-
-  These use EntityImpl where the established pattern uses just Entity:
-
-  ┌──────────────────────────────────────────────────────────────────────────────────┬───────────────────────────────────────┐
-  │ File                                                                             │ Expected Name                         │
-  ├──────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────┤
-  │ engine/entities/data/amazon/AmazonS3DataResourceEntityImpl.java                  │ AmazonS3DataResourceEntity.java       │
-  │ engine/functional/processing/component/ComponentProcessingRequestEntityImpl.java │ ComponentProcessingRequestEntity.java │
-  └──────────────────────────────────────────────────────────────────────────────────┴───────────────────────────────────────┘
-
-  The session equivalent (SessionProcessingRequestEntity.java) correctly uses Entity without Impl.
-
-  ────────────────────────────────────────
-
-  Repositories missing Entity in the name
-
-  In spring/jpa/, most repositories follow Spring<Concept>EntityRepository.java, but these don't:
-
-  ┌─────────────────────────────────────────────────┬───────────────────────────────────────────────────────┐
-  │ File                                            │ Expected Name                                         │
-  ├─────────────────────────────────────────────────┼───────────────────────────────────────────────────────┤
-  │ SpringProcessingRequestRepository.java          │ SpringProcessingRequestEntityRepository.java          │
-  │ SpringProcessingRequestRepositoryWrapper.java   │ SpringProcessingRequestEntityRepositoryWrapper.java   │
-  │ SpringOfferSetRepository.java                   │ SpringOfferSetEntityRepository.java                   │
-  │ SpringSessionProcessingRequestRepository.java   │ SpringSessionProcessingRequestEntityRepository.java   │
-  │ SpringComponentProcessingRequestRepository.java │ SpringComponentProcessingRequestEntityRepository.java │
-  └─────────────────────────────────────────────────┴───────────────────────────────────────────────────────┘
-
-  ────────────────────────────────────────
-
-  Factory missing Entity in the name
-
-  ┌───────────────────────────────────────────────────┬────────────────────────────────┐
-  │ File                                              │ Expected Name                  │
-  ├───────────────────────────────────────────────────┼────────────────────────────────┤
-  │ engine/entities/offerset/OfferSetFactory.java     │ OfferSetEntityFactory.java     │
-  │ engine/entities/offerset/OfferSetFactoryImpl.java │ OfferSetEntityFactoryImpl.java │
-  └───────────────────────────────────────────────────┴────────────────────────────────┘
-
-  There are also AbstractDataResourceFactory.java / AbstractDataResourceFactoryImpl.java in engine/entities/data/ which exist alongside the correctly-named
-  AbstractDataResourceEntityFactory.java / AbstractDataResourceEntityFactoryImpl.java — these may be duplicates or serve a different purpose.
-
-  ────────────────────────────────────────
-
-  Contradictory abstract + Impl naming
-
-  ┌────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-  │ File                               │ Issue                                                                                                               │
-  ├────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-  │ engine/functional/validator/Abstra │ An Abstract prefix on a class with Impl suffix is contradictory — abstract classes aren't full implementations. The │
-  │ ctValidatorImpl.java               │ same package has ValidatorBase.java using a different convention.                                                   │
-  └────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-  ────────────────────────────────────────
-
-  Sub-concept names diverging from parent concept
-
-  These files use a different concept name than their parent package would suggest:
-
-  ┌──────────────────────────┬──────────────────────────────┬─────────────────────────────────────────────────────────────┐
-  │ Location                 │ Files                        │ Issue                                                       │
-  ├──────────────────────────┼──────────────────────────────┼─────────────────────────────────────────────────────────────┤
-  │ data/simple/docker/file/ │ DockerFileResource*          │ Concept is FileResource, not DataResource                   │
-  │ data/simple/docker/http/ │ DockerHttpResource*          │ Concept is HttpResource, not DataResource                   │
-  │ data/simple/docker/stop/ │ DockerStopResourceValidator* │ Only has validators, no entity                              │
-  │ session/simple/          │ SimpleSessionConnector*      │ Concept is SessionConnector, diverges from ExecutionSession │
-  └──────────────────────────┴──────────────────────────────┴─────────────────────────────────────────────────────────────┘
-
-  These may be intentional specialisations, but they don't follow the standard tier naming.
-
-  ────────────────────────────────────────
-
-  Summary of clear-cut renames
-
-  The most straightforward fixes (simple renames that would bring conformance):
-
-  1. AmazonS3DataResourceEntityImpl.java → AmazonS3DataResourceEntity.java
-  2. ComponentProcessingRequestEntityImpl.java → ComponentProcessingRequestEntity.java
-  3. SpringOfferSetRepository.java → SpringOfferSetEntityRepository.java
-  4. SpringProcessingRequestRepository.java → SpringProcessingRequestEntityRepository.java
-  5. SpringProcessingRequestRepositoryWrapper.java → SpringProcessingRequestEntityRepositoryWrapper.java
-  6. SpringSessionProcessingRequestRepository.java → SpringSessionProcessingRequestEntityRepository.java
-  7. SpringComponentProcessingRequestRepository.java → SpringComponentProcessingRequestEntityRepository.java
-  8. OfferSetFactory.java → OfferSetEntityFactory.java
-  9. OfferSetFactoryImpl.java → OfferSetEntityFactoryImpl.java
-
-  Would you like me to proceed with any of these renames?
---END--
-
-==START==
-Yes, please proceed with simple renames 1..9
-==END==
-
---START--
-....
-....
-    To-do All done
-    ☒ Rename AmazonS3DataResourceEntityImpl → AmazonS3DataResourceEntity
-    ☒ Rename ComponentProcessingRequestEntityImpl → ComponentProcessingRequestEntity
-    ☒ Rename SpringOfferSetRepository → SpringOfferSetEntityRepository
-    ☒ Rename SpringProcessingRequestRepository → SpringProcessingRequestEntityRepository
-    ☒ Rename SpringProcessingRequestRepositoryWrapper → SpringProcessingRequestEntityRepositoryWrapper
-    ☒ Rename SpringSessionProcessingRequestRepository → SpringSessionProcessingRequestEntityRepository
-    ☒ Rename SpringComponentProcessingRequestRepository → SpringComponentProcessingRequestEntityRepository
-    ☒ Rename OfferSetFactory → OfferSetEntityFactory
-    ☒ Rename OfferSetFactoryImpl → OfferSetEntityFactoryImpl
-
-  All 9 renames are complete and the project compiles cleanly. Here's a summary of what was done:
-
-  ┌───┬────────────────────────────────────────────┬──────────────────────────────────────────────────┬───────────────┐
-  │ # │ Old Name                                   │ New Name                                         │ Files Updated │
-  ├───┼────────────────────────────────────────────┼──────────────────────────────────────────────────┼───────────────┤
-  │ 1 │ AmazonS3DataResourceEntityImpl             │ AmazonS3DataResourceEntity                       │ 3 files       │
-  │ 2 │ ComponentProcessingRequestEntityImpl       │ ComponentProcessingRequestEntity                 │ 9 files       │
-  │ 3 │ SpringOfferSetRepository                   │ SpringOfferSetEntityRepository                   │ 3 files       │
-  │ 4 │ SpringProcessingRequestRepository          │ SpringProcessingRequestEntityRepository          │ 5 files       │
-  │ 5 │ SpringProcessingRequestRepositoryWrapper   │ SpringProcessingRequestEntityRepositoryWrapper   │ 3 files       │
-  │ 6 │ SpringSessionProcessingRequestRepository   │ SpringSessionProcessingRequestEntityRepository   │ 3 files       │
-  │ 7 │ SpringComponentProcessingRequestRepository │ SpringComponentProcessingRequestEntityRepository │ 3 files       │
-  │ 8 │ OfferSetFactory                            │ OfferSetEntityFactory                            │ 5 files       │
-  │ 9 │ OfferSetFactoryImpl                        │ OfferSetEntityFactoryImpl                        │ 3 files       │
-  └───┴────────────────────────────────────────────┴──────────────────────────────────────────────────┴───────────────┘
-
-  For rename 8, I also renamed the method getOfferSetFactory() → getOfferSetEntityFactory() in the Platform interface and its implementations, to be
-  consistent with the existing getExecutionSessionEntityFactory() naming pattern.
---END--
+    >   ....
+    >   ....
+    >       To-do All done
+    >       ☒ Rename AmazonS3DataResourceEntityImpl → AmazonS3DataResourceEntity
+    >       ☒ Rename ComponentProcessingRequestEntityImpl → ComponentProcessingRequestEntity
+    >       ☒ Rename SpringOfferSetRepository → SpringOfferSetEntityRepository
+    >       ☒ Rename SpringProcessingRequestRepository → SpringProcessingRequestEntityRepository
+    >       ☒ Rename SpringProcessingRequestRepositoryWrapper → SpringProcessingRequestEntityRepositoryWrapper
+    >       ☒ Rename SpringSessionProcessingRequestRepository → SpringSessionProcessingRequestEntityRepository
+    >       ☒ Rename SpringComponentProcessingRequestRepository → SpringComponentProcessingRequestEntityRepository
+    >       ☒ Rename OfferSetFactory → OfferSetEntityFactory
+    >       ☒ Rename OfferSetFactoryImpl → OfferSetEntityFactoryImpl
+    >   
+    >     All 9 renames are complete and the project compiles cleanly. Here's a summary of what was done:
+    >   
+    >     ┌───┬────────────────────────────────────────────┬──────────────────────────────────────────────────┬───────────────┐
+    >     │ # │ Old Name                                   │ New Name                                         │ Files Updated │
+    >     ├───┼────────────────────────────────────────────┼──────────────────────────────────────────────────┼───────────────┤
+    >     │ 1 │ AmazonS3DataResourceEntityImpl             │ AmazonS3DataResourceEntity                       │ 3 files       │
+    >     │ 2 │ ComponentProcessingRequestEntityImpl       │ ComponentProcessingRequestEntity                 │ 9 files       │
+    >     │ 3 │ SpringOfferSetRepository                   │ SpringOfferSetEntityRepository                   │ 3 files       │
+    >     │ 4 │ SpringProcessingRequestRepository          │ SpringProcessingRequestEntityRepository          │ 5 files       │
+    >     │ 5 │ SpringProcessingRequestRepositoryWrapper   │ SpringProcessingRequestEntityRepositoryWrapper   │ 3 files       │
+    >     │ 6 │ SpringSessionProcessingRequestRepository   │ SpringSessionProcessingRequestEntityRepository   │ 3 files       │
+    >     │ 7 │ SpringComponentProcessingRequestRepository │ SpringComponentProcessingRequestEntityRepository │ 3 files       │
+    >     │ 8 │ OfferSetFactory                            │ OfferSetEntityFactory                            │ 5 files       │
+    >     │ 9 │ OfferSetFactoryImpl                        │ OfferSetEntityFactoryImpl                        │ 3 files       │
+    >     └───┴────────────────────────────────────────────┴──────────────────────────────────────────────────┴───────────────┘
+    >   
+    >     For rename 8, I also renamed the method getOfferSetFactory() → getOfferSetEntityFactory() in the Platform interface and its implementations, to be
+    >     consistent with the existing getExecutionSessionEntityFactory() naming pattern.
 
 
-==START==
-Did you update the file headers, as specified in the project rules ?
-==END==
+    ?   Did you update the file headers, as specified in the project rules ?
 
---START--
-  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-  │ … Thought for 3.3s                                                                                                                                       │
-  │ The user is asking about the file headers. According to the AGENTS.md coding conventions:                                                                │
-  │                                                                                                                                                          │
-  │ 1. agents/licence-header.mdc — GPL licence header that must be added to all new source files.                                                            │
-  │ 2. agents/copyright-year.mdc — Copyright year in the licence header must be updated to the current year when a file is modified.                         │
-  │ 3. agents/ai-metrics.mdc — AIMetrics block must be added or updated in file headers for all created or modified files.                                   │
-  │                                                                                                                                                          │
-  │ I need to read those rule files and then update all the files I modified. Let me first read the rule files to understand exactly what's required.        │
-  │  ctrl+o to collapse                                                                                                                                      │
-  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >     ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >     │ … Thought for 3.3s                                                                                                                                       │
+    >     │ The user is asking about the file headers. According to the AGENTS.md coding conventions:                                                                │
+    >     │                                                                                                                                                          │
+    >     │ 1. agents/licence-header.mdc — GPL licence header that must be added to all new source files.                                                            │
+    >     │ 2. agents/copyright-year.mdc — Copyright year in the licence header must be updated to the current year when a file is modified.                         │
+    >     │ 3. agents/ai-metrics.mdc — AIMetrics block must be added or updated in file headers for all created or modified files.                                   │
+    >     │                                                                                                                                                          │
+    >     │ I need to read those rule files and then update all the files I modified. Let me first read the rule files to understand exactly what's required.        │
+    >     │  ctrl+o to collapse                                                                                                                                      │
+    >     └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >   
+    >     No, I missed that. Let me read the header rules and update all modified files.
+    >   ....
+    >   ....
+    >     $ cd /calycopis/Calycopis-broker/github-zrq && git status 258ms
+    >       On branch 20260515-zrq-repackaging
+    >       Your branch is ahead of 'origin/20260515-zrq-repackaging' by 3 commits.
+    >         (use "git push" to publish your local commits)
+    >       nothing to commit, working tree clean
+    >        ctrl+o to collapse
+    >   
+    >     The changes have already been committed (3 commits ahead). Let me check what files were modified across those commits.
+    >   
+    >     ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >     │ … Thought for 1.6s                                                                                                                                       │
+    >     │ Let me look at which of these are Java files that I actually modified (the ones from my rename operations). I need to ignore the notes/ and AGENTS.md    │
+    >     │ files, and also files that were part of prior commits but not mine. Let me check what's in my commits specifically.                                      │
+    >     │  ctrl+o to collapse                                                                                                                                      │
+    >     └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >   ....
+    >   ....
+    >     Let me see which commits are mine (the rename ones).
+    >   
+    >     $ cd /calycopis/Calycopis-broker/github-zrq && git log --oneline -5 300ms
+    >       45b6ead Notes ...
+    >       b4dcd1a Updating class names to conform to naming conventions
+    >       62e0890 Updating the AGENTS file
+    >       af41b40 format-notes
+    >       342ed67 Splitting ComputeOffer, adding ResourceQuery and QueryHandler, and moving Spring specific parts into a separate package.
+    >        ctrl+o to collapse
+    >   
+    >     So commit b4dcd1a is the rename commit and 62e0890 is the AGENTS.md update. The changes are already committed but without header updates. I need to
+    >     update the headers now for the Java files I modified. Let me get the list of Java files from the rename commit.
+    >   ....
+    >   ....
+    >   ....
+    >   ....
+    >     Build compiles cleanly. All file headers have been updated with:
+    >     • Copyright year set to 2026
+    >     • AIMetrics entry added with timestamp 2026-05-26T16:50:00, contribution value of 2% (reflecting the small rename changes)
 
-  No, I missed that. Let me read the header rules and update all modified files.
-....
-....
-  $ cd /calycopis/Calycopis-broker/github-zrq && git status 258ms
-    On branch 20260515-zrq-repackaging
-    Your branch is ahead of 'origin/20260515-zrq-repackaging' by 3 commits.
-      (use "git push" to publish your local commits)
-    nothing to commit, working tree clean
-     ctrl+o to collapse
 
-  The changes have already been committed (3 commits ahead). Let me check what files were modified across those commits.
+# -----------------------------------------------------
 
-  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-  │ … Thought for 1.6s                                                                                                                                       │
-  │ Let me look at which of these are Java files that I actually modified (the ones from my rename operations). I need to ignore the notes/ and AGENTS.md    │
-  │ files, and also files that were part of prior commits but not mine. Let me check what's in my commits specifically.                                      │
-  │  ctrl+o to collapse                                                                                                                                      │
-  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-....
-....
-  Let me see which commits are mine (the rename ones).
+    ?   /quit
 
-  $ cd /calycopis/Calycopis-broker/github-zrq && git log --oneline -5 300ms
-    45b6ead Notes ...
-    b4dcd1a Updating class names to conform to naming conventions
-    62e0890 Updating the AGENTS file
-    af41b40 format-notes
-    342ed67 Splitting ComputeOffer, adding ResourceQuery and QueryHandler, and moving Spring specific parts into a separate package.
-     ctrl+o to collapse
+    >     To resume this session: agent --resume=e0232013-ed4c-480c-b43c-136061eef8ba
 
-  So commit b4dcd1a is the rename commit and 62e0890 is the AGENTS.md update. The changes are already committed but without header updates. I need to
-  update the headers now for the Java files I modified. Let me get the list of Java files from the rename commit.
-....
-....
-....
-....
-  Build compiles cleanly. All file headers have been updated with:
-  • Copyright year set to 2026
-  • AIMetrics entry added with timestamp 2026-05-26T16:50:00, contribution value of 2% (reflecting the small rename changes)
---END--
 
 

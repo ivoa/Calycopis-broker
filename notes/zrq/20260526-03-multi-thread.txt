@@ -40,224 +40,216 @@
 
     agent
 
-==START==
-Regarding the project at `/calycopis/Calycopis-broker/github-zrq`.
-Please read the AGENTS.md file for the project at `/calycopis/Calycopis-broker/github-zrq/AGENTS.md`
-==END==
+    ?   Regarding the project at `/calycopis/Calycopis-broker/github-zrq`.
+    ?   Please read the AGENTS.md file for the project at `/calycopis/Calycopis-broker/github-zrq/AGENTS.md`
 
---START--
-  I've read the AGENTS.md file for the Calycopis-broker project. Here's a summary of what it covers:
+    >     I've read the AGENTS.md file for the Calycopis-broker project. Here's a summary of what it covers:
+    >   
+    >     Project overview: The Calycopis project implements the IVOA Execution Broker service, which provides an abstract API for various execution platforms
+    >     (OpenStack, Docker, Kubernetes, Slurm, etc.). It takes execution requests and returns offers for execution sessions.
+    >   
+    >     Key sections:
+    >   
+    >     • API surface — REST endpoints for offer sets (POST/GET /offersets) and execution sessions (GET/POST /sessions/{uuid})
+    >     • Data model — Polymorphic types using discriminators for executables, compute/storage/data resources, and sessions
+    >     • Design patterns — A three-tier Entity/Factory/Validator/Repository pattern (Abstract base → Schema type → Platform implementation)
+    >     • Coding conventions — No ternary operators (except in logging), clarity over brevity, JPA annotations preferred over Spring-specific ones, GPL licence
+    >       headers required, AIMetrics blocks in file headers
+    >     • Development platform — Runs inside a developer-tools Docker/Podman container with access to the host Podman socket
+    >     • Database — PostgreSQL required (no H2), credentials stored externally at /etc/calycopis/database.yaml
+    >     • Build — Maven-based, supports mock and docker platform profiles via ./mvnw spring-boot:run
+    >     • Testing — Curl examples, Java tests, and Python tests using generated client classes from the OpenAPI schema
+    >   
+    >     The file also documents important container-in-container architecture considerations (filesystem visibility between the dev container and application
+    >     containers) and provides instructions for adding new platforms or resource types.
+    >   
+    >     Is there anything specific about this project you'd like to work on?
 
-  Project overview: The Calycopis project implements the IVOA Execution Broker service, which provides an abstract API for various execution platforms
-  (OpenStack, Docker, Kubernetes, Slurm, etc.). It takes execution requests and returns offers for execution sessions.
-
-  Key sections:
-
-  • API surface — REST endpoints for offer sets (POST/GET /offersets) and execution sessions (GET/POST /sessions/{uuid})
-  • Data model — Polymorphic types using discriminators for executables, compute/storage/data resources, and sessions
-  • Design patterns — A three-tier Entity/Factory/Validator/Repository pattern (Abstract base → Schema type → Platform implementation)
-  • Coding conventions — No ternary operators (except in logging), clarity over brevity, JPA annotations preferred over Spring-specific ones, GPL licence
-    headers required, AIMetrics blocks in file headers
-  • Development platform — Runs inside a developer-tools Docker/Podman container with access to the host Podman socket
-  • Database — PostgreSQL required (no H2), credentials stored externally at /etc/calycopis/database.yaml
-  • Build — Maven-based, supports mock and docker platform profiles via ./mvnw spring-boot:run
-  • Testing — Curl examples, Java tests, and Python tests using generated client classes from the OpenAPI schema
-
-  The file also documents important container-in-container architecture considerations (filesystem visibility between the dev container and application
-  containers) and provides instructions for adding new platforms or resource types.
-
-  Is there anything specific about this project you'd like to work on?
---END--
-
-==START==
-/plan
-The internal request processing loop is run on a single thread created by
-`net.ivoa.calycopis.broker.spring.processing.TestProcessingSerivceImpl`
-using the `@Scheduled(fixedDelay = 1000)` Spring annotation.
-Can you create a plan for replacing this with a different mechanism for managing
-the processing threads that would enable us to have 10 or 20 concurrent
-processing threads running.
-==END==
+    ?   /plan
+    ?   The internal request processing loop is run on a single thread created by
+    ?   `net.ivoa.calycopis.broker.spring.processing.TestProcessingSerivceImpl`
+    ?   using the `@Scheduled(fixedDelay = 1000)` Spring annotation.
+    ?   Can you create a plan for replacing this with a different mechanism for managing
+    ?   the processing threads that would enable us to have 10 or 20 concurrent
+    ?   processing threads running.
 
 
---START--
-....
-....
- ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
- │ Suggested Plan                                                                                                                                           │
- │                                                                                                                                                          │
- │ Concurrent Processing Thread Pool                                                                                                                        │
- │                                                                                                                                                          │
- │ Current Architecture                                                                                                                                     │
- │                                                                                                                                                          │
- │ The processing pipeline currently works as follows:                                                                                                      │
- │ 1. A single @Scheduled(fixedDelay = 1000) method on TestProcessingSerivceImpl triggers the loop every second (after the previous invocation              │
- │    completes).                                                                                                                                           │
- │ 2. The loop sequentially claims requests from the database (WHERE service IS NULL ... LIMIT 1), pre-processes them in a transaction, runs the action     │
- │    outside any transaction, then post-processes in another transaction.                                                                                  │
- │ 3. Concurrency safety relies on the database UPDATE ... WHERE service IS NULL LIMIT 1 claim mechanism — each request is atomically assigned to a         │
- │    service UUID before processing.                                                                                                                       │
- │                                                                                                                                                          │
- │ flowchart LR                                                                                                                                             │
- │   Scheduler["@Scheduled (1 thread)"] --> Loop["loop()"]                                                                                                  │
- │   Loop --> GetNext["getNext()"]                                                                                                                          │
- │   GetNext --> PreProcess["preProcess (tx)"]                                                                                                              │
- │   PreProcess --> Action["action.process()"]                                                                                                              │
- │   Action --> PostProcess["postProcess (tx)"]                                                                                                             │
- │   PostProcess --> GetNext                                                                                                                                │
- │ ctrl+o to render diagram                                                                                                                                 │
- │                                                                                                                                                          │
- │ Bottleneck: Because action.process() can take 30+ seconds (mock delays) or significant time (Docker container creation, monitoring), the entire queue    │
- │ is blocked behind each action.                                                                                                                           │
- │                                                                                                                                                          │
- │ Proposed Architecture                                                                                                                                    │
- │                                                                                                                                                          │
- │ Replace the sequential loop with a dispatcher + thread pool pattern:                                                                                     │
- │                                                                                                                                                          │
- │ flowchart TD                                                                                                                                             │
- │   Scheduler["@Scheduled dispatcher (1 thread, fast)"] --> Claim["Claim up to N requests"]                                                                │
- │   Claim --> Submit["Submit each to ThreadPoolTaskExecutor"]                                                                                              │
- │   Submit --> W1["Worker thread 1"]                                                                                                                       │
- │   Submit --> W2["Worker thread 2"]                                                                                                                       │
- │   Submit --> Wn["Worker thread N"]                                                                                                                       │
- │   W1 --> PreProcess1["preProcess (tx)"]                                                                                                                  │
- │   PreProcess1 --> Action1["action.process()"]                                                                                                            │
- │   Action1 --> PostProcess1["postProcess (tx)"]                                                                                                           │
- │ ctrl+o to render diagram                                                                                                                                 │
- │                                                                                                                                                          │
- │ The dispatcher runs frequently (e.g. every 500ms), claims available requests up to the number of idle threads, and submits each as a task to the         │
- │ thread pool. The long-running action.process() executes on pool threads, allowing parallel processing.                                                   │
- │                                                                                                                                                          │
- │ Key Design Decisions                                                                                                                                     │
- │                                                                                                                                                          │
- │ • ThreadPoolTaskExecutor (Spring's standard thread pool wrapper): configurable core/max pool size via application.yaml property (e.g.                    │
- │   calycopis.processing.threads: 10).                                                                                                                     │
- │ • Claim batch size: The dispatcher claims only as many requests as there are idle threads in the pool, preventing over-claiming. This can use            │
- │   executor.getThreadPoolExecutor().getActiveCount() vs pool size.                                                                                        │
- │ • One service UUID per worker invocation: Each submitted task uses this (the service instance) when calling transactionHandler.getNext(). Since          │
- │   getNext already uses UPDATE ... LIMIT 1 atomically, multiple concurrent calls will not claim the same row. Each worker calls getNext for itself to     │
- │   guarantee at most one request per worker.                                                                                                              │
- │ • No change to the claim SQL: The existing updateNextRequest query is already safe under concurrent execution due to the WHERE ... LIMIT 1 +             │
- │   single-row UPDATE pattern, which PostgreSQL serialises correctly.                                                                                      │
- │ • ProcessingServiceImpl.loop() becomes ProcessingServiceImpl.processOne(): Instead of a while loop, expose a method that claims and processes a          │
- │   single request. The dispatcher submits processOne tasks to the pool.                                                                                   │
- │                                                                                                                                                          │
- │ Files to Modify                                                                                                                                          │
- │                                                                                                                                                          │
- │ 1. ProcessingServiceImpl — add processOne() method                                                                                                       │
- │                                                                                                                                                          │
- │ java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/ProcessingServiceImpl.java                                                     │
- │ (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/ProcessingServiceImpl.java)                                                   │
- │ Add a new processOne() method that claims one request and processes it (the body of the current while-loop iteration). Keep loop() as-is for backward    │
- │ compatibility (it can call processOne() in a while loop internally).                                                                                     │
- │                                                                                                                                                          │
- │ public boolean processOne()                                                                                                                              │
- │     {                                                                                                                                                    │
- │     UUID requestId = transactionHandler.getNext(this);                                                                                                   │
- │     if (requestId == null)                                                                                                                               │
- │         {                                                                                                                                                │
- │         return false;                                                                                                                                    │
- │         }                                                                                                                                                │
- │     ProcessingAction action = transactionHandler.preProcess(this, requestId);                                                                            │
- │     if (action != null)                                                                                                                                  │
- │         {                                                                                                                                                │
- │         action.process();                                                                                                                                │
- │         }                                                                                                                                                │
- │     transactionHandler.postProcess(this, requestId, action);                                                                                             │
- │     return true;                                                                                                                                         │
- │     }                                                                                                                                                    │
- │                                                                                                                                                          │
- │ 2. TestProcessingSerivceImpl — replace @Scheduled loop with pool dispatcher                                                                              │
- │                                                                                                                                                          │
- │ java/src/main/java/net/ivoa/calycopis/broker/spring/processing/TestProcessingSerivceImpl.java                                                            │
- │ (java/src/main/java/net/ivoa/calycopis/broker/spring/processing/TestProcessingSerivceImpl.java)                                                          │
- │ • Remove @Scheduled(fixedDelay = 1000) from loop().                                                                                                      │
- │ • Inject a ThreadPoolTaskExecutor (either via @Autowired or built in a @Configuration class).                                                            │
- │ • Add a @Scheduled(fixedDelay = 500) dispatcher method that:                                                                                             │
- │   1. Computes available capacity = pool size - active count.                                                                                             │
- │   2. For each available slot, submits a Runnable that calls processOne().                                                                                │
- │                                                                                                                                                          │
- │ @Scheduled(fixedDelay = 500)                                                                                                                             │
- │ public void dispatch()                                                                                                                                   │
- │     {                                                                                                                                                    │
- │     int capacity = poolSize - executor.getActiveCount();                                                                                                 │
- │     for (int i = 0; i < capacity; i++)                                                                                                                   │
- │         {                                                                                                                                                │
- │         executor.submit(() -> this.processOne());                                                                                                        │
- │         }                                                                                                                                                │
- │     }                                                                                                                                                    │
- │                                                                                                                                                          │
- │ 3. New configuration class for the thread pool                                                                                                           │
- │                                                                                                                                                          │
- │ Create: java/src/main/java/net/ivoa/calycopis/broker/spring/processing/ProcessingThreadPoolConfig.java                                                   │
- │ (java/src/main/java/net/ivoa/calycopis/broker/spring/processing/ProcessingThreadPoolConfig.java)                                                         │
- │ A @Configuration class that defines a ThreadPoolTaskExecutor bean with configurable size:                                                                │
- │                                                                                                                                                          │
- │ @Configuration                                                                                                                                           │
- │ public class ProcessingThreadPoolConfig                                                                                                                  │
- │     {                                                                                                                                                    │
- │     @Value("${calycopis.processing.threads:10}")                                                                                                         │
- │     private int poolSize;                                                                                                                                │
- │     @Bean(name = "processingExecutor")                                                                                                                   │
- │     public ThreadPoolTaskExecutor processingExecutor()                                                                                                   │
- │         {                                                                                                                                                │
- │         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();                                                                                  │
- │         executor.setCorePoolSize(poolSize);                                                                                                              │
- │         executor.setMaxPoolSize(poolSize);                                                                                                               │
- │         executor.setQueueCapacity(0);                                                                                                                    │
- │         executor.setThreadNamePrefix("processing-");                                                                                                     │
- │         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());                                                                    │
- │         executor.initialize();                                                                                                                           │
- │         return executor;                                                                                                                                 │
- │         }                                                                                                                                                │
- │     }                                                                                                                                                    │
- │                                                                                                                                                          │
- │ Setting queueCapacity(0) with a DiscardPolicy means if all threads are busy when the dispatcher submits, the task is silently dropped — the dispatcher   │
- │  will try again on the next tick. This prevents unbounded queue growth.                                                                                  │
- │                                                                                                                                                          │
- │ 4. Application configuration                                                                                                                             │
- │                                                                                                                                                          │
- │ Add to application.yaml:                                                                                                                                 │
- │                                                                                                                                                          │
- │ calycopis:                                                                                                                                               │
- │   processing:                                                                                                                                            │
- │     threads: 10                                                                                                                                          │
- │                                                                                                                                                          │
- │ 5. Concurrency safety review                                                                                                                             │
- │                                                                                                                                                          │
- │ The existing design is already concurrency-safe because:                                                                                                 │
- │ • Claim: updateNextRequest uses UPDATE ... WHERE service IS NULL LIMIT 1 — PostgreSQL row-level locking ensures only one transaction wins.               │
- │ • Transactions: Each preProcess / postProcess runs in REQUIRES_NEW, so each worker has its own transaction.                                              │
- │ • No shared mutable state: ProcessingServiceImpl holds only platform and transactionHandler (both effectively immutable singletons). The                 │
- │   ProcessingRequestEntity is loaded fresh in each transaction.                                                                                           │
- │ • Release: postProcess sets request.setService(null), releasing the claim for future processing cycles.                                                  │
- │                                                                                                                                                          │
- │ No additional locking is required.                                                                                                                       │
- │                                                                                                                                                          │
- │ Alternative Considered: Multiple Service Instances                                                                                                       │
- │                                                                                                                                                          │
- │ An alternative would be to create N instances of ProcessingServiceImpl, each with its own UUID, each running its own @Scheduled loop. This was           │
- │ rejected because:                                                                                                                                        │
- │ • It multiplies Spring beans unnecessarily.                                                                                                              │
- │ • The claim SQL already handles concurrent access cleanly.                                                                                               │
- │ • A thread pool is more standard and configurable.                                                                                                       │
- │                                                                                                                                                          │
- │ Testing Considerations                                                                                                                                   │
- │                                                                                                                                                          │
- │ • The mock platform uses Thread.sleep() in MockPrepareAction. With 10 threads, 10 mock sessions can process concurrently (each sleeping                  │
- │   independently), dramatically reducing end-to-end test times.                                                                                           │
- │ • The docker platform will benefit from parallel container creation/monitoring.                                                                          │
- │ • Existing tests should pass without modification since the processing semantics are unchanged — only throughput improves.                               │
- │                                                                                                                                                          │
- │  Saved to root/.cursor/plans/Concurrent processing threads-e0232013.plan.md                                                                              │
- │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
- │                                                                                                                                                          │
- │ Ready to build?                                                                                                                                          │
- │                                                                                                                                                          │
- │  → 1. Yes, build locally (b)                                                                                                                             │
- │    2. No, propose changes (p or Esc)                                                                                                                     │
- │                                                                                                                                                          │
- └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
---END--
+    >   ....
+    >   ....
+    >    ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >    │ Suggested Plan                                                                                                                                           │
+    >    │                                                                                                                                                          │
+    >    │ Concurrent Processing Thread Pool                                                                                                                        │
+    >    │                                                                                                                                                          │
+    >    │ Current Architecture                                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ The processing pipeline currently works as follows:                                                                                                      │
+    >    │ 1. A single @Scheduled(fixedDelay = 1000) method on TestProcessingSerivceImpl triggers the loop every second (after the previous invocation              │
+    >    │    completes).                                                                                                                                           │
+    >    │ 2. The loop sequentially claims requests from the database (WHERE service IS NULL ... LIMIT 1), pre-processes them in a transaction, runs the action     │
+    >    │    outside any transaction, then post-processes in another transaction.                                                                                  │
+    >    │ 3. Concurrency safety relies on the database UPDATE ... WHERE service IS NULL LIMIT 1 claim mechanism — each request is atomically assigned to a         │
+    >    │    service UUID before processing.                                                                                                                       │
+    >    │                                                                                                                                                          │
+    >    │ flowchart LR                                                                                                                                             │
+    >    │   Scheduler["@Scheduled (1 thread)"] --> Loop["loop()"]                                                                                                  │
+    >    │   Loop --> GetNext["getNext()"]                                                                                                                          │
+    >    │   GetNext --> PreProcess["preProcess (tx)"]                                                                                                              │
+    >    │   PreProcess --> Action["action.process()"]                                                                                                              │
+    >    │   Action --> PostProcess["postProcess (tx)"]                                                                                                             │
+    >    │   PostProcess --> GetNext                                                                                                                                │
+    >    │ ctrl+o to render diagram                                                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ Bottleneck: Because action.process() can take 30+ seconds (mock delays) or significant time (Docker container creation, monitoring), the entire queue    │
+    >    │ is blocked behind each action.                                                                                                                           │
+    >    │                                                                                                                                                          │
+    >    │ Proposed Architecture                                                                                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ Replace the sequential loop with a dispatcher + thread pool pattern:                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ flowchart TD                                                                                                                                             │
+    >    │   Scheduler["@Scheduled dispatcher (1 thread, fast)"] --> Claim["Claim up to N requests"]                                                                │
+    >    │   Claim --> Submit["Submit each to ThreadPoolTaskExecutor"]                                                                                              │
+    >    │   Submit --> W1["Worker thread 1"]                                                                                                                       │
+    >    │   Submit --> W2["Worker thread 2"]                                                                                                                       │
+    >    │   Submit --> Wn["Worker thread N"]                                                                                                                       │
+    >    │   W1 --> PreProcess1["preProcess (tx)"]                                                                                                                  │
+    >    │   PreProcess1 --> Action1["action.process()"]                                                                                                            │
+    >    │   Action1 --> PostProcess1["postProcess (tx)"]                                                                                                           │
+    >    │ ctrl+o to render diagram                                                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ The dispatcher runs frequently (e.g. every 500ms), claims available requests up to the number of idle threads, and submits each as a task to the         │
+    >    │ thread pool. The long-running action.process() executes on pool threads, allowing parallel processing.                                                   │
+    >    │                                                                                                                                                          │
+    >    │ Key Design Decisions                                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ • ThreadPoolTaskExecutor (Spring's standard thread pool wrapper): configurable core/max pool size via application.yaml property (e.g.                    │
+    >    │   calycopis.processing.threads: 10).                                                                                                                     │
+    >    │ • Claim batch size: The dispatcher claims only as many requests as there are idle threads in the pool, preventing over-claiming. This can use            │
+    >    │   executor.getThreadPoolExecutor().getActiveCount() vs pool size.                                                                                        │
+    >    │ • One service UUID per worker invocation: Each submitted task uses this (the service instance) when calling transactionHandler.getNext(). Since          │
+    >    │   getNext already uses UPDATE ... LIMIT 1 atomically, multiple concurrent calls will not claim the same row. Each worker calls getNext for itself to     │
+    >    │   guarantee at most one request per worker.                                                                                                              │
+    >    │ • No change to the claim SQL: The existing updateNextRequest query is already safe under concurrent execution due to the WHERE ... LIMIT 1 +             │
+    >    │   single-row UPDATE pattern, which PostgreSQL serialises correctly.                                                                                      │
+    >    │ • ProcessingServiceImpl.loop() becomes ProcessingServiceImpl.processOne(): Instead of a while loop, expose a method that claims and processes a          │
+    >    │   single request. The dispatcher submits processOne tasks to the pool.                                                                                   │
+    >    │                                                                                                                                                          │
+    >    │ Files to Modify                                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ 1. ProcessingServiceImpl — add processOne() method                                                                                                       │
+    >    │                                                                                                                                                          │
+    >    │ java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/ProcessingServiceImpl.java                                                     │
+    >    │ (java/src/main/java/net/ivoa/calycopis/broker/engine/functional/processing/ProcessingServiceImpl.java)                                                   │
+    >    │ Add a new processOne() method that claims one request and processes it (the body of the current while-loop iteration). Keep loop() as-is for backward    │
+    >    │ compatibility (it can call processOne() in a while loop internally).                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ public boolean processOne()                                                                                                                              │
+    >    │     {                                                                                                                                                    │
+    >    │     UUID requestId = transactionHandler.getNext(this);                                                                                                   │
+    >    │     if (requestId == null)                                                                                                                               │
+    >    │         {                                                                                                                                                │
+    >    │         return false;                                                                                                                                    │
+    >    │         }                                                                                                                                                │
+    >    │     ProcessingAction action = transactionHandler.preProcess(this, requestId);                                                                            │
+    >    │     if (action != null)                                                                                                                                  │
+    >    │         {                                                                                                                                                │
+    >    │         action.process();                                                                                                                                │
+    >    │         }                                                                                                                                                │
+    >    │     transactionHandler.postProcess(this, requestId, action);                                                                                             │
+    >    │     return true;                                                                                                                                         │
+    >    │     }                                                                                                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ 2. TestProcessingSerivceImpl — replace @Scheduled loop with pool dispatcher                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ java/src/main/java/net/ivoa/calycopis/broker/spring/processing/TestProcessingSerivceImpl.java                                                            │
+    >    │ (java/src/main/java/net/ivoa/calycopis/broker/spring/processing/TestProcessingSerivceImpl.java)                                                          │
+    >    │ • Remove @Scheduled(fixedDelay = 1000) from loop().                                                                                                      │
+    >    │ • Inject a ThreadPoolTaskExecutor (either via @Autowired or built in a @Configuration class).                                                            │
+    >    │ • Add a @Scheduled(fixedDelay = 500) dispatcher method that:                                                                                             │
+    >    │   1. Computes available capacity = pool size - active count.                                                                                             │
+    >    │   2. For each available slot, submits a Runnable that calls processOne().                                                                                │
+    >    │                                                                                                                                                          │
+    >    │ @Scheduled(fixedDelay = 500)                                                                                                                             │
+    >    │ public void dispatch()                                                                                                                                   │
+    >    │     {                                                                                                                                                    │
+    >    │     int capacity = poolSize - executor.getActiveCount();                                                                                                 │
+    >    │     for (int i = 0; i < capacity; i++)                                                                                                                   │
+    >    │         {                                                                                                                                                │
+    >    │         executor.submit(() -> this.processOne());                                                                                                        │
+    >    │         }                                                                                                                                                │
+    >    │     }                                                                                                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ 3. New configuration class for the thread pool                                                                                                           │
+    >    │                                                                                                                                                          │
+    >    │ Create: java/src/main/java/net/ivoa/calycopis/broker/spring/processing/ProcessingThreadPoolConfig.java                                                   │
+    >    │ (java/src/main/java/net/ivoa/calycopis/broker/spring/processing/ProcessingThreadPoolConfig.java)                                                         │
+    >    │ A @Configuration class that defines a ThreadPoolTaskExecutor bean with configurable size:                                                                │
+    >    │                                                                                                                                                          │
+    >    │ @Configuration                                                                                                                                           │
+    >    │ public class ProcessingThreadPoolConfig                                                                                                                  │
+    >    │     {                                                                                                                                                    │
+    >    │     @Value("${calycopis.processing.threads:10}")                                                                                                         │
+    >    │     private int poolSize;                                                                                                                                │
+    >    │     @Bean(name = "processingExecutor")                                                                                                                   │
+    >    │     public ThreadPoolTaskExecutor processingExecutor()                                                                                                   │
+    >    │         {                                                                                                                                                │
+    >    │         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();                                                                                  │
+    >    │         executor.setCorePoolSize(poolSize);                                                                                                              │
+    >    │         executor.setMaxPoolSize(poolSize);                                                                                                               │
+    >    │         executor.setQueueCapacity(0);                                                                                                                    │
+    >    │         executor.setThreadNamePrefix("processing-");                                                                                                     │
+    >    │         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());                                                                    │
+    >    │         executor.initialize();                                                                                                                           │
+    >    │         return executor;                                                                                                                                 │
+    >    │         }                                                                                                                                                │
+    >    │     }                                                                                                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ Setting queueCapacity(0) with a DiscardPolicy means if all threads are busy when the dispatcher submits, the task is silently dropped — the dispatcher   │
+    >    │  will try again on the next tick. This prevents unbounded queue growth.                                                                                  │
+    >    │                                                                                                                                                          │
+    >    │ 4. Application configuration                                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ Add to application.yaml:                                                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ calycopis:                                                                                                                                               │
+    >    │   processing:                                                                                                                                            │
+    >    │     threads: 10                                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ 5. Concurrency safety review                                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ The existing design is already concurrency-safe because:                                                                                                 │
+    >    │ • Claim: updateNextRequest uses UPDATE ... WHERE service IS NULL LIMIT 1 — PostgreSQL row-level locking ensures only one transaction wins.               │
+    >    │ • Transactions: Each preProcess / postProcess runs in REQUIRES_NEW, so each worker has its own transaction.                                              │
+    >    │ • No shared mutable state: ProcessingServiceImpl holds only platform and transactionHandler (both effectively immutable singletons). The                 │
+    >    │   ProcessingRequestEntity is loaded fresh in each transaction.                                                                                           │
+    >    │ • Release: postProcess sets request.setService(null), releasing the claim for future processing cycles.                                                  │
+    >    │                                                                                                                                                          │
+    >    │ No additional locking is required.                                                                                                                       │
+    >    │                                                                                                                                                          │
+    >    │ Alternative Considered: Multiple Service Instances                                                                                                       │
+    >    │                                                                                                                                                          │
+    >    │ An alternative would be to create N instances of ProcessingServiceImpl, each with its own UUID, each running its own @Scheduled loop. This was           │
+    >    │ rejected because:                                                                                                                                        │
+    >    │ • It multiplies Spring beans unnecessarily.                                                                                                              │
+    >    │ • The claim SQL already handles concurrent access cleanly.                                                                                               │
+    >    │ • A thread pool is more standard and configurable.                                                                                                       │
+    >    │                                                                                                                                                          │
+    >    │ Testing Considerations                                                                                                                                   │
+    >    │                                                                                                                                                          │
+    >    │ • The mock platform uses Thread.sleep() in MockPrepareAction. With 10 threads, 10 mock sessions can process concurrently (each sleeping                  │
+    >    │   independently), dramatically reducing end-to-end test times.                                                                                           │
+    >    │ • The docker platform will benefit from parallel container creation/monitoring.                                                                          │
+    >    │ • Existing tests should pass without modification since the processing semantics are unchanged — only throughput improves.                               │
+    >    │                                                                                                                                                          │
+    >    │  Saved to root/.cursor/plans/Concurrent processing threads-e0232013.plan.md                                                                              │
+    >    │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+    >    │                                                                                                                                                          │
+    >    │ Ready to build?                                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │  → 1. Yes, build locally (b)                                                                                                                             │
+    >    │    2. No, propose changes (p or Esc)                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 

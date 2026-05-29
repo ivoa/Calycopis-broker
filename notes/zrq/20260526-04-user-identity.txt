@@ -38,443 +38,431 @@
 # Ask Cursor how to implement auth/auth identities.
 #[root@calycopis-dev]
 
-==START==
-/plan
-The following task relates to two projects, an OpenAPI specification at `/calycopis/Calycopis-schema/github-zrq`
-and a Java web-service implementation at `/calycopis/Calycopis-broker/github-zrq`.
-Start by reading the AGENTS.md files for both projects.
-Then consider the following task.
-At the moment the web service does not have any support for authentication or authorization.
-Can you create a plan to implement authentication and authorization based on the following criteria:
-* Authentication using both OpenID Connect (OIDC) using an external identify provider and username/password in the local database.
-* An authenticated identity maps to an Identity interface and IdentityEntity class.
-* The Identity interface extenmds Component and the IdentityEntity class extends ComponentEntity.
-* The identity for an inbound request should be resolved by the web service layer and passed as a parameter to the factory method handling the request.
-* All ComponentEntity entities are assigned an 'owner' property that links to the IdentityEntity that created them.
-* An IdentityEntity instance references itself as its 'owner'
-==END==
+    ?   /plan
+    ?   The following task relates to two projects, an OpenAPI specification at `/calycopis/Calycopis-schema/github-zrq`
+    ?   and a Java web-service implementation at `/calycopis/Calycopis-broker/github-zrq`.
+    ?   Start by reading the AGENTS.md files for both projects.
+    ?   Then consider the following task.
+    ?   At the moment the web service does not have any support for authentication or authorization.
+    ?   Can you create a plan to implement authentication and authorization based on the following criteria:
+    ?   * Authentication using both OpenID Connect (OIDC) using an external identify provider and username/password in the local database.
+    ?   * An authenticated identity maps to an Identity interface and IdentityEntity class.
+    ?   * The Identity interface extenmds Component and the IdentityEntity class extends ComponentEntity.
+    ?   * The identity for an inbound request should be resolved by the web service layer and passed as a parameter to the factory method handling the request.
+    ?   * All ComponentEntity entities are assigned an 'owner' property that links to the IdentityEntity that created them.
+    ?   * An IdentityEntity instance references itself as its 'owner'
 
 
---START--
-....
-....
- ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
- │ Suggested Plan                                                                                                                                           │
- │                                                                                                                                                          │
- │ Authentication and Identity Implementation Plan                                                                                                          │
- │                                                                                                                                                          │
- │ Current State                                                                                                                                            │
- │                                                                                                                                                          │
- │ • No Spring Security dependencies in the project                                                                                                         │
- │ • No authentication/authorization infrastructure exists                                                                                                  │
- │ • Web layer uses the OpenAPI delegate pattern: OffersetsApiDelegateImpl and SessionsApiDelegateImpl extend BaseDelegateImpl and receive a                │
- │   NativeWebRequest + Platform                                                                                                                            │
- │ • Factory methods like OfferSetFactory.create(IvoaExecutionRequest) receive only the request body — no caller identity                                   │
- │ • All entities inherit from ComponentEntity (table components, JOINED inheritance) which has uuid, name, description, created, modified, and             │
- │   messages                                                                                                                                               │
- │                                                                                                                                                          │
- │ Architecture Overview                                                                                                                                    │
- │                                                                                                                                                          │
- │ flowchart TD                                                                                                                                             │
- │   subgraph webLayer [Web Layer]                                                                                                                          │
- │     Filter["Spring Security Filter Chain"]                                                                                                               │
- │     Resolver["IdentityResolver"]                                                                                                                         │
- │     Delegate["ApiDelegate"]                                                                                                                              │
- │   end                                                                                                                                                    │
- │   subgraph authProviders [Authentication Providers]                                                                                                      │
- │     OIDC["OIDC Provider (external IdP)"]                                                                                                                 │
- │     Local["Local DB (username/password)"]                                                                                                                │
- │   end                                                                                                                                                    │
- │   subgraph dataModel [Data Model]                                                                                                                        │
- │     IdentityEntity["IdentityEntity (extends ComponentEntity)"]                                                                                           │
- │     ComponentEntity["ComponentEntity (+ owner field)"]                                                                                                   │
- │   end                                                                                                                                                    │
- │   OIDC --> Filter                                                                                                                                        │
- │   Local --> Filter                                                                                                                                       │
- │   Filter --> Resolver                                                                                                                                    │
- │   Resolver --> Delegate                                                                                                                                  │
- │   Delegate -->|"passes Identity"| Factory["Factory methods"]                                                                                             │
- │   Factory --> IdentityEntity                                                                                                                             │
- │   Factory --> ComponentEntity                                                                                                                            │
- │   ComponentEntity -->|"owner (ManyToOne)"| IdentityEntity                                                                                                │
- │   IdentityEntity -->|"owner = self"| IdentityEntity                                                                                                      │
- │ ctrl+o to render diagram                                                                                                                                 │
- │                                                                                                                                                          │
- │ Part 1: Identity Data Model                                                                                                                              │
- │                                                                                                                                                          │
- │ 1.1 Identity interface and entity                                                                                                                        │
- │                                                                                                                                                          │
- │ Create a new package net.ivoa.calycopis.broker.engine.entities.identity/ following the existing Component pattern:                                       │
- │ • Identity.java — interface extending Component. Adds:                                                                                                   │
- │   • String getUsername() — unique local username or OIDC subject                                                                                         │
- │   • URI getIssuer() — null for local accounts, OIDC issuer URI for federated accounts                                                                    │
- │   • String getDisplayName()                                                                                                                              │
- │ • IdentityEntity.java — JPA @Entity extending ComponentEntity with @Inheritance(JOINED). Adds:                                                           │
- │   • @Column(unique=true) String username                                                                                                                 │
- │   • @Column URI issuer (nullable — null means local account)                                                                                             │
- │   • @Column String passwordHash (nullable — null for OIDC-only accounts)                                                                                 │
- │   • @Column String displayName                                                                                                                           │
- │   • The entity references itself as its owner (see 1.2 below)                                                                                            │
- │ • IdentityEntityFactory.java — factory interface with:                                                                                                   │
- │   • Optional<IdentityEntity> select(UUID uuid)                                                                                                           │
- │   • Optional<IdentityEntity> findByUsername(String username)                                                                                             │
- │   • Optional<IdentityEntity> findByIssuerAndSubject(URI issuer, String subject)                                                                          │
- │   • IdentityEntity create(String username, String passwordHash) (local)                                                                                  │
- │   • IdentityEntity create(URI issuer, String subject, String displayName) (OIDC)                                                                         │
- │ • IdentityEntityRepository.java — Spring @Repository with custom queries for lookup by username, and by issuer+subject combination.                      │
- │                                                                                                                                                          │
- │ 1.2 Owner relationship on ComponentEntity                                                                                                                │
- │                                                                                                                                                          │
- │ Add to ComponentEntity:                                                                                                                                  │
- │                                                                                                                                                          │
- │ @ManyToOne(fetch = FetchType.LAZY)                                                                                                                       │
- │ @JoinColumn(name = "owner_uuid")                                                                                                                         │
- │ private IdentityEntity owner;                                                                                                                            │
- │                                                                                                                                                          │
- │ Add to the Component interface:                                                                                                                          │
- │                                                                                                                                                          │
- │ public Identity getOwner();                                                                                                                              │
- │                                                                                                                                                          │
- │ All ComponentEntity constructors gain an IdentityEntity owner parameter. Since IdentityEntity extends ComponentEntity, its constructor sets this.owner   │
- │  = this (self-referencing).                                                                                                                              │
- │                                                                                                                                                          │
- │ 1.3 Database schema impact                                                                                                                               │
- │                                                                                                                                                          │
- │ Because ddl-auto: create is used, Hibernate will add:                                                                                                    │
- │ • A new identities table (joined to components)                                                                                                          │
- │ • A new owner_uuid FK column on the components table                                                                                                     │
- │                                                                                                                                                          │
- │ Part 2: Spring Security Configuration                                                                                                                    │
- │                                                                                                                                                          │
- │ 2.1 Dependencies (pom.xml)                                                                                                                               │
- │                                                                                                                                                          │
- │ Add to java/pom.xml:                                                                                                                                     │
- │                                                                                                                                                          │
- │ <dependency>                                                                                                                                             │
- │     <groupId>org.springframework.boot</groupId>                                                                                                          │
- │     <artifactId>spring-boot-starter-security</artifactId>                                                                                                │
- │ </dependency>                                                                                                                                            │
- │ <dependency>                                                                                                                                             │
- │     <groupId>org.springframework.boot</groupId>                                                                                                          │
- │     <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>                                                                                  │
- │ </dependency>                                                                                                                                            │
- │ <dependency>                                                                                                                                             │
- │     <groupId>org.springframework.security</groupId>                                                                                                      │
- │     <artifactId>spring-security-crypto</artifactId>                                                                                                      │
- │ </dependency>                                                                                                                                            │
- │                                                                                                                                                          │
- │ 2.2 Security configuration class                                                                                                                         │
- │                                                                                                                                                          │
- │ Create net.ivoa.calycopis.broker.spring.security.SecurityConfig.java — a @Configuration class defining:                                                  │
- │ • SecurityFilterChain bean:                                                                                                                              │
- │   • Permits unauthenticated GET on /offersets/{uuid} and /sessions/{uuid} (public read)                                                                  │
- │   • Requires authentication for POST endpoints                                                                                                           │
- │   • Configures two authentication mechanisms:                                                                                                            │
- │     1. Bearer token (JWT) — validated via Spring's OAuth2 Resource Server support using the configured OIDC issuer's JWKS endpoint                       │
- │     2. HTTP Basic — validated against local IdentityEntity password hashes in the database                                                               │
- │   • CSRF disabled (stateless API)                                                                                                                        │
- │   • Session management stateless                                                                                                                         │
- │ • PasswordEncoder bean (BCrypt)                                                                                                                          │
- │                                                                                                                                                          │
- │ 2.3 Local authentication provider                                                                                                                        │
- │                                                                                                                                                          │
- │ Create net.ivoa.calycopis.broker.spring.security.LocalAuthenticationProvider.java:                                                                       │
- │ • Implements AuthenticationProvider                                                                                                                      │
- │ • Loads user by username from IdentityEntityRepository                                                                                                   │
- │ • Validates password using PasswordEncoder                                                                                                               │
- │ • Returns a UsernamePasswordAuthenticationToken with the IdentityEntity UUID as principal                                                                │
- │                                                                                                                                                          │
- │ 2.4 Application configuration                                                                                                                            │
- │                                                                                                                                                          │
- │ Add to application.yaml:                                                                                                                                 │
- │                                                                                                                                                          │
- │ spring:                                                                                                                                                  │
- │   security:                                                                                                                                              │
- │     oauth2:                                                                                                                                              │
- │       resourceserver:                                                                                                                                    │
- │         jwt:                                                                                                                                             │
- │           issuer-uri: ${OIDC_ISSUER_URI:https://accounts.example.org}                                                                                    │
- │ calycopis:                                                                                                                                               │
- │   security:                                                                                                                                              │
- │     public-read: true                                                                                                                                    │
- │                                                                                                                                                          │
- │ Externalise the OIDC issuer URI via environment variable, consistent with the existing pattern of external config (like /etc/calycopis/database.yaml).   │
- │                                                                                                                                                          │
- │ Part 3: Identity Resolution in the Web Layer                                                                                                             │
- │                                                                                                                                                          │
- │ 3.1 IdentityResolver service                                                                                                                             │
- │                                                                                                                                                          │
- │ Create net.ivoa.calycopis.broker.spring.security.IdentityResolver.java:                                                                                  │
- │ • A @Service that takes a Spring Authentication object and returns the corresponding IdentityEntity                                                      │
- │ • For JWT tokens: extracts issuer + subject claims, looks up or creates (auto-provisioning) an IdentityEntity                                            │
- │ • For Basic auth: the IdentityEntity UUID is already in the authentication principal (from LocalAuthenticationProvider)                                  │
- │ • For anonymous access (if allowed): returns a well-known "anonymous" IdentityEntity                                                                     │
- │                                                                                                                                                          │
- │ 3.2 Modify BaseDelegateImpl                                                                                                                              │
- │                                                                                                                                                          │
- │ Add to BaseDelegateImpl:                                                                                                                                 │
- │ • Inject IdentityResolver                                                                                                                                │
- │ • Add a getIdentity() method that calls SecurityContextHolder.getContext().getAuthentication() and resolves it to an IdentityEntity                      │
- │                                                                                                                                                          │
- │ 3.3 Modify delegate implementations                                                                                                                      │
- │                                                                                                                                                          │
- │ In OffersetsApiDelegateImpl.offerSetPost():                                                                                                              │
- │                                                                                                                                                          │
- │ IdentityEntity identity = this.getIdentity();                                                                                                            │
- │ OfferSetEntity entity = this.platform.getOfferSetFactory().create(request, identity);                                                                    │
- │                                                                                                                                                          │
- │ In SessionsApiDelegateImpl.directExecutionPost():                                                                                                        │
- │                                                                                                                                                          │
- │ IdentityEntity identity = this.getIdentity();                                                                                                            │
- │ SimpleExecutionSessionEntity entity = platform.getOfferSetFactory().direct(request, identity);                                                           │
- │                                                                                                                                                          │
- │ Similarly for executionUpdatePost().                                                                                                                     │
- │                                                                                                                                                          │
- │ Part 4: Threading Identity Through Factories                                                                                                             │
- │                                                                                                                                                          │
- │ 4.1 Factory interface changes                                                                                                                            │
- │                                                                                                                                                          │
- │ Update OfferSetFactory:                                                                                                                                  │
- │                                                                                                                                                          │
- │ public OfferSetEntity create(IvoaExecutionRequest request, IdentityEntity owner);                                                                        │
- │ public SimpleExecutionSessionEntity direct(IvoaExecutionRequest request, IdentityEntity owner);                                                          │
- │                                                                                                                                                          │
- │ 4.2 Factory implementation changes                                                                                                                       │
- │                                                                                                                                                          │
- │ OfferSetFactoryImpl.create() passes the owner to:                                                                                                        │
- │ • OfferSetRequestParserContext (add owner field)                                                                                                         │
- │ • All entity creation calls downstream (sessions, compute, storage, data, executable, volume entities)                                                   │
- │                                                                                                                                                          │
- │ Each entity factory's create() method gains an IdentityEntity owner parameter that is passed to the entity constructor.                                  │
- │                                                                                                                                                          │
- │ 4.3 ComponentEntity constructor chain                                                                                                                    │
- │                                                                                                                                                          │
- │ All ComponentEntity constructors become:                                                                                                                 │
- │                                                                                                                                                          │
- │ protected ComponentEntity(final String name, final IdentityEntity owner)                                                                                 │
- │ protected ComponentEntity(final IvoaComponentMetadata meta, final IdentityEntity owner)                                                                  │
- │ protected ComponentEntity(final String name, final String description, final Instant created, final IdentityEntity owner)                                │
- │                                                                                                                                                          │
- │ This is a wide-reaching change but mechanical — every subclass constructor adds the owner parameter and passes it up.                                    │
- │                                                                                                                                                          │
- │ Part 5: Implementation Sequence                                                                                                                          │
- │                                                                                                                                                          │
- │ The work should be done in phases to keep the project compilable between steps:                                                                          │
- │ 1. Phase A — Add the owner field to ComponentEntity as nullable (no constraint), add the Identity/IdentityEntity classes. No security yet — all          │
- │    owners are null. Project compiles and tests pass.                                                                                                     │
- │ 2. Phase B — Add Spring Security dependencies, SecurityConfig, LocalAuthenticationProvider, and IdentityResolver. All endpoints initially permit all     │
- │    (no enforcement). Project still works without auth.                                                                                                   │
- │ 3. Phase C — Modify factory interfaces and implementations to accept IdentityEntity owner. The delegates resolve identity and pass it through. For       │
- │    unauthenticated requests, use the anonymous identity.                                                                                                 │
- │ 4. Phase D — Enable security enforcement: require authentication on POST endpoints. Add authorization checks (only owner can update their sessions).     │
- │                                                                                                                                                          │
- │ Key Files to Create                                                                                                                                      │
- │                                                                                                                                                          │
- │ ┌──────────────────────────────────┬──────────────────────────┐                                                                                          │
- │ │ File                             │ Package                  │                                                                                          │
- │ ├──────────────────────────────────┼──────────────────────────┤                                                                                          │
- │ │ Identity.java                    │ engine.entities.identity │                                                                                          │
- │ │ IdentityEntity.java              │ engine.entities.identity │                                                                                          │
- │ │ IdentityEntityFactory.java       │ engine.entities.identity │                                                                                          │
- │ │ IdentityEntityFactoryImpl.java   │ spring.identity          │                                                                                          │
- │ │ IdentityEntityRepository.java    │ spring.jpa               │                                                                                          │
- │ │ SecurityConfig.java              │ spring.security          │                                                                                          │
- │ │ LocalAuthenticationProvider.java │ spring.security          │                                                                                          │
- │ │ IdentityResolver.java            │ spring.security          │                                                                                          │
- │ └──────────────────────────────────┴──────────────────────────┘                                                                                          │
- │                                                                                                                                                          │
- │ Key Files to Modify                                                                                                                                      │
- │                                                                                                                                                          │
- │ ┌───────────────────────────────┬───────────────────────────────────────────────────┐                                                                    │
- │ │ File                          │ Change                                            │                                                                    │
- │ ├───────────────────────────────┼───────────────────────────────────────────────────┤                                                                    │
- │ │ ComponentEntity.java          │ Add owner ManyToOne field + constructor param     │                                                                    │
- │ │ Component.java                │ Add getOwner()                                    │                                                                    │
- │ │ OfferSetFactory.java          │ Add IdentityEntity param to create() and direct() │                                                                    │
- │ │ OfferSetFactoryImpl.java      │ Thread owner through to entity creation           │                                                                    │
- │ │ BaseDelegateImpl.java         │ Add getIdentity() via IdentityResolver            │                                                                    │
- │ │ OffersetsApiDelegateImpl.java │ Call getIdentity() and pass to factory            │                                                                    │
- │ │ SessionsApiDelegateImpl.java  │ Call getIdentity() and pass to factory            │                                                                    │
- │ │ pom.xml                       │ Add spring-security and oauth2 dependencies       │                                                                    │
- │ │ application.yaml              │ Add OIDC and security config                      │                                                                    │
- │ │ All entity constructors       │ Add owner parameter (mechanical propagation)      │                                                                    │
- │ └───────────────────────────────┴───────────────────────────────────────────────────┘                                                                    │
- │                                                                                                                                                          │
- │ Risks and Considerations                                                                                                                                 │
- │                                                                                                                                                          │
- │ • Wide constructor change: Adding owner to ComponentEntity touches every entity class in the project. Phase A mitigates this by making it nullable       │
- │   first.                                                                                                                                                 │
- │ • Processing loop: Entities created by the processing loop (e.g. during session lifecycle transitions) inherit the owner from the parent session —       │
- │   no identity resolution needed in the background thread.                                                                                                │
- │ • OpenAPI delegate pattern: The generated controller interfaces cannot be modified, but the delegate implementations have full access to                 │
- │   NativeWebRequest and can use SecurityContextHolder to retrieve authentication.                                                                         │
- │ • OIDC auto-provisioning: First-time OIDC users get an IdentityEntity created automatically on their first authenticated request.                        │
- │                                                                                                                                                          │
- │  Saved to root/.cursor/plans/Auth identity implementation-e0232013.plan.md                                                                               │
- │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
- │                                                                                                                                                          │
- │ Ready to build?                                                                                                                                          │
- │                                                                                                                                                          │
- │  → 1. Yes, build locally (b)                                                                                                                             │
- │    2. No, propose changes (p or Esc)                                                                                                                     │
- │                                                                                                                                                          │
- └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
---END--
+    >   ....
+    >   ....
+    >    ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >    │ Suggested Plan                                                                                                                                           │
+    >    │                                                                                                                                                          │
+    >    │ Authentication and Identity Implementation Plan                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ Current State                                                                                                                                            │
+    >    │                                                                                                                                                          │
+    >    │ • No Spring Security dependencies in the project                                                                                                         │
+    >    │ • No authentication/authorization infrastructure exists                                                                                                  │
+    >    │ • Web layer uses the OpenAPI delegate pattern: OffersetsApiDelegateImpl and SessionsApiDelegateImpl extend BaseDelegateImpl and receive a                │
+    >    │   NativeWebRequest + Platform                                                                                                                            │
+    >    │ • Factory methods like OfferSetFactory.create(IvoaExecutionRequest) receive only the request body — no caller identity                                   │
+    >    │ • All entities inherit from ComponentEntity (table components, JOINED inheritance) which has uuid, name, description, created, modified, and             │
+    >    │   messages                                                                                                                                               │
+    >    │                                                                                                                                                          │
+    >    │ Architecture Overview                                                                                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ flowchart TD                                                                                                                                             │
+    >    │   subgraph webLayer [Web Layer]                                                                                                                          │
+    >    │     Filter["Spring Security Filter Chain"]                                                                                                               │
+    >    │     Resolver["IdentityResolver"]                                                                                                                         │
+    >    │     Delegate["ApiDelegate"]                                                                                                                              │
+    >    │   end                                                                                                                                                    │
+    >    │   subgraph authProviders [Authentication Providers]                                                                                                      │
+    >    │     OIDC["OIDC Provider (external IdP)"]                                                                                                                 │
+    >    │     Local["Local DB (username/password)"]                                                                                                                │
+    >    │   end                                                                                                                                                    │
+    >    │   subgraph dataModel [Data Model]                                                                                                                        │
+    >    │     IdentityEntity["IdentityEntity (extends ComponentEntity)"]                                                                                           │
+    >    │     ComponentEntity["ComponentEntity (+ owner field)"]                                                                                                   │
+    >    │   end                                                                                                                                                    │
+    >    │   OIDC --> Filter                                                                                                                                        │
+    >    │   Local --> Filter                                                                                                                                       │
+    >    │   Filter --> Resolver                                                                                                                                    │
+    >    │   Resolver --> Delegate                                                                                                                                  │
+    >    │   Delegate -->|"passes Identity"| Factory["Factory methods"]                                                                                             │
+    >    │   Factory --> IdentityEntity                                                                                                                             │
+    >    │   Factory --> ComponentEntity                                                                                                                            │
+    >    │   ComponentEntity -->|"owner (ManyToOne)"| IdentityEntity                                                                                                │
+    >    │   IdentityEntity -->|"owner = self"| IdentityEntity                                                                                                      │
+    >    │ ctrl+o to render diagram                                                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ Part 1: Identity Data Model                                                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ 1.1 Identity interface and entity                                                                                                                        │
+    >    │                                                                                                                                                          │
+    >    │ Create a new package net.ivoa.calycopis.broker.engine.entities.identity/ following the existing Component pattern:                                       │
+    >    │ • Identity.java — interface extending Component. Adds:                                                                                                   │
+    >    │   • String getUsername() — unique local username or OIDC subject                                                                                         │
+    >    │   • URI getIssuer() — null for local accounts, OIDC issuer URI for federated accounts                                                                    │
+    >    │   • String getDisplayName()                                                                                                                              │
+    >    │ • IdentityEntity.java — JPA @Entity extending ComponentEntity with @Inheritance(JOINED). Adds:                                                           │
+    >    │   • @Column(unique=true) String username                                                                                                                 │
+    >    │   • @Column URI issuer (nullable — null means local account)                                                                                             │
+    >    │   • @Column String passwordHash (nullable — null for OIDC-only accounts)                                                                                 │
+    >    │   • @Column String displayName                                                                                                                           │
+    >    │   • The entity references itself as its owner (see 1.2 below)                                                                                            │
+    >    │ • IdentityEntityFactory.java — factory interface with:                                                                                                   │
+    >    │   • Optional<IdentityEntity> select(UUID uuid)                                                                                                           │
+    >    │   • Optional<IdentityEntity> findByUsername(String username)                                                                                             │
+    >    │   • Optional<IdentityEntity> findByIssuerAndSubject(URI issuer, String subject)                                                                          │
+    >    │   • IdentityEntity create(String username, String passwordHash) (local)                                                                                  │
+    >    │   • IdentityEntity create(URI issuer, String subject, String displayName) (OIDC)                                                                         │
+    >    │ • IdentityEntityRepository.java — Spring @Repository with custom queries for lookup by username, and by issuer+subject combination.                      │
+    >    │                                                                                                                                                          │
+    >    │ 1.2 Owner relationship on ComponentEntity                                                                                                                │
+    >    │                                                                                                                                                          │
+    >    │ Add to ComponentEntity:                                                                                                                                  │
+    >    │                                                                                                                                                          │
+    >    │ @ManyToOne(fetch = FetchType.LAZY)                                                                                                                       │
+    >    │ @JoinColumn(name = "owner_uuid")                                                                                                                         │
+    >    │ private IdentityEntity owner;                                                                                                                            │
+    >    │                                                                                                                                                          │
+    >    │ Add to the Component interface:                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ public Identity getOwner();                                                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ All ComponentEntity constructors gain an IdentityEntity owner parameter. Since IdentityEntity extends ComponentEntity, its constructor sets this.owner   │
+    >    │  = this (self-referencing).                                                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ 1.3 Database schema impact                                                                                                                               │
+    >    │                                                                                                                                                          │
+    >    │ Because ddl-auto: create is used, Hibernate will add:                                                                                                    │
+    >    │ • A new identities table (joined to components)                                                                                                          │
+    >    │ • A new owner_uuid FK column on the components table                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ Part 2: Spring Security Configuration                                                                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ 2.1 Dependencies (pom.xml)                                                                                                                               │
+    >    │                                                                                                                                                          │
+    >    │ Add to java/pom.xml:                                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ <dependency>                                                                                                                                             │
+    >    │     <groupId>org.springframework.boot</groupId>                                                                                                          │
+    >    │     <artifactId>spring-boot-starter-security</artifactId>                                                                                                │
+    >    │ </dependency>                                                                                                                                            │
+    >    │ <dependency>                                                                                                                                             │
+    >    │     <groupId>org.springframework.boot</groupId>                                                                                                          │
+    >    │     <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>                                                                                  │
+    >    │ </dependency>                                                                                                                                            │
+    >    │ <dependency>                                                                                                                                             │
+    >    │     <groupId>org.springframework.security</groupId>                                                                                                      │
+    >    │     <artifactId>spring-security-crypto</artifactId>                                                                                                      │
+    >    │ </dependency>                                                                                                                                            │
+    >    │                                                                                                                                                          │
+    >    │ 2.2 Security configuration class                                                                                                                         │
+    >    │                                                                                                                                                          │
+    >    │ Create net.ivoa.calycopis.broker.spring.security.SecurityConfig.java — a @Configuration class defining:                                                  │
+    >    │ • SecurityFilterChain bean:                                                                                                                              │
+    >    │   • Permits unauthenticated GET on /offersets/{uuid} and /sessions/{uuid} (public read)                                                                  │
+    >    │   • Requires authentication for POST endpoints                                                                                                           │
+    >    │   • Configures two authentication mechanisms:                                                                                                            │
+    >    │     1. Bearer token (JWT) — validated via Spring's OAuth2 Resource Server support using the configured OIDC issuer's JWKS endpoint                       │
+    >    │     2. HTTP Basic — validated against local IdentityEntity password hashes in the database                                                               │
+    >    │   • CSRF disabled (stateless API)                                                                                                                        │
+    >    │   • Session management stateless                                                                                                                         │
+    >    │ • PasswordEncoder bean (BCrypt)                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ 2.3 Local authentication provider                                                                                                                        │
+    >    │                                                                                                                                                          │
+    >    │ Create net.ivoa.calycopis.broker.spring.security.LocalAuthenticationProvider.java:                                                                       │
+    >    │ • Implements AuthenticationProvider                                                                                                                      │
+    >    │ • Loads user by username from IdentityEntityRepository                                                                                                   │
+    >    │ • Validates password using PasswordEncoder                                                                                                               │
+    >    │ • Returns a UsernamePasswordAuthenticationToken with the IdentityEntity UUID as principal                                                                │
+    >    │                                                                                                                                                          │
+    >    │ 2.4 Application configuration                                                                                                                            │
+    >    │                                                                                                                                                          │
+    >    │ Add to application.yaml:                                                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ spring:                                                                                                                                                  │
+    >    │   security:                                                                                                                                              │
+    >    │     oauth2:                                                                                                                                              │
+    >    │       resourceserver:                                                                                                                                    │
+    >    │         jwt:                                                                                                                                             │
+    >    │           issuer-uri: ${OIDC_ISSUER_URI:https://accounts.example.org}                                                                                    │
+    >    │ calycopis:                                                                                                                                               │
+    >    │   security:                                                                                                                                              │
+    >    │     public-read: true                                                                                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ Externalise the OIDC issuer URI via environment variable, consistent with the existing pattern of external config (like /etc/calycopis/database.yaml).   │
+    >    │                                                                                                                                                          │
+    >    │ Part 3: Identity Resolution in the Web Layer                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ 3.1 IdentityResolver service                                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ Create net.ivoa.calycopis.broker.spring.security.IdentityResolver.java:                                                                                  │
+    >    │ • A @Service that takes a Spring Authentication object and returns the corresponding IdentityEntity                                                      │
+    >    │ • For JWT tokens: extracts issuer + subject claims, looks up or creates (auto-provisioning) an IdentityEntity                                            │
+    >    │ • For Basic auth: the IdentityEntity UUID is already in the authentication principal (from LocalAuthenticationProvider)                                  │
+    >    │ • For anonymous access (if allowed): returns a well-known "anonymous" IdentityEntity                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ 3.2 Modify BaseDelegateImpl                                                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ Add to BaseDelegateImpl:                                                                                                                                 │
+    >    │ • Inject IdentityResolver                                                                                                                                │
+    >    │ • Add a getIdentity() method that calls SecurityContextHolder.getContext().getAuthentication() and resolves it to an IdentityEntity                      │
+    >    │                                                                                                                                                          │
+    >    │ 3.3 Modify delegate implementations                                                                                                                      │
+    >    │                                                                                                                                                          │
+    >    │ In OffersetsApiDelegateImpl.offerSetPost():                                                                                                              │
+    >    │                                                                                                                                                          │
+    >    │ IdentityEntity identity = this.getIdentity();                                                                                                            │
+    >    │ OfferSetEntity entity = this.platform.getOfferSetFactory().create(request, identity);                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ In SessionsApiDelegateImpl.directExecutionPost():                                                                                                        │
+    >    │                                                                                                                                                          │
+    >    │ IdentityEntity identity = this.getIdentity();                                                                                                            │
+    >    │ SimpleExecutionSessionEntity entity = platform.getOfferSetFactory().direct(request, identity);                                                           │
+    >    │                                                                                                                                                          │
+    >    │ Similarly for executionUpdatePost().                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    │ Part 4: Threading Identity Through Factories                                                                                                             │
+    >    │                                                                                                                                                          │
+    >    │ 4.1 Factory interface changes                                                                                                                            │
+    >    │                                                                                                                                                          │
+    >    │ Update OfferSetFactory:                                                                                                                                  │
+    >    │                                                                                                                                                          │
+    >    │ public OfferSetEntity create(IvoaExecutionRequest request, IdentityEntity owner);                                                                        │
+    >    │ public SimpleExecutionSessionEntity direct(IvoaExecutionRequest request, IdentityEntity owner);                                                          │
+    >    │                                                                                                                                                          │
+    >    │ 4.2 Factory implementation changes                                                                                                                       │
+    >    │                                                                                                                                                          │
+    >    │ OfferSetFactoryImpl.create() passes the owner to:                                                                                                        │
+    >    │ • OfferSetRequestParserContext (add owner field)                                                                                                         │
+    >    │ • All entity creation calls downstream (sessions, compute, storage, data, executable, volume entities)                                                   │
+    >    │                                                                                                                                                          │
+    >    │ Each entity factory's create() method gains an IdentityEntity owner parameter that is passed to the entity constructor.                                  │
+    >    │                                                                                                                                                          │
+    >    │ 4.3 ComponentEntity constructor chain                                                                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ All ComponentEntity constructors become:                                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ protected ComponentEntity(final String name, final IdentityEntity owner)                                                                                 │
+    >    │ protected ComponentEntity(final IvoaComponentMetadata meta, final IdentityEntity owner)                                                                  │
+    >    │ protected ComponentEntity(final String name, final String description, final Instant created, final IdentityEntity owner)                                │
+    >    │                                                                                                                                                          │
+    >    │ This is a wide-reaching change but mechanical — every subclass constructor adds the owner parameter and passes it up.                                    │
+    >    │                                                                                                                                                          │
+    >    │ Part 5: Implementation Sequence                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ The work should be done in phases to keep the project compilable between steps:                                                                          │
+    >    │ 1. Phase A — Add the owner field to ComponentEntity as nullable (no constraint), add the Identity/IdentityEntity classes. No security yet — all          │
+    >    │    owners are null. Project compiles and tests pass.                                                                                                     │
+    >    │ 2. Phase B — Add Spring Security dependencies, SecurityConfig, LocalAuthenticationProvider, and IdentityResolver. All endpoints initially permit all     │
+    >    │    (no enforcement). Project still works without auth.                                                                                                   │
+    >    │ 3. Phase C — Modify factory interfaces and implementations to accept IdentityEntity owner. The delegates resolve identity and pass it through. For       │
+    >    │    unauthenticated requests, use the anonymous identity.                                                                                                 │
+    >    │ 4. Phase D — Enable security enforcement: require authentication on POST endpoints. Add authorization checks (only owner can update their sessions).     │
+    >    │                                                                                                                                                          │
+    >    │ Key Files to Create                                                                                                                                      │
+    >    │                                                                                                                                                          │
+    >    │ ┌──────────────────────────────────┬──────────────────────────┐                                                                                          │
+    >    │ │ File                             │ Package                  │                                                                                          │
+    >    │ ├──────────────────────────────────┼──────────────────────────┤                                                                                          │
+    >    │ │ Identity.java                    │ engine.entities.identity │                                                                                          │
+    >    │ │ IdentityEntity.java              │ engine.entities.identity │                                                                                          │
+    >    │ │ IdentityEntityFactory.java       │ engine.entities.identity │                                                                                          │
+    >    │ │ IdentityEntityFactoryImpl.java   │ spring.identity          │                                                                                          │
+    >    │ │ IdentityEntityRepository.java    │ spring.jpa               │                                                                                          │
+    >    │ │ SecurityConfig.java              │ spring.security          │                                                                                          │
+    >    │ │ LocalAuthenticationProvider.java │ spring.security          │                                                                                          │
+    >    │ │ IdentityResolver.java            │ spring.security          │                                                                                          │
+    >    │ └──────────────────────────────────┴──────────────────────────┘                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │ Key Files to Modify                                                                                                                                      │
+    >    │                                                                                                                                                          │
+    >    │ ┌───────────────────────────────┬───────────────────────────────────────────────────┐                                                                    │
+    >    │ │ File                          │ Change                                            │                                                                    │
+    >    │ ├───────────────────────────────┼───────────────────────────────────────────────────┤                                                                    │
+    >    │ │ ComponentEntity.java          │ Add owner ManyToOne field + constructor param     │                                                                    │
+    >    │ │ Component.java                │ Add getOwner()                                    │                                                                    │
+    >    │ │ OfferSetFactory.java          │ Add IdentityEntity param to create() and direct() │                                                                    │
+    >    │ │ OfferSetFactoryImpl.java      │ Thread owner through to entity creation           │                                                                    │
+    >    │ │ BaseDelegateImpl.java         │ Add getIdentity() via IdentityResolver            │                                                                    │
+    >    │ │ OffersetsApiDelegateImpl.java │ Call getIdentity() and pass to factory            │                                                                    │
+    >    │ │ SessionsApiDelegateImpl.java  │ Call getIdentity() and pass to factory            │                                                                    │
+    >    │ │ pom.xml                       │ Add spring-security and oauth2 dependencies       │                                                                    │
+    >    │ │ application.yaml              │ Add OIDC and security config                      │                                                                    │
+    >    │ │ All entity constructors       │ Add owner parameter (mechanical propagation)      │                                                                    │
+    >    │ └───────────────────────────────┴───────────────────────────────────────────────────┘                                                                    │
+    >    │                                                                                                                                                          │
+    >    │ Risks and Considerations                                                                                                                                 │
+    >    │                                                                                                                                                          │
+    >    │ • Wide constructor change: Adding owner to ComponentEntity touches every entity class in the project. Phase A mitigates this by making it nullable       │
+    >    │   first.                                                                                                                                                 │
+    >    │ • Processing loop: Entities created by the processing loop (e.g. during session lifecycle transitions) inherit the owner from the parent session —       │
+    >    │   no identity resolution needed in the background thread.                                                                                                │
+    >    │ • OpenAPI delegate pattern: The generated controller interfaces cannot be modified, but the delegate implementations have full access to                 │
+    >    │   NativeWebRequest and can use SecurityContextHolder to retrieve authentication.                                                                         │
+    >    │ • OIDC auto-provisioning: First-time OIDC users get an IdentityEntity created automatically on their first authenticated request.                        │
+    >    │                                                                                                                                                          │
+    >    │  Saved to root/.cursor/plans/Auth identity implementation-e0232013.plan.md                                                                               │
+    >    │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+    >    │                                                                                                                                                          │
+    >    │ Ready to build?                                                                                                                                          │
+    >    │                                                                                                                                                          │
+    >    │  → 1. Yes, build locally (b)                                                                                                                             │
+    >    │    2. No, propose changes (p or Esc)                                                                                                                     │
+    >    │                                                                                                                                                          │
+    >    └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-==START==
-Would this require any changes to the OpenAPI schema project ?
-==END==
+    ?   Would this require any changes to the OpenAPI schema project ?
 
---START--
-  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-  │ … Thought for 15s                                                                                                                                        │
-  │ The user is asking whether the authentication/identity plan would require changes to the OpenAPI schema project at                                       │
-  │ /calycopis/Calycopis-schema/github-zrq. Let me think about this.                                                                                         │
-  │                                                                                                                                                          │
-  │ The plan introduces:                                                                                                                                     │
-  │ 1. An Identity concept with owner relationships                                                                                                          │
-  │ 2. Authentication via OIDC and local credentials                                                                                                         │
-  │ 3. An owner property on all components                                                                                                                   │
-  │                                                                                                                                                          │
-  │ The question is whether any of this needs to be reflected in the OpenAPI schema (and therefore the generated classes). Let me consider:                  │
-  │                                                                                                                                                          │
-  │ 1. Security schemes - The OpenAPI spec currently has no securitySchemes defined. Adding OIDC/Bearer and HTTP Basic auth would require adding             │
-  │                                                                                                                                                          │
-  │ securitySchemes to the spec and applying them to endpoints. However, this is optional from a functional standpoint — Spring Security can be configured   │
-  │ independently of the OpenAPI spec. The spec changes would be for documentation/client generation purposes.                                               │
-  │                                                                                                                                                          │
-  │ 2. Identity in responses - If the API exposes the owner of a component in responses like ComponentMetadata, the schema would need to include that        │
-  │                                                                                                                                                          │
-  │ owner field.                                                                                                                                             │
-  │ 3. Identity as a resource - An /identities/{uuid} endpoint or identity information in API responses would require schema updates.                        │
-  │ 4. ComponentMetadata changes - Currently IvoaComponentMetadata has uuid, url, name, created, modified, and messages. Adding an owner field to            │
-  │                                                                                                                                                          │
-  │ expose ownership in API responses would mean updating that model.                                                                                        │
-  │                                                                                                                                                          │
-  │ Looking at the AGENTS.md documentation, ComponentMetadata is meant to include identifiers, human text, timestamps, messages, and options. The real       │
-  │ question is whether the owner identity needs to be visible in API responses. Given the requirements that all ComponentEntity entities have an owner      │
-  │ property at the persistence layer, and identity resolution happens at the web service layer, I think the answer depends on whether the owner should be   │
-  │ exposed to API consumers. Security schemes should be documented in the OpenAPI schema for clarity, but the core implementation might not strictly        │
-  │ require                                                                                                                                                  │
-  │ it. However, if ownership information needs to appear in responses, then ComponentMetadata would need to be extended with an owner field.                │
-  │  ctrl+o to collapse                                                                                                                                      │
-  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >     ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >     │ … Thought for 15s                                                                                                                                        │
+    >     │ The user is asking whether the authentication/identity plan would require changes to the OpenAPI schema project at                                       │
+    >     │ /calycopis/Calycopis-schema/github-zrq. Let me think about this.                                                                                         │
+    >     │                                                                                                                                                          │
+    >     │ The plan introduces:                                                                                                                                     │
+    >     │ 1. An Identity concept with owner relationships                                                                                                          │
+    >     │ 2. Authentication via OIDC and local credentials                                                                                                         │
+    >     │ 3. An owner property on all components                                                                                                                   │
+    >     │                                                                                                                                                          │
+    >     │ The question is whether any of this needs to be reflected in the OpenAPI schema (and therefore the generated classes). Let me consider:                  │
+    >     │                                                                                                                                                          │
+    >     │ 1. Security schemes - The OpenAPI spec currently has no securitySchemes defined. Adding OIDC/Bearer and HTTP Basic auth would require adding             │
+    >     │                                                                                                                                                          │
+    >     │ securitySchemes to the spec and applying them to endpoints. However, this is optional from a functional standpoint — Spring Security can be configured   │
+    >     │ independently of the OpenAPI spec. The spec changes would be for documentation/client generation purposes.                                               │
+    >     │                                                                                                                                                          │
+    >     │ 2. Identity in responses - If the API exposes the owner of a component in responses like ComponentMetadata, the schema would need to include that        │
+    >     │                                                                                                                                                          │
+    >     │ owner field.                                                                                                                                             │
+    >     │ 3. Identity as a resource - An /identities/{uuid} endpoint or identity information in API responses would require schema updates.                        │
+    >     │ 4. ComponentMetadata changes - Currently IvoaComponentMetadata has uuid, url, name, created, modified, and messages. Adding an owner field to            │
+    >     │                                                                                                                                                          │
+    >     │ expose ownership in API responses would mean updating that model.                                                                                        │
+    >     │                                                                                                                                                          │
+    >     │ Looking at the AGENTS.md documentation, ComponentMetadata is meant to include identifiers, human text, timestamps, messages, and options. The real       │
+    >     │ question is whether the owner identity needs to be visible in API responses. Given the requirements that all ComponentEntity entities have an owner      │
+    >     │ property at the persistence layer, and identity resolution happens at the web service layer, I think the answer depends on whether the owner should be   │
+    >     │ exposed to API consumers. Security schemes should be documented in the OpenAPI schema for clarity, but the core implementation might not strictly        │
+    >     │ require                                                                                                                                                  │
+    >     │ it. However, if ownership information needs to appear in responses, then ComponentMetadata would need to be extended with an owner field.                │
+    >     │  ctrl+o to collapse                                                                                                                                      │
+    >     └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >   
+    >     Good question. The answer depends on how much of the identity model you want exposed through the API. There are three potential areas of schema impact:
+    >   
+    >     1. Security schemes (documentation-only)
+    >   
+    >     The OpenAPI spec currently has no securitySchemes defined. Adding them would document the supported auth mechanisms for clients:
+    >   
+    >     securitySchemes:
+    >       bearer:
+    >         type: http
+    >         scheme: bearer
+    >         bearerFormat: JWT
+    >       basic:
+    >         type: http
+    >         scheme: basic
+    >   
+    >     This is not required for the implementation to work (Spring Security operates independently of the spec), but it's good practice for client generation
+    >     and documentation.
+    >   
+    >     2. Owner field in ComponentMetadata
+    >   
+    >     If you want the owner of a component to be visible in API responses (e.g., "who created this session?"), then ComponentMetadata in the schema would need
+    >      a new field — something like:
+    >   
+    >     owner:
+    >       type: string
+    >       format: uri
+    >       description: URL of the identity that owns this component
+    >   
+    >     If the owner is purely internal (for server-side authorization checks only and never serialised to clients), then no schema change is needed here.
+    >   
+    >     3. Identity as an API resource
+    >   
+    >     If identities should be queryable via a new endpoint (e.g., GET /identities/{uuid} or GET /identities/whoami), that would require a new path and
+    >     response type in the schema.
+    >   
+    >     ────────────────────────────────────────
+    >   
+    >     In the current plan as written, the Identity model is server-side only — it's used internally for ownership tracking and authorization. The
+    >     makeBean(URIBuilder) serialisation methods on entities wouldn't include owner information unless the schema is updated.
+    >   
+    >     So the key question is: do you want the owner/identity to be visible in API responses, or is it purely for internal authorization? That determines
+    >     whether the schema project needs changes.
 
-  Good question. The answer depends on how much of the identity model you want exposed through the API. There are three potential areas of schema impact:
+    ?   Would this require changes to the generated Python client classes that are used by the Python tests ?
 
-  1. Security schemes (documentation-only)
-
-  The OpenAPI spec currently has no securitySchemes defined. Adding them would document the supported auth mechanisms for clients:
-
-  securitySchemes:
-    bearer:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-    basic:
-      type: http
-      scheme: basic
-
-  This is not required for the implementation to work (Spring Security operates independently of the spec), but it's good practice for client generation
-  and documentation.
-
-  2. Owner field in ComponentMetadata
-
-  If you want the owner of a component to be visible in API responses (e.g., "who created this session?"), then ComponentMetadata in the schema would need
-   a new field — something like:
-
-  owner:
-    type: string
-    format: uri
-    description: URL of the identity that owns this component
-
-  If the owner is purely internal (for server-side authorization checks only and never serialised to clients), then no schema change is needed here.
-
-  3. Identity as an API resource
-
-  If identities should be queryable via a new endpoint (e.g., GET /identities/{uuid} or GET /identities/whoami), that would require a new path and
-  response type in the schema.
-
-  ────────────────────────────────────────
-
-  In the current plan as written, the Identity model is server-side only — it's used internally for ownership tracking and authorization. The
-  makeBean(URIBuilder) serialisation methods on entities wouldn't include owner information unless the schema is updated.
-
-  So the key question is: do you want the owner/identity to be visible in API responses, or is it purely for internal authorization? That determines
-  whether the schema project needs changes.
---END--
-
-==START==
-Would this require changes to the generated Python client classes that are used by the Python tests ?
-==END==
-
---START--
-
-
-  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-  │ … Thought for 11s                                                                                                                                        │
-  │ The user is asking whether the authentication/identity plan would require changes to the generated Python client classes used by the Python tests.       │
-  │                                                                                                                                                          │
-  │ Let me think about this:                                                                                                                                 │
-  │                                                                                                                                                          │
-  │ 1. If the OpenAPI schema doesn't change (identity is purely internal), then the generated Python client classes wouldn't change at all. However, the     │
-  │                                                                                                                                                          │
-  │ Python tests would still need to be updated to:                                                                                                          │
-  │ • Send authentication headers (Bearer token or Basic auth) with their requests                                                                           │
-  │ • The generated client likely has configuration options for auth already (OpenAPI Generator typically generates auth support into clients)               │
-  │                                                                                                                                                          │
-  │ 2. If the OpenAPI schema adds securitySchemes, the regenerated Python client would get auth configuration support built in (API key headers, Basic       │
-  │                                                                                                                                                          │
-  │ auth, Bearer token support). But OpenAPI Generator typically generates this support regardless — the Python client probably already has auth             │
-  │ configuration hooks.                                                                                                                                     │
-  │                                                                                                                                                          │
-  │ 3. If the OpenAPI schema adds owner fields to responses, the generated model classes would gain new fields, but this would be backward-compatible        │
-  │                                                                                                                                                          │
-  │ (new optional fields).                                                                                                                                   │
-  │                                                                                                                                                          │
-  │ The tests currently make unauthenticated calls to the broker API, but once security enforcement kicks in, they'll need to pass credentials through the   │
-  │ client's auth configuration. OpenAPI Generator typically bakes auth support into the generated client already, so the generated classes themselves       │
-  │ might                                                                                                                                                    │
-  │ not need regeneration — just the test code that instantiates and configures them.                                                                        │
-  │  ctrl+o to collapse                                                                                                                                      │
-  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-  There are two distinct aspects to consider:
-
-  1. The generated Python client classes themselves
-
-  If the OpenAPI schema is not changed (identity stays internal), then the generated client classes do not need to be regenerated. They remain as-is.
-
-  Even if you later add securitySchemes to the schema and regenerate, OpenAPI Generator's Python clients typically already include authentication hooks in
-   the Configuration class (fields for access_token, username, password, API key headers, etc.) regardless of whether the schema declares security
-  schemes. So regeneration would be a cosmetic/documentation improvement, not a breaking change.
-
-  2. The Python test code that uses the client
-
-  This is where changes are required. Once security enforcement is enabled (Phase D), the tests must provide credentials with their requests. Typically
-  this means configuring the client like:
-
-  # For Basic auth (local account)
-  configuration = Configuration(
-      host="http://localhost:8082",
-      username="testuser",
-      password="testpass"
-  )
-  # For Bearer/OIDC token
-  configuration = Configuration(
-      host="http://localhost:8082",
-      access_token="eyJhbG..."
-  )
-
-  The tests would also need a setup step to either:
-  • Create a local test identity (e.g., via a management endpoint or direct DB insertion)
-  • Or obtain a token from the OIDC provider
-
-  ────────────────────────────────────────
-
-  Summary: The generated client library itself should work without regeneration. The test scripts would need modifications to pass authentication
-  credentials, but this can be deferred to Phase D. During Phases A-C (with security permissive), existing tests continue to pass unchanged.
-
---END--
+    >   
+    >   
+    >     ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >     │ … Thought for 11s                                                                                                                                        │
+    >     │ The user is asking whether the authentication/identity plan would require changes to the generated Python client classes used by the Python tests.       │
+    >     │                                                                                                                                                          │
+    >     │ Let me think about this:                                                                                                                                 │
+    >     │                                                                                                                                                          │
+    >     │ 1. If the OpenAPI schema doesn't change (identity is purely internal), then the generated Python client classes wouldn't change at all. However, the     │
+    >     │                                                                                                                                                          │
+    >     │ Python tests would still need to be updated to:                                                                                                          │
+    >     │ • Send authentication headers (Bearer token or Basic auth) with their requests                                                                           │
+    >     │ • The generated client likely has configuration options for auth already (OpenAPI Generator typically generates auth support into clients)               │
+    >     │                                                                                                                                                          │
+    >     │ 2. If the OpenAPI schema adds securitySchemes, the regenerated Python client would get auth configuration support built in (API key headers, Basic       │
+    >     │                                                                                                                                                          │
+    >     │ auth, Bearer token support). But OpenAPI Generator typically generates this support regardless — the Python client probably already has auth             │
+    >     │ configuration hooks.                                                                                                                                     │
+    >     │                                                                                                                                                          │
+    >     │ 3. If the OpenAPI schema adds owner fields to responses, the generated model classes would gain new fields, but this would be backward-compatible        │
+    >     │                                                                                                                                                          │
+    >     │ (new optional fields).                                                                                                                                   │
+    >     │                                                                                                                                                          │
+    >     │ The tests currently make unauthenticated calls to the broker API, but once security enforcement kicks in, they'll need to pass credentials through the   │
+    >     │ client's auth configuration. OpenAPI Generator typically bakes auth support into the generated client already, so the generated classes themselves       │
+    >     │ might                                                                                                                                                    │
+    >     │ not need regeneration — just the test code that instantiates and configures them.                                                                        │
+    >     │  ctrl+o to collapse                                                                                                                                      │
+    >     └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >   
+    >     There are two distinct aspects to consider:
+    >   
+    >     1. The generated Python client classes themselves
+    >   
+    >     If the OpenAPI schema is not changed (identity stays internal), then the generated client classes do not need to be regenerated. They remain as-is.
+    >   
+    >     Even if you later add securitySchemes to the schema and regenerate, OpenAPI Generator's Python clients typically already include authentication hooks in
+    >      the Configuration class (fields for access_token, username, password, API key headers, etc.) regardless of whether the schema declares security
+    >     schemes. So regeneration would be a cosmetic/documentation improvement, not a breaking change.
+    >   
+    >     2. The Python test code that uses the client
+    >   
+    >     This is where changes are required. Once security enforcement is enabled (Phase D), the tests must provide credentials with their requests. Typically
+    >     this means configuring the client like:
+    >   
+    >     # For Basic auth (local account)
+    >     configuration = Configuration(
+    >         host="http://localhost:8082",
+    >         username="testuser",
+    >         password="testpass"
+    >     )
+    >     # For Bearer/OIDC token
+    >     configuration = Configuration(
+    >         host="http://localhost:8082",
+    >         access_token="eyJhbG..."
+    >     )
+    >   
+    >     The tests would also need a setup step to either:
+    >     • Create a local test identity (e.g., via a management endpoint or direct DB insertion)
+    >     • Or obtain a token from the OIDC provider
+    >   
+    >     ────────────────────────────────────────
+    >   
+    >     Summary: The generated client library itself should work without regeneration. The test scripts would need modifications to pass authentication
+    >     credentials, but this can be deferred to Phase D. During Phases A-C (with security permissive), existing tests continue to pass unchanged.
+    >   
 
 

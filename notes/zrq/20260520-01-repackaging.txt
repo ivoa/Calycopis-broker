@@ -1913,13 +1913,9 @@ EOF
 
 # -----------------------------------------------------
 
-==START==
-  /quit
-==END==
+    ?     /quit
 
---START--
-  To resume this session: agent --resume=b39c4460-4e5f-4dec-8c1b-b487150aa67c
---END--
+    >     To resume this session: agent --resume=b39c4460-4e5f-4dec-8c1b-b487150aa67c
 
 # -----------------------------------------------------
 
