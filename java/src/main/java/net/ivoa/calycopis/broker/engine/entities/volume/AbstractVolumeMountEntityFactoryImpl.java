@@ -26,6 +26,7 @@ package net.ivoa.calycopis.broker.engine.entities.volume;
 import java.util.Optional;
 import java.util.UUID;
 
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
 /**
@@ -36,20 +37,20 @@ extends FactoryBaseImpl
 implements AbstractVolumeMountEntityFactory
     {
 
-    protected final AbstractVolumeMountEntityRepository repository;
+    protected final AbstractEntityRepository<AbstractVolumeMountEntity> repository;
 
     /**
      * Protected constructor.
      * 
      */
     protected AbstractVolumeMountEntityFactoryImpl(
-        final AbstractVolumeMountEntityRepository repository
+        final AbstractEntityRepository<AbstractVolumeMountEntity> repository
         ){
         this.repository = repository;
         }
 
     @Override
-    public Optional<AbstractVolumeMountEntityImpl> select(UUID uuid)
+    public Optional<AbstractVolumeMountEntity> select(UUID uuid)
         {
         return repository.findById(uuid);
         }

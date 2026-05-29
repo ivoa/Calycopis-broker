@@ -24,7 +24,7 @@
 package net.ivoa.calycopis.broker.engine.entities.compute;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.functional.validator.AbstractValidatorImpl;
+import net.ivoa.calycopis.broker.engine.functional.validator.AbstractValidator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
 
 /**
@@ -32,7 +32,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
  */
 @Slf4j
 public abstract class AbstractComputeResourceValidatorImpl
-extends AbstractValidatorImpl<IvoaAbstractComputeResource, AbstractComputeResourceEntityImpl>
+extends AbstractValidator<IvoaAbstractComputeResource, AbstractComputeResourceEntity>
 implements AbstractComputeResourceValidator
     {
     }

@@ -57,14 +57,15 @@ package net.ivoa.calycopis.broker.engine.entities.data.ivoa;
 import java.net.URI;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
+import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataLinkItem;
 import net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataResource;
@@ -135,7 +136,7 @@ implements IvoaDataResourceValidator
         IvoaIvoaDataResource validated = new IvoaIvoaDataResource()
             .kind(IvoaDataResource.TYPE_DISCRIMINATOR)
             .meta(
-                makeMeta(
+                ValidatorTools.makeMeta(
                     requested.getMeta(),
                     context
                     )
@@ -170,7 +171,7 @@ implements IvoaDataResourceValidator
                 validated
                 ){
                 @Override
-                public AbstractDataResourceEntityImpl build(final SimpleExecutionSessionEntityImpl session)
+                public AbstractDataResourceEntity build(final SimpleExecutionSessionEntity session)
                     {
                     this.entity = IvoaDataResourceValidatorImpl.this.entityFactory.create(
                         session,

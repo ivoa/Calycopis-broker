@@ -36,24 +36,24 @@ package net.ivoa.calycopis.broker.engine.entities.offerset;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.threeten.extra.Interval;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResource;
-import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidator;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
@@ -324,7 +324,7 @@ implements OfferSetRequestParser
 
     
     @Override
-    public OfferSetEntityImpl stageTwo(final Platform platform, final OfferSetEntityImpl offersetEntity, final OfferSetRequestParserContext offersetContext, int offerCount)
+    public OfferSetEntity stageTwo(final Platform platform, final OfferSetEntity offersetEntity, final OfferSetRequestParserContext offersetContext, int offerCount)
         {
         log.debug("stageTwo(Platform , OfferSetEntity, OfferSetRequestParserContext)");
         log.debug("Context valid [{}]", offersetContext.valid());
@@ -358,8 +358,13 @@ implements OfferSetRequestParser
             log.debug("---- ---- ---- ----");
 
             //
+            // This is a mixture of Simple and Abstract compute resources.
+            // This is a mixture of a single offer and multiple compute resources.
+            // This creates a session from a compute resource offer.
+            
+            //
             // Generate a list of offers for our criteria.
-            List<ComputeResourceOffer> computeOffers =  platform.getComputeResourceOfferFactory().generate(
+            Iterable<SimpleComputeResourceOffer> computeOffers =  platform.getComputeResourceOfferFactory().generate(
                 offersetContext.getStartInterval(),
                 offersetContext.getExecutionDuration(),
                 offersetContext.getTotalMinCores(),
@@ -368,14 +373,14 @@ implements OfferSetRequestParser
                 );
             //
             // Create an ExecutionSession for each offer.
-            for (ComputeResourceOffer computeOffer : computeOffers)
+            for (SimpleComputeResourceOffer computeOffer : computeOffers)
                 {
-                log.debug("OfferBlock [{}]", computeOffer.getStartTime());
+                log.debug("OfferBlock [{}]", computeOffer.getStartInterval());
                 // TODO Fix this nasty class cast ....
                 // Needed because the platform returns an AbstractExecutionSessionEntityFactory, which creates an AbstractExecutionSessionEntity.
                 // To make this work we need to go down the rabbit hole and change all the things that use SimpleExecutionSessionEntity to use AbstractExecutionSessionEntity.
                 // TODO Later ...
-                SimpleExecutionSessionEntityImpl executionSessionEntity = (SimpleExecutionSessionEntityImpl) platform.getAbstractSessionFactory().create(
+                SimpleExecutionSessionEntity executionSessionEntity = platform.getExecutionSessionEntityFactory().create(
                     offersetEntity,
                     offersetContext,
                     computeOffer
@@ -392,11 +397,12 @@ implements OfferSetRequestParser
 
                 //
                 // Add our compute resources.
-                // TODO nasty hack - context has multiple compute resources, we only track the last one.
-                AbstractComputeResourceEntityImpl computeResourceEntity = null;
+                // TODO context can have multiple compute resources, we only track one.
+                // TODO context handles abstract compute resources, but the resource offer is type specific. 
+                AbstractComputeResourceEntity computeResourceEntity = null;
                 for (AbstractComputeResourceValidator.Result result : offersetContext.getComputeValidatorResults())
                     {
-                    computeResourceEntity = result.build(
+                    computeResourceEntity = ((SimpleComputeResourceValidator.Result) result).build(
                         executionSessionEntity,
                         computeOffer
                         );
@@ -419,7 +425,7 @@ implements OfferSetRequestParser
                     }
                 //
                 // Add our volume mounts to the compute resource.
-                if (computeResourceEntity instanceof SimpleComputeResourceEntityImpl simpleCompute)
+                if (computeResourceEntity instanceof SimpleComputeResourceEntity simpleCompute)
                     {
                     for (AbstractVolumeMountValidator.Result result : offersetContext.getVolumeValidatorResults())
                         {

@@ -23,21 +23,18 @@
 
 package net.ivoa.calycopis.broker.engine.entities.executable.docker.docker;
 
-import org.springframework.stereotype.Component;
-
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidator;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 
 /**
  * DockerDockerContainerEntity factory implementation for the Docker Platform.
  *
  */
 @Slf4j
-@Component
 public class DockerDockerContainerEntityFactoryImpl
 extends DockerContainerEntityFactoryImpl
 implements DockerDockerContainerEntityFactory
@@ -48,18 +45,18 @@ implements DockerDockerContainerEntityFactory
      * 
      */
     public DockerDockerContainerEntityFactoryImpl(
-        final AbstractExecutableEntityRepository repository
+        final AbstractEntityRepository<AbstractExecutableEntity> reporitory
         ){
-        super(repository);
+        super(reporitory);
         }
 
     @Override
-    public AbstractExecutableEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+    public AbstractExecutableEntity create(
+        final SimpleExecutionSessionEntity session,
         final AbstractExecutableValidator.Result result
         ){
-        DockerDockerContainerEntityImpl entity = this.repository.save(
-            new DockerDockerContainerEntityImpl(
+        DockerDockerContainerEntity entity = this.repository.save(
+            new DockerDockerContainerEntity(
                 session,
                 result
                 )

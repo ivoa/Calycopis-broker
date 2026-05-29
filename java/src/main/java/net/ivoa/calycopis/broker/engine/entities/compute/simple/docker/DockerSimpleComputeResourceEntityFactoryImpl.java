@@ -23,14 +23,13 @@
 
 package net.ivoa.calycopis.broker.engine.entities.compute.simple.docker;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceValidator;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 
 /**
  * A DockerSimpleComputeResourceEntityFactory implementation.
@@ -42,40 +41,30 @@ extends SimpleComputeResourceEntityFactoryImpl
 implements DockerSimpleComputeResourceEntityFactory
     {
 
-    private final DockerSimpleComputeResourceEntityRepository repository;
-
     /**
      * Public constructor used by our Platform.
      *
      */
     public DockerSimpleComputeResourceEntityFactoryImpl(
-        final DockerSimpleComputeResourceEntityRepository repository
+        final AbstractEntityRepository<AbstractComputeResourceEntity> repository
         ){
-        super();
-        this.repository = repository;
-        }
-
-    @Override
-    public Optional<AbstractComputeResourceEntityImpl> select(UUID uuid)
-        {
-        return Optional.of(
-            repository.findById(uuid).get()
+        super(
+            repository
             );
         }
 
     @Override
-    public DockerSimpleComputeResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
-        final DockerSimpleComputeResourceValidator.Result result,
-        final ComputeResourceOffer offer
+    public DockerSimpleComputeResourceEntity create(
+        final SimpleExecutionSessionEntity session,
+        final SimpleComputeResourceValidator.Result result,
+        final SimpleComputeResourceOffer offer
         ){
-        DockerSimpleComputeResourceEntityImpl entity = this.repository.save(
-            new DockerSimpleComputeResourceEntityImpl(
+        return this.repository.save(
+            new DockerSimpleComputeResourceEntity(
                 session,
                 result,
                 offer
                 )
             );
-        return entity;
         }
     }

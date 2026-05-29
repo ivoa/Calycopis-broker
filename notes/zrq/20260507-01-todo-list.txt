@@ -59,19 +59,6 @@
     Create storage pool.
     Create Docker impelemtation of SimpleStorage.
 
-    Add metrics to schema
-        metrics:
-          - kind: min-max-metric
-            min: float
-            max: float
-    Add costs to schema
-        costs:
-          - kind: min-max-cost
-            min: float
-            max: float
-    Add 'payment-required' redirect.
-        location
-        ivoa-payment-gateway-kind
 
 # -----------------------------------------------------
 # medium
@@ -103,17 +90,51 @@
     Add support for JupyterNotebooks
     Add support for VirtualDesktops
 
+    Add metrics to schema
+        metrics:
+          - kind: min-max-metric
+            min: float
+            max: float
+    Add costs to schema
+        costs:
+          - kind: min-max-cost
+            min: float
+            max: float
+    Add 'payment-required' redirect.
+        location
+        ivoa-payment-gateway-kind
+
+    Investigate 'default' type for inheritance.
+    https://github.com/OAI/OpenAPI-Specification/issues/3105
+    https://github.com/OAI/sig-moonwalk
+    - probably not
+
+# -----------------------------------------------------
+
+    How do we include a `generic` placeholder data object in our schema.
+    So the application says it needs one data object as 'config' and a set of data objects as 'data'.
+    Does SimpleDataResource work for that ?
+    User can substitute a different type of AbstractDataResource.
+
+    ** What if we use AbstractDataResource as the placeholder.
+    ** Allow AbstractDataResource in the schema, but that gets caught in the validation step.
+    ** This looks like it might work.
+
+
 # -----------------------------------------------------
 # minor
 
     How many of the JpaRepositories are actually used ?
     I think it might just be the base class AbstractXyz ones.
+    -- done
 
     Get rid of Optional, just return null.
     Or make use of the NoSuchElementException that Optional throws.
 
-    Remove the XyzEntity interfaces and replace with XyzEntityImpl.
-    Evaluate - do we need XyzEntityFactory interfaces
+    Remove the XyzEntity interfaces
+
+    Do we need XyzEntityFactory interfaces - we aren't using Autowire any more.
+    -- planned but not implemented
 
     Decide on one pattern for entities and their interfaces:
 
@@ -123,8 +144,16 @@
         AbstractExecutable is the interface
         AbstractExecutableEntityImpl is the entity class
 
-
     Message and MessageEntityImpl should have kind rather than type.
+
+    Merge AbstractExecutionSession and SimpleExecutionSession into just ExecutionSession.
+    Remove AbstractExecutionSession et al.
+
+    Change SimpleExecutionSessionEntityUpdateHandler to SimpleExecutionSessionEntityUpdater
+    Change getSessionUpdateHandler to getSessionUpdater
+
+
+
 
 
 

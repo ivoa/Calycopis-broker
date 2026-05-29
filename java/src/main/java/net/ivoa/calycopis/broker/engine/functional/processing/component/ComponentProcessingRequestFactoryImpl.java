@@ -18,12 +18,35 @@
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-05-20T14:00:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-26T16:50:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 2,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  */
 
 package net.ivoa.calycopis.broker.engine.functional.processing.component;
 
-import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
 /**
@@ -34,19 +57,19 @@ extends FactoryBaseImpl
 implements ComponentProcessingRequestFactory
     {
 
-    private final ComponentProcessingRequestRepository repository;
+    private final AbstractEntityRepository<ComponentProcessingRequestEntity> repository;
     
     /**
      * Public constructor used by our Platform.
      * 
      */
-    public ComponentProcessingRequestFactoryImpl(final ComponentProcessingRequestRepository repository)
+    public ComponentProcessingRequestFactoryImpl(final AbstractEntityRepository<ComponentProcessingRequestEntity> repository)
         {
         this.repository = repository;
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createPrepareComponentRequest(LifecycleComponentEntityImpl component)
+    public ComponentProcessingRequestEntity createPrepareComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new PrepareComponentRequestEntity(
@@ -56,7 +79,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createMonitorComponentRequest(LifecycleComponentEntityImpl component)
+    public ComponentProcessingRequestEntity createMonitorComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new MonitorComponentRequestEntity(
@@ -66,7 +89,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createReleaseComponentRequest(LifecycleComponentEntityImpl component)
+    public ComponentProcessingRequestEntity createReleaseComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new ReleaseComponentRequestEntity(
@@ -76,7 +99,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createCancelComponentRequest(LifecycleComponentEntityImpl component)
+    public ComponentProcessingRequestEntity createCancelComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new CancelComponentRequestEntity(
@@ -86,7 +109,7 @@ implements ComponentProcessingRequestFactory
         }
 
     @Override
-    public ComponentProcessingRequestEntityImpl createFailComponentRequest(LifecycleComponentEntityImpl component)
+    public ComponentProcessingRequestEntity createFailComponentRequest(LifecycleComponentEntity component)
         {
         return repository.save(
             new FailComponentRequestEntity(

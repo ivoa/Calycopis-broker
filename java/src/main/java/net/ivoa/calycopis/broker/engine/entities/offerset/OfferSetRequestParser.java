@@ -22,7 +22,7 @@
 package net.ivoa.calycopis.broker.engine.entities.offerset;
 
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
 
 /**
@@ -42,6 +42,6 @@ extends FactoryBase
      * Populate an OfferSetEntity based on the contents of a ParserContext.
      *
      */
-    public OfferSetEntityImpl stageTwo(final Platform platform, final OfferSetEntityImpl offersetEntity, final OfferSetRequestParserContext offersetContext, int offerCount);
+    public OfferSetEntity stageTwo(final Platform platform, final OfferSetEntity offersetEntity, final OfferSetRequestParserContext offersetContext, int offerCount);
     
     }

@@ -22,14 +22,14 @@
  */
 package net.ivoa.calycopis.broker.engine.functional.validator;
 
-import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 
 /**
  * Public interface for a ValidatorFactory.
  * 
  */
-public interface ValidatorFactory<ObjectType, EntityType extends ComponentEntityImpl>
+public interface ValidatorFactory<ObjectType, EntityType extends ComponentEntity>
 extends FactoryBase, Validator<ObjectType, EntityType>
     {
 

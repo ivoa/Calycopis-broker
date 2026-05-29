@@ -24,20 +24,20 @@
 package net.ivoa.calycopis.broker.engine.entities.executable;
 
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityFactory;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 
 /**
  *
  */
 public interface AbstractExecutableEntityFactory
-extends LifecycleComponentEntityFactory<AbstractExecutableEntityImpl>
+extends LifecycleComponentEntityFactory<AbstractExecutableEntity>
     {
     /**
      * Create a new ExecutableEntity based on a Validator Result.
      *
      */
-    public AbstractExecutableEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+    public AbstractExecutableEntity create(
+        final SimpleExecutionSessionEntity session,
         final AbstractExecutableValidator.Result result
         );
     }

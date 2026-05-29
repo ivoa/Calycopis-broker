@@ -23,21 +23,44 @@
 
 package net.ivoa.calycopis.broker.engine.entities.session.simple;
 
-import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntityFactory;
+import java.util.Optional;
+import java.util.UUID;
+
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
+import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
  * A Factory for execution sessions.
  *
  */
 public interface SimpleExecutionSessionEntityFactory
-    extends AbstractExecutionSessionEntityFactory<SimpleExecutionSessionEntityImpl>
+extends FactoryBase
     {
 
     /**
-     * Save an ExecutionSessionEntity.
+     * Select an ExecutionSession based on UUID.
      *
      */
-    public SimpleExecutionSessionEntityImpl save(final SimpleExecutionSessionEntityImpl entity);
+    public Optional<SimpleExecutionSessionEntity> select(final UUID uuid);
+
+    /**
+     * Select ExecutionSessions based on phase.
+     *
+     */
+    public Iterable<SimpleExecutionSessionEntity> select(final IvoaSimpleExecutionSessionPhase phase);
+
+    /**
+     * Create a new ExecutionSession from a parser context and compute resource offer. 
+     *
+     */
+    public SimpleExecutionSessionEntity create(
+        final OfferSetEntity parent,
+        final OfferSetRequestParserContext context,
+        final SimpleComputeResourceOffer offer
+        );
     
     }
 

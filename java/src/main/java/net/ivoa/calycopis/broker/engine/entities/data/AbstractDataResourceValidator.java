@@ -36,7 +36,7 @@
 package net.ivoa.calycopis.broker.engine.entities.data;
 
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
 
@@ -45,7 +45,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
  * 
  */
 public interface AbstractDataResourceValidator
-extends Validator<IvoaAbstractDataResource, AbstractDataResourceEntityImpl>
+extends Validator<IvoaAbstractDataResource, AbstractDataResourceEntity>
     {
     /**
      * Validate a component.
@@ -61,13 +61,13 @@ extends Validator<IvoaAbstractDataResource, AbstractDataResourceEntityImpl>
      * 
      */
     public interface Result
-    extends Validator.Result<IvoaAbstractDataResource, AbstractDataResourceEntityImpl> 
+    extends Validator.Result<IvoaAbstractDataResource, AbstractDataResourceEntity> 
         {
         /**
          * Build a DataResourceEntity based on the validation result. 
          *
          */
-        public AbstractDataResourceEntityImpl build(final SimpleExecutionSessionEntityImpl session);
+        public AbstractDataResourceEntity build(final SimpleExecutionSessionEntity session);
         }
 
     /**
@@ -75,7 +75,7 @@ extends Validator<IvoaAbstractDataResource, AbstractDataResourceEntityImpl>
      * 
      */
     public static abstract class ResultBean
-    extends Validator.ResultBean<IvoaAbstractDataResource, AbstractDataResourceEntityImpl>
+    extends Validator.ResultBean<IvoaAbstractDataResource, AbstractDataResourceEntity>
     implements AbstractDataResourceValidator.Result
         {
         /**

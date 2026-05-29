@@ -28,7 +28,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
-import net.ivoa.calycopis.broker.engine.functional.validator.AbstractValidatorImpl;
+import net.ivoa.calycopis.broker.engine.functional.validator.AbstractValidator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
 
 /**
@@ -36,7 +36,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
  */
 @Slf4j
 public abstract class AbstractDataResourceValidatorImpl
-extends AbstractValidatorImpl<IvoaAbstractDataResource, AbstractDataResourceEntityImpl>
+extends AbstractValidator<IvoaAbstractDataResource, AbstractDataResourceEntity>
 implements AbstractDataResourceValidator
     {
 

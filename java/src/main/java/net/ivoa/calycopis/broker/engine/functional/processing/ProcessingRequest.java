@@ -27,7 +27,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
 
-import net.ivoa.calycopis.broker.engine.functional.platfom.Platform;
+import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 
 /**
  * 

@@ -34,7 +34,11 @@
 
 package net.ivoa.calycopis.broker.engine.entities.compute;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 
 /**
@@ -45,4 +49,25 @@ public abstract class AbstractComputeResourceEntityFactoryImpl
 extends FactoryBaseImpl
 implements AbstractComputeResourceEntityFactory
     {
+    
+    protected final AbstractEntityRepository<AbstractComputeResourceEntity> repository;
+
+    /**
+     * Protected constructor.
+     *
+     */
+    protected AbstractComputeResourceEntityFactoryImpl(
+        final AbstractEntityRepository<AbstractComputeResourceEntity> repository
+        ){
+        super();
+        this.repository = repository;
+        }
+    
+    @Override
+    public Optional<AbstractComputeResourceEntity> select(UUID uuid)
+        {
+        return Optional.of(
+            repository.findById(uuid).get()
+            );
+        }
     }

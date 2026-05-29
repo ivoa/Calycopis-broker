@@ -28,6 +28,16 @@
  *       "value": 3,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-27T06:10:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 1,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -42,11 +52,11 @@ import java.util.List;
 
 import org.threeten.extra.Interval;
 
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSession;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
@@ -85,37 +95,37 @@ extends AbstractExecutionSession
      * Get the Executable entity.
      *
      */
-    public AbstractExecutableEntityImpl getExecutable();
+    public AbstractExecutableEntity getExecutable();
 
     /**
      * Get the ComputeResource.
      *
      */
-    public AbstractComputeResourceEntityImpl getComputeResource();
+    public AbstractComputeResourceEntity getComputeResource();
 
     /**
      * Get a list of the DataResources.
      *
      */
-    public List<AbstractDataResourceEntityImpl> getDataResources();
+    public List<AbstractDataResourceEntity> getDataResources();
 
     /**
      * Get a list of the StorageResources.
      *
      */
-    public List<AbstractStorageResourceEntityImpl> getStorageResources();
+    public List<AbstractStorageResourceEntity> getStorageResources();
 
     /**
      * Get a list of the connectors.
      *
      */
-    public List<SimpleSessionConnectorEntity> getConnectors();
+    public List<SimpleExecutionSessionConnectorEntity> getConnectors();
 
     /**
      * Add a new connector.
      *
      */
-    public void addConnector(final SimpleSessionConnectorEntity connector);
+    public void addConnector(final SimpleExecutionSessionConnectorEntity connector);
 
     /**
      * Add a new connector.

@@ -48,11 +48,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
+import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
 import net.ivoa.calycopis.schema.spring.model.IvoaDockerContainer;
 import net.ivoa.calycopis.schema.spring.model.IvoaDockerExternalPort;
@@ -118,7 +119,7 @@ implements DockerContainerValidator
         IvoaDockerContainer validated = new IvoaDockerContainer()
             .kind(DockerContainer.TYPE_DISCRIMINATOR)
             .meta(
-                makeMeta(
+                ValidatorTools.makeMeta(
                     requested.getMeta(),
                     context
                     )
@@ -185,7 +186,7 @@ implements DockerContainerValidator
                     validated
                     ) {
                     @Override
-                    public AbstractExecutableEntityImpl build(final SimpleExecutionSessionEntityImpl session)
+                    public AbstractExecutableEntity build(final SimpleExecutionSessionEntity session)
                         {
                         this.entity = DockerContainerValidatorImpl.this.entityFactory.create(
                             session,
@@ -244,7 +245,7 @@ implements DockerContainerValidator
                 for (String location : requested.getLocations())
                     {
                     // TODO Better checks
-                    success &= notBadValueCheck(
+                    success &= ValidatorTools.notBadValueCheck(
                         location,
                         context
                         );
@@ -267,7 +268,7 @@ implements DockerContainerValidator
                 image.setDigest(
                     digest
                     );
-                if (isBadValueCheck(digest,context)) 
+                if (ValidatorTools.isBadValueCheck(digest,context)) 
                     {
                     context.addWarning(
                         "urn:bad-value",
@@ -547,7 +548,7 @@ implements DockerContainerValidator
             java.util.List<String> result = new java.util.ArrayList<String>();
             for (String arg : requested)
                 {
-                if (isBadValueCheck(arg, context))
+                if (ValidatorTools.isBadValueCheck(arg, context))
                     {
                     context.addWarning(
                         "urn:bad-value",
@@ -585,13 +586,13 @@ implements DockerContainerValidator
 
         boolean success = true ;
     
-        String entrypoint = notEmpty(
+        String entrypoint = ValidatorTools.notEmpty(
             requested
             );
         if (entrypoint != null)
             {
             // TODO Make this configurable.
-            success &= notBadValueCheck(
+            success &= ValidatorTools.notBadValueCheck(
                 entrypoint,
                 context
                 );
@@ -662,7 +663,7 @@ implements DockerContainerValidator
             Map<String, String> hashmap = new HashMap<String, String>();
             for (Map.Entry<String,String> entry : requested.entrySet())
                 {
-                if (isBadValueCheck(entry.getKey(),context))
+                if (ValidatorTools.isBadValueCheck(entry.getKey(),context))
                     {
                     context.addWarning(
                         "urn:bad-value",
@@ -674,7 +675,7 @@ implements DockerContainerValidator
                         );
                     success = false ;
                     }
-                else if (isBadValueCheck(entry.getValue(),context))
+                else if (ValidatorTools.isBadValueCheck(entry.getValue(),context))
                     {
                     context.addWarning(
                         "urn:bad-value",

@@ -34,16 +34,16 @@
  */
 package net.ivoa.calycopis.broker.engine.functional.validator;
 
-import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
 
 /**
  * Public interface for a Validator.
  *  
  */
-public interface Validator<ObjectType, EntityType extends ComponentEntityImpl>
+public interface Validator<ObjectType, EntityType extends ComponentEntity>
     {
     /**
      * Result enum for the validation process.
@@ -129,7 +129,7 @@ public interface Validator<ObjectType, EntityType extends ComponentEntityImpl>
      * Simple bean implementation of Result.
      *  
      */
-    public abstract static class ResultBean<ObjectType, EntityType extends ComponentEntityImpl>
+    public abstract static class ResultBean<ObjectType, EntityType extends ComponentEntity>
     implements Result<ObjectType, EntityType>
         {
         /**
@@ -179,7 +179,7 @@ public interface Validator<ObjectType, EntityType extends ComponentEntityImpl>
          * Derived classes should override this to build an Entity based on the validation result.
          * 
          */
-        public EntityType build(final SimpleExecutionSessionEntityImpl session)
+        public EntityType build(final SimpleExecutionSessionEntity session)
             {
             return null;
             }

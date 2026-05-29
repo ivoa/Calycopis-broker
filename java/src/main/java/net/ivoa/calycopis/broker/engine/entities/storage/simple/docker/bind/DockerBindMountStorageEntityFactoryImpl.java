@@ -23,8 +23,9 @@
 
 package net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.bind;
 
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator.Result;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.docker.DockerSimpleStorageResourceEntityFactoryImpl;
@@ -42,19 +43,21 @@ implements DockerBindMountStorageEntityFactory
      * 
      */
     public DockerBindMountStorageEntityFactoryImpl(
-        final DockerBindMountStorageEntityRepository repository
+        final AbstractEntityRepository<AbstractStorageResourceEntity> repository
         ){
-        super(repository);
+        super(
+            repository
+            );
         }
 
     @Override
-    public DockerBindMountStorageEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+    public DockerBindMountStorageEntity create(
+        final SimpleExecutionSessionEntity session,
         final AbstractStorageResourceValidator.Result result,
         final String path
         ){
-        DockerBindMountStorageEntityImpl entity = this.repository.save(
-            new DockerBindMountStorageEntityImpl(
+        DockerBindMountStorageEntity entity = this.repository.save(
+            new DockerBindMountStorageEntity(
                 session,
                 result,
                 path
@@ -64,8 +67,8 @@ implements DockerBindMountStorageEntityFactory
         }
 
     @Override
-    public AbstractStorageResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
+    public AbstractStorageResourceEntity create(
+        final SimpleExecutionSessionEntity session,
         final Result result
         ){
         throw new UnsupportedOperationException(

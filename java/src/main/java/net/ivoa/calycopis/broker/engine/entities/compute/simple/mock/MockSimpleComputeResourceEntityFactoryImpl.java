@@ -23,14 +23,13 @@
 
 package net.ivoa.calycopis.broker.engine.entities.compute.simple.mock;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
+import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceValidator;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 
 /**
  * A SimpleComputeResource Factory implementation.
@@ -42,34 +41,26 @@ extends SimpleComputeResourceEntityFactoryImpl
 implements MockSimpleComputeResourceEntityFactory
     {
 
-    private final MockSimpleComputeResourceEntityRepository repository;
-
     /**
      * Public constructor used by our Platform.
      *
      */
-    public MockSimpleComputeResourceEntityFactoryImpl(final MockSimpleComputeResourceEntityRepository repository)
+    public MockSimpleComputeResourceEntityFactoryImpl(
+        final AbstractEntityRepository<AbstractComputeResourceEntity> repository)
         {
-        super();
-        this.repository = repository;
-        }
-
-    @Override
-    public Optional<AbstractComputeResourceEntityImpl> select(UUID uuid)
-        {
-        return Optional.of(
-            this.repository.findById(uuid).get()
+        super(
+            repository
             );
         }
 
     @Override
-    public MockSimpleComputeResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
-        final MockSimpleComputeResourceValidator.Result result,
-        final ComputeResourceOffer offer
+    public MockSimpleComputeResourceEntity create(
+        final SimpleExecutionSessionEntity session,
+        final SimpleComputeResourceValidator.Result result,
+        final SimpleComputeResourceOffer offer
         ){
         return this.repository.save(
-            new MockSimpleComputeResourceEntityImpl(
+            new MockSimpleComputeResourceEntity(
                 session,
                 result,
                 offer

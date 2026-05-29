@@ -7,10 +7,10 @@ import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
 @Slf4j
 public class MockMonitorAction extends MockDelayAction
     {
-    public MockMonitorAction(final MockMonitorableComponent monitorable, int delay)
+    public MockMonitorAction(final LifecycleComponent component, int delay)
         {
         super(
-            monitorable,
+            component,
             delay
             );
         }

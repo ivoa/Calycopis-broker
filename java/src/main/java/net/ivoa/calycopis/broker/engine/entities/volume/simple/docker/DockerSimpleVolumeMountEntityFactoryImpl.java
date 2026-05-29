@@ -36,9 +36,11 @@
 package net.ivoa.calycopis.broker.engine.entities.volume.simple.docker;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntity;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountValidator;
 
@@ -56,19 +58,21 @@ implements DockerSimpleVolumeMountEntityFactory
      *  
      */
     public DockerSimpleVolumeMountEntityFactoryImpl(
-        final DockerSimpleVolumeMountEntityRepository repository
+        final AbstractEntityRepository<AbstractVolumeMountEntity> repository
         ){
-        super(repository);
+        super(
+            repository
+            );
         }
 
     @Override
-    public DockerSimpleVolumeMountEntityImpl create(
-        final AbstractComputeResourceEntityImpl computeResource,
-        final AbstractDataResourceEntityImpl        dataResource,
+    public DockerSimpleVolumeMountEntity create(
+        final AbstractComputeResourceEntity computeResource,
+        final AbstractDataResourceEntity        dataResource,
         final SimpleVolumeMountValidator.Result result
         ){
         return this.repository.save(
-            new DockerSimpleVolumeMountEntityImpl(
+            new DockerSimpleVolumeMountEntity(
                 computeResource,
                 dataResource,
                 result
@@ -77,13 +81,13 @@ implements DockerSimpleVolumeMountEntityFactory
         }
 
     @Override
-    public DockerSimpleVolumeMountEntityImpl create(
-        final AbstractComputeResourceEntityImpl computeResource,
-        final AbstractStorageResourceEntityImpl storageResource,
+    public DockerSimpleVolumeMountEntity create(
+        final AbstractComputeResourceEntity computeResource,
+        final AbstractStorageResourceEntity storageResource,
         final SimpleVolumeMountValidator.Result result
         ){
         return this.repository.save(
-            new DockerSimpleVolumeMountEntityImpl(
+            new DockerSimpleVolumeMountEntity(
                 computeResource,
                 storageResource,
                 result

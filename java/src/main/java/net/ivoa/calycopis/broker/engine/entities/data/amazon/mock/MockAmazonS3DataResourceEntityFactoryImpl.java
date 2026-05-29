@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2025 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -27,22 +27,30 @@
  *       "value": 100,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-26T16:50:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 2,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
  */
 package net.ivoa.calycopis.broker.engine.entities.data.amazon.mock;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
+import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 
 /**
  *
@@ -53,35 +61,26 @@ extends AmazonS3DataResourceEntityFactoryImpl
 implements MockAmazonS3DataResourceEntityFactory
     {
 
-    private final MockAmazonS3DataResourceEntityRepository repository;
-
     /**
      * Public constructor, used by our Platform.
      *
      */
     public MockAmazonS3DataResourceEntityFactoryImpl(
-        final MockAmazonS3DataResourceEntityRepository repository
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
         ){
-        super();
-        this.repository = repository;
-        }
-
-    @Override
-    public Optional<AbstractDataResourceEntityImpl> select(final UUID uuid)
-        {
-        return Optional.of(
-            this.repository.findById(uuid).get()
+        super(
+            repository
             );
         }
 
     @Override
-    public AmazonS3DataResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
-        final AbstractStorageResourceEntityImpl storage,
+    public AmazonS3DataResourceEntity create(
+        final SimpleExecutionSessionEntity session,
+        final AbstractStorageResourceEntity storage,
         final AbstractDataResourceValidator.Result result
         ){
         return this.repository.save(
-            new MockAmazonS3DataResourceEntityImpl(
+            new MockAmazonS3DataResourceEntity(
                 session,
                 storage,
                 result

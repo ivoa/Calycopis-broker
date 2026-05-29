@@ -24,6 +24,8 @@
 package net.ivoa.calycopis.broker.engine.entities.compute.simple;
 
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
 
 /**
  * A SimpleComputeResource Factory.
@@ -32,5 +34,14 @@ import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResource
 public interface SimpleComputeResourceEntityFactory
 extends AbstractComputeResourceEntityFactory
     {
+    /**
+     * Create a new SimpleComputeResourceEntity based on a Validator Result and resource Offer.
+     *
+     */
+    public SimpleComputeResourceEntity create(
+        final SimpleExecutionSessionEntity session,
+        final SimpleComputeResourceValidator.Result result,
+        final SimpleComputeResourceOffer offer
+        );
     }
 

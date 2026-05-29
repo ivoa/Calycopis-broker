@@ -36,8 +36,6 @@
 package net.ivoa.calycopis.broker.engine.entities.compute;
 
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
 
@@ -45,7 +43,7 @@ import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
  * 
  */
 public interface AbstractComputeResourceValidator
-extends Validator<IvoaAbstractComputeResource, AbstractComputeResourceEntityImpl>
+extends Validator<IvoaAbstractComputeResource, AbstractComputeResourceEntity>
     {
     /**
      * Validate a component.
@@ -61,13 +59,8 @@ extends Validator<IvoaAbstractComputeResource, AbstractComputeResourceEntityImpl
      * 
      */
     public static interface Result
-    extends Validator.Result<IvoaAbstractComputeResource, AbstractComputeResourceEntityImpl> 
+    extends Validator.Result<IvoaAbstractComputeResource, AbstractComputeResourceEntity> 
         {
-        /**
-         * Build an ComputeResourceEntity based on the validation result.
-         * 
-         */
-        public AbstractComputeResourceEntityImpl build(final SimpleExecutionSessionEntityImpl session, final ComputeResourceOffer offer);
         }
 
     /**
@@ -75,7 +68,7 @@ extends Validator<IvoaAbstractComputeResource, AbstractComputeResourceEntityImpl
      * 
      */
     public abstract static class ResultBean
-    extends Validator.ResultBean<IvoaAbstractComputeResource, AbstractComputeResourceEntityImpl>
+    extends Validator.ResultBean<IvoaAbstractComputeResource, AbstractComputeResourceEntity>
     implements AbstractComputeResourceValidator.Result
         {
         /**
@@ -92,7 +85,7 @@ extends Validator<IvoaAbstractComputeResource, AbstractComputeResourceEntityImpl
          * Protected constructor with a ResultEnum and IvoaAbstractComputeResource.
          * 
          */
-        public ResultBean(
+        protected ResultBean(
             final ResultEnum result,
             final IvoaAbstractComputeResource object
             ){

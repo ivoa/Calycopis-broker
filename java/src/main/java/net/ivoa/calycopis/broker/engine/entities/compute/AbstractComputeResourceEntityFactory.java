@@ -24,22 +24,11 @@
 package net.ivoa.calycopis.broker.engine.entities.compute;
 
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityFactory;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
-import net.ivoa.calycopis.broker.engine.functional.booking.compute.ComputeResourceOffer;
 
 /**
  * 
  */
 public interface AbstractComputeResourceEntityFactory
-extends LifecycleComponentEntityFactory<AbstractComputeResourceEntityImpl>
+extends LifecycleComponentEntityFactory<AbstractComputeResourceEntity>
     {
-    /**
-     * Create a new ComputeResourceEntity based on a Validator Result.
-     *
-     */
-    public AbstractComputeResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
-        final AbstractComputeResourceValidator.Result result,
-        final ComputeResourceOffer offer
-        );
     }

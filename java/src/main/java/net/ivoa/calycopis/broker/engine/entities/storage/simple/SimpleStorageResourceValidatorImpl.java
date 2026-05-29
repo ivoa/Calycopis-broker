@@ -45,12 +45,13 @@ package net.ivoa.calycopis.broker.engine.entities.storage.simple;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityFactory;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
+import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaSimpleStorageResource;
 
@@ -115,7 +116,7 @@ implements SimpleStorageResourceValidator
         IvoaSimpleStorageResource validated = new IvoaSimpleStorageResource()
             .kind(SimpleStorageResource.TYPE_DISCRIMINATOR)
             .meta(
-                makeMeta(
+                ValidatorTools.makeMeta(
                     requested.getMeta(),
                     context
                     )
@@ -139,7 +140,7 @@ implements SimpleStorageResourceValidator
                     validated
                     ){
                     @Override
-                    public AbstractStorageResourceEntityImpl build(final SimpleExecutionSessionEntityImpl session)
+                    public AbstractStorageResourceEntity build(final SimpleExecutionSessionEntity session)
                         {
                         this.entity = SimpleStorageResourceValidatorImpl.this.entityFactory.create(
                             session,

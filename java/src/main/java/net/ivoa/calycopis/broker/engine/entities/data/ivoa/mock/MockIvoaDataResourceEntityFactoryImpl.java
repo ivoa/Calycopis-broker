@@ -33,16 +33,14 @@
  */
 package net.ivoa.calycopis.broker.engine.entities.data.ivoa.mock;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
+import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntityFactoryImpl;
-import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityImpl;
-import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 
 /**
  *
@@ -53,35 +51,26 @@ extends IvoaDataResourceEntityFactoryImpl
 implements MockIvoaDataResourceEntityFactory
     {
 
-    private final MockIvoaDataResourceEntityRepository dataResourceEntityRepository;
-
     /**
      * Public constructor used by our Platform.
      *
      */
     public MockIvoaDataResourceEntityFactoryImpl(
-        final MockIvoaDataResourceEntityRepository dataResourceEntityRepository
+        final AbstractEntityRepository<AbstractDataResourceEntity> repository
         ){
-        super();
-        this.dataResourceEntityRepository = dataResourceEntityRepository;
-        }
-
-    @Override
-    public Optional<AbstractDataResourceEntityImpl> select(final UUID uuid)
-        {
-        return Optional.of(
-            this.dataResourceEntityRepository.findById(uuid).get()
+        super(
+            repository
             );
         }
 
     @Override
-    public IvoaDataResourceEntityImpl create(
-        final SimpleExecutionSessionEntityImpl session,
-        final AbstractStorageResourceEntityImpl storage,
+    public IvoaDataResourceEntity create(
+        final SimpleExecutionSessionEntity session,
+        final AbstractStorageResourceEntity storage,
         final AbstractDataResourceValidator.Result result
         ){
-        return this.dataResourceEntityRepository.save(
-            new MockIvoaDataResourceEntityImpl(
+        return this.repository.save(
+            new MockIvoaDataResourceEntity(
                 session,
                 storage,
                 result

@@ -35,6 +35,8 @@
 
 package net.ivoa.calycopis.broker.engine.entities.storage.simple.docker;
 
+import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.SimpleStorageResourceEntityFactoryImpl;
 
 /**
@@ -50,8 +52,10 @@ implements DockerSimpleStorageResourceEntityFactory
      * 
      */
     protected DockerSimpleStorageResourceEntityFactoryImpl(
-        final DockerSimpleStorageResourceEntityRepository repository
+        final AbstractEntityRepository<AbstractStorageResourceEntity> repository
         ){
-        super(repository);
+        super(
+            repository
+            );
         }
     }
