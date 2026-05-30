@@ -36,7 +36,6 @@
 # Start another terminal and run our Python tests.
 #[user@desktop]
 
-
     podman exec \
         --tty \
         --interactive \
@@ -69,4 +68,7 @@
         popd
     popd
 
-
+    #
+    # Need to fix the internal polling before we do more stress testing.
+    # https://github.com/ivoa/Calycopis-broker/issues/386
+    #

@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2024 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,18 @@
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-05-30T05:50:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 8,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  */
 
@@ -38,9 +50,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.identity.Identity;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.message.Message;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageEntity;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageItemBean;
@@ -151,7 +167,22 @@ implements Component
         {
         return this.modified;
         }
-    
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_uuid")
+    private IdentityEntity owner;
+
+    @Override
+    public Identity getOwner()
+        {
+        return this.owner;
+        }
+
+    protected void setOwner(final IdentityEntity owner)
+        {
+        this.owner = owner;
+        }
+
     @OneToMany(
         mappedBy = "parent",
         fetch = FetchType.LAZY,

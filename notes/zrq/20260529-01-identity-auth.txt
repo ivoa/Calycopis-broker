@@ -1,0 +1,312 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Add support for user identities.
+        cursor/plans/Auth identity implementation-e0232013.plan.md
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+#  Create a new branch to work in.
+#[user@desktop]
+
+    branchname=identity-auth
+    newbranch=$(date '+%Y%m%d')-zrq-${branchname:?}
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${CALYCOPIS_CODE}"
+
+        git checkout main
+
+        git checkout -b "${newbranch:?}"
+
+    popd
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run an instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+--START--
+CONTAINER ID  IMAGE                                              COMMAND     CREATED        STATUS        PORTS       NAMES
+720ff14ddb6f  localhost/podman-pause:5.4.2-1743552000                        2 minutes ago  Up 5 seconds              ccc1c63f6538-infra
+ae5770123000  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 seconds ago  Up 4 seconds              calycopis-dev
+--END--
+
+
+# -----------------------------------------------------
+# Create out database config.
+#[root@calycopis-dev]
+
+    mkdir /etc/calycopis
+
+    cat > /etc/calycopis/database.yaml << EOF
+spring:
+    datasource:
+        url: jdbc:postgresql://postgresql:5432/calycopis
+        username: $(pwgen 32 1)
+        password: $(pwgen 32 1)
+        driverClassName: org.postgresql.Driver
+        initialize: true
+EOF
+
+
+# -----------------------------------------------------
+# Start our PostgreSQL database.
+#[root@calycopis-dev]
+
+    podman run \
+        --rm \
+        --detach \
+        --replace \
+        --name postgresql \
+        --pod calycopis-pod \
+        --expose 5432 \
+        --env "POSTGRES_DB=calycopis" \
+        --env "POSTGRES_USER=$(yq '.spring.datasource.username' /etc/calycopis/database.yaml)" \
+        --env "POSTGRES_PASSWORD=$(yq '.spring.datasource.password' /etc/calycopis/database.yaml)" \
+        docker.io/library/postgres:latest
+
+    >   ....
+    >   ....
+
+
+# -----------------------------------------------------
+# Build and launch our service with the docker platform.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd java
+
+            ./mvnw clean spring-boot:run -D calycopis-platform=docker
+
+        popd
+    popd
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Start another terminal and run our Python tests.
+#[user@desktop]
+
+    testdata=${HOME}/temp
+
+    podman exec \
+        --tty \
+        --env "TESTDATA=${testdata}" \
+        --interactive \
+            calycopis-dev \
+                bash
+
+    pip install pytest
+    pip install docker
+
+    pip install --edit /calycopis/Calycopis-schema/github-zrq/codegen/python/client/build
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+            pushd docker
+
+                pytest *
+
+            popd
+        popd
+    popd
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Start another terminal to run Cursor.
+#[user@desktop]
+
+    podman exec \
+        --tty \
+        --interactive \
+            calycopis-dev \
+                bash
+
+        curl https://cursor.com/install -fsS | bash
+
+        agent
+
+==START==
+/plan
+Please load plan `Auth identity implementation-e0232013.plan.md` from a previous session.
+==END==
+
+--START--
+....
+....
+  Here's the plan from your previous session:
+
+  ────────────────────────────────────────
+
+  Authentication and Identity Implementation Plan
+
+  This plan adds authentication and identity tracking to the Calycopis broker, implementing Spring Security with both OIDC (JWT) and
+  local (HTTP Basic) authentication, plus an IdentityEntity ownership model for all components.
+
+  Phases:
+
+  1. Phase A — Create Identity model, add nullable owner field to ComponentEntity, create repository and factory
+  2. Phase B — Add Spring Security dependencies, create SecurityConfig (permissive), LocalAuthenticationProvider, IdentityResolver
+  3. Phase C — Modify factory interfaces to accept IdentityEntity, update delegates to resolve and pass identity, propagate owner
+     through all entity creation
+  4. Phase D — Enable authentication enforcement on POST endpoints, add owner-based authorization checks
+
+  All four phases are currently in pending status. Would you like to proceed with implementation starting from Phase A, or would you
+   like to review/modify the plan first?
+--END--
+
+==START==
+Start by implementing Phase A.
+==END==
+
+--START--
+  Tip: Try Composer via /models, frontier intelligence at a fraction of the cost.
+--END--
+
+
+==START==
+Please read the AGENTS.md file for the project, and apply the rules described
+in the the Coding conventions section.
+==END==
+
+--START--
+....
+....
+  All good — compiles cleanly. All coding conventions from AGENTS.md have been applied:
+
+  1. Licence headers — All new files have the correct GPL licence header with proper Copyright (c) 2026 year
+  2. Copyright year — Updated from 2024 to 2026 in the two modified files (Component.java, ComponentEntity.java)
+  3. AIMetrics — Added to all new files (100% contribution) and both modified files (8-10% contribution reflecting the proportion
+     of lines changed)
+  4. No ternary operators — None used in any of the new code
+  5. Clarity over brevity — Code style matches the existing project conventions (expanded braces, descriptive method names)
+--END--
+
+
+==START==
+Please implement Phase B.
+==END==
+
+--START--
+....
+....
+    To-do All done
+    ☒ Phase B: Add Spring Security dependencies, SecurityConfig, LocalAuthenticationProvider, IdentityResolver
+    ☒ Add Spring Security and OAuth2 resource server dependencies to pom.xml
+    ☒ Create SecurityConfig.java (permissive - all endpoints allowed)
+    ☒ Create LocalAuthenticationProvider.java
+    ☒ Create IdentityResolver.java
+    ☒ Add security config to application.yaml
+    ☒ Verify compilation
+
+  Phase B is complete. Here's what was done:
+
+  Files created:
+  • spring/security/SecurityConfig.java — @Configuration with permissive SecurityFilterChain (all requests permitted, CSRF
+    disabled, stateless sessions), plus a BCryptPasswordEncoder bean
+  • spring/security/LocalAuthenticationProvider.java — @Component AuthenticationProvider that validates HTTP Basic credentials
+    against IdentityEntity password hashes
+  • spring/security/IdentityResolver.java — @Service that resolves a Spring Authentication into an IdentityEntity (handles UUID
+    principals from Basic auth, JWT tokens with auto-provisioning, and username strings)
+  • spring/identity/SpringIdentityEntityFactoryImpl.java — @Component that makes IdentityEntityFactory available as a Spring bean
+     (extends IdentityEntityFactoryImpl with injected repository)
+
+  Files modified:
+  • pom.xml — Added spring-boot-starter-security and spring-boot-starter-oauth2-resource-server dependencies; updated copyright
+    year and AIMetrics
+  • application.yaml — Added calycopis.security.public-read: true config property; updated AIMetrics
+
+  The security configuration is fully permissive — all endpoints remain accessible without authentication. The infrastructure is in
+  place for Phase C (identity threading) and Phase D (enforcement).
+--END--
+
+
+==START==
+Please implement Phase C.
+==END==
+
+--START--
+....
+....
+--END--
+
+
+
+
+

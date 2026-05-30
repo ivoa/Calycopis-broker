@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2024 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,18 @@
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-05-30T05:50:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 10,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  */
 
@@ -27,6 +39,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
 
+import net.ivoa.calycopis.broker.engine.entities.identity.Identity;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageSubject;
 
 /**
@@ -72,5 +85,11 @@ extends MessageSubject
      *
      */
     public Instant getModified();
-    
+
+    /**
+     * Get the Component owner. May be null during Phase A (nullable).
+     *
+     */
+    public Identity getOwner();
+
     }
