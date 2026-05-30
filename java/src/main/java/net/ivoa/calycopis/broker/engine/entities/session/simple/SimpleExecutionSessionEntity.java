@@ -149,11 +149,11 @@ implements SimpleExecutionSession
         ){
         super(
             offerset,
-            offerset.getName() + "-" + offerblock.getName()
+            offerset.getName() + "-" + offerblock.getName(),
+            context.getOwner()
             );
         this.phase = IvoaSimpleExecutionSessionPhase.OFFERED;
         this.expires = offerset.getExpires();
-        this.setOwner(context.getOwner());
         }
 
     @Column(name = "phase")

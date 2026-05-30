@@ -52,7 +52,8 @@ implements AbstractExecutable
         final AbstractExecutableValidator.Result result
         ){
         super(
-            result.getMeta()
+            result.getMeta(),
+            session.getOwner()
             );
 
         this.session = session;

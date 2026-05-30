@@ -69,7 +69,7 @@ implements Identity
      */
     public IdentityEntity(final String username, final String passwordHash)
         {
-        super(username);
+        super(username, null);
         this.username = username;
         this.issuer = null;
         this.passwordHash = passwordHash;
@@ -82,7 +82,7 @@ implements Identity
      */
     public IdentityEntity(final URI issuer, final String subject, final String displayName)
         {
-        super(subject);
+        super(subject, null);
         this.username = subject;
         this.issuer = issuer;
         this.passwordHash = null;

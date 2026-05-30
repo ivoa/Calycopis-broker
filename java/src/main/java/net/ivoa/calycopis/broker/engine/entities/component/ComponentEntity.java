@@ -94,12 +94,13 @@ implements Component
      * Protected constructor used by our Factories.
      *
      */
-    protected ComponentEntity(final String name)
+    protected ComponentEntity(final String name, final IdentityEntity owner)
         {
         this(
             name,
             null,
-            Instant.now()
+            Instant.now(),
+            owner
             );
         }
 
@@ -107,12 +108,13 @@ implements Component
      * Protected constructor.
      *
      */
-    protected ComponentEntity(final IvoaComponentMetadata meta)
+    protected ComponentEntity(final IvoaComponentMetadata meta, final IdentityEntity owner)
         {
         this(
             meta.getName(),
             meta.getDescription(),
-            Instant.now()
+            Instant.now(),
+            owner
             );
         }
     
@@ -120,11 +122,12 @@ implements Component
      * Protected constructor.
      *
      */
-    protected ComponentEntity(final String name, final String description, final Instant created)
+    protected ComponentEntity(final String name, final String description, final Instant created, final IdentityEntity owner)
         {
         this.name = name;
         this.created = created;
         this.description = description;
+        this.owner = owner;
         }
 
     @Id
@@ -173,12 +176,12 @@ implements Component
     private IdentityEntity owner;
 
     @Override
-    public Identity getOwner()
+    public IdentityEntity getOwner()
         {
         return this.owner;
         }
 
-    public void setOwner(final IdentityEntity owner)
+    protected void setOwner(final IdentityEntity owner)
         {
         this.owner = owner;
         }

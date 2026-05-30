@@ -32,6 +32,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSet;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
@@ -66,9 +67,9 @@ implements AbstractExecutionSession
     /**
      * 
      */
-    public AbstractExecutionSessionEntity(final OfferSetEntity offerset, final String name)
+    public AbstractExecutionSessionEntity(final OfferSetEntity offerset, final String name, final IdentityEntity owner)
         {
-        super(name);
+        super(name, owner);
         this.offerset = offerset;
         offerset.addExecutionSession(
             this

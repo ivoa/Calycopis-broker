@@ -394,5 +394,168 @@ Please implement Phase D.
 --END--
 
 
+==START==
+Can we replace the use of ComponentEntity.setOwner(identity)
+with setting the owner in ComponentEntity constructor,
+passing it down the chain of constructors
+==END==
+
+--START--
+....
+....
+ ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Suggested Plan                                                                                                                  │
+ │                                                                                                                                 │
+ │ Replace setOwner() with Constructor-Based Owner Propagation                                                                     │
+ │                                                                                                                                 │
+ │ Strategy                                                                                                                        │
+ │                                                                                                                                 │
+ │ Add IdentityEntity owner to the ComponentEntity constructors. Top-level entities (OfferSetEntity,                               │
+ │ SimpleExecutionSessionEntity) pass it explicitly. Child entities (storage, compute, data, executable, volume) derive it from    │
+ │ their parent session.getOwner() in their own constructors.                                                                      │
+ │                                                                                                                                 │
+ │ Changes                                                                                                                         │
+ │                                                                                                                                 │
+ │ 1. ComponentEntity constructors gain an owner parameter                                                                         │
+ │                                                                                                                                 │
+ │ In ComponentEntity.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/component/ComponentEntity.java), add      │
+ │ IdentityEntity owner to all three non-JPA constructors and assign this.owner = owner:                                           │
+ │                                                                                                                                 │
+ │ protected ComponentEntity(final String name, final IdentityEntity owner)                                                        │
+ │ protected ComponentEntity(final IvoaComponentMetadata meta, final IdentityEntity owner)                                         │
+ │ protected ComponentEntity(final String name, final String description, final Instant created, final IdentityEntity owner)       │
+ │                                                                                                                                 │
+ │ The single-arg (String name) constructor currently delegates to the three-arg one with nulls. It becomes (String name,          │
+ │ IdentityEntity owner) delegating to the four-arg.                                                                               │
+ │ Remove the public setOwner() method (no longer needed externally).                                                              │
+ │                                                                                                                                 │
+ │ 2. LifecycleComponentEntity passes owner through                                                                                │
+ │                                                                                                                                 │
+ │ In LifecycleComponentEntity.java                                                                                                │
+ │ (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/component/LifecycleComponentEntity.java), add owner to both       │
+ │ non-JPA constructors and pass it up to super(...).                                                                              │
+ │                                                                                                                                 │
+ │ 3. AbstractExecutionSessionEntity passes owner through                                                                          │
+ │                                                                                                                                 │
+ │ In AbstractExecutionSessionEntity.java                                                                                          │
+ │ (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/session/AbstractExecutionSessionEntity.java):                     │
+ │                                                                                                                                 │
+ │ public AbstractExecutionSessionEntity(final OfferSetEntity offerset, final String name, final IdentityEntity owner)             │
+ │                                                                                                                                 │
+ │ Passes owner to super(name, owner).                                                                                             │
+ │                                                                                                                                 │
+ │ 4. SimpleExecutionSessionEntity passes context.getOwner()                                                                       │
+ │                                                                                                                                 │
+ │ In SimpleExecutionSessionEntity.java                                                                                            │
+ │ (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/session/simple/SimpleExecutionSessionEntity.java), the            │
+ │ three-arg constructor passes context.getOwner() up the chain. Remove the explicit this.setOwner(context.getOwner()) call.       │
+ │                                                                                                                                 │
+ │ 5. OfferSetEntity constructor gains owner                                                                                       │
+ │                                                                                                                                 │
+ │ In OfferSetEntity.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/offerset/OfferSetEntity.java):             │
+ │                                                                                                                                 │
+ │ protected OfferSetEntity(String name, String description, Instant created, Instant expires, IdentityEntity owner)               │
+ │                                                                                                                                 │
+ │ Passes owner to super(name, description, created, owner).                                                                       │
+ │                                                                                                                                 │
+ │ 6. OfferSetEntityFactoryImpl passes owner via constructor                                                                       │
+ │                                                                                                                                 │
+ │ In OfferSetEntityFactoryImpl.java                                                                                               │
+ │ (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/offerset/OfferSetEntityFactoryImpl.java), the create(context,     │
+ │ offerCount) method passes offersetContext.getOwner() to the OfferSetEntity constructor instead of calling setOwner() after.     │
+ │                                                                                                                                 │
+ │ 7. IdentityEntity sets self-owner via constructor                                                                               │
+ │                                                                                                                                 │
+ │ In IdentityEntity.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/identity/IdentityEntity.java), both        │
+ │ constructors call super(name, null) initially (owner is null at construction time). The setSelfOwner() method remains to        │
+ │ handle the self-reference since the entity cannot reference itself before it exists. This is the one case where                 │
+ │ post-construction assignment is unavoidable.                                                                                    │
+ │                                                                                                                                 │
+ │ 8. Child entities derive owner from session                                                                                     │
+ │                                                                                                                                 │
+ │ All child entities (storage, compute, data, executable, volume) already receive a SimpleExecutionSessionEntity session in       │
+ │ their constructors. They will pass session.getOwner() up the chain:                                                             │
+ │ • AbstractStorageResourceEntity(session, result) -> calls super(result.getMeta(), session.getOwner())                           │
+ │ • AbstractExecutableEntity(session, result) -> calls super(result.getMeta(), session.getOwner())                                │
+ │ • AbstractDataResourceEntity(session, storage, result) -> calls super(result.getMeta(), session.getOwner())                     │
+ │ • AbstractComputeResourceEntity(session, result, offer) -> calls super(result.getMeta(), session.getOwner())                    │
+ │                                                                                                                                 │
+ │ Volume mount entities receive a computeResource parameter. They pass computeResource.getOwner() up the chain:                   │
+ │ • AbstractVolumeMountEntity(computeResource, ...) -> calls super(meta, computeResource.getOwner())                              │
+ │                                                                                                                                 │
+ │ 9. Remove setOwner()                                                                                                            │
+ │                                                                                                                                 │
+ │ After all constructors propagate the owner, remove the public setOwner() method from ComponentEntity. Keep a package-private    │
+ │ or protected version only for IdentityEntity.setSelfOwner().                                                                    │
+ │                                                                                                                                 │
+ │ Files touched (in order)                                                                                                        │
+ │                                                                                                                                 │
+ │ 1. ComponentEntity.java - add owner to constructors, remove public setOwner                                                     │
+ │ 2. LifecycleComponentEntity.java - pass owner through                                                                           │
+ │ 3. AbstractExecutionSessionEntity.java - add owner param                                                                        │
+ │ 4. SimpleExecutionSessionEntity.java - pass context.getOwner(), remove setOwner call                                            │
+ │ 5. OfferSetEntity.java - add owner to constructor                                                                               │
+ │ 6. OfferSetEntityFactoryImpl.java - pass owner to constructor instead of setOwner                                               │
+ │ 7. IdentityEntity.java - pass null as owner in super(), keep setSelfOwner                                                       │
+ │ 8. AbstractStorageResourceEntity.java - derive owner from session                                                               │
+ │ 9. AbstractExecutableEntity.java - derive owner from session                                                                    │
+ │ 10. AbstractDataResourceEntity.java - derive owner from session                                                                 │
+ │ 11. AbstractComputeResourceEntity.java - derive owner from session                                                              │
+ │ 12. AbstractVolumeMountEntity.java - derive owner from computeResource                                                          │
+ │                                                                                                                                 │
+ │  Saved to root/.cursor/plans/Constructor owner propagation-2c7048d4.plan.md                                                     │
+ │ ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+ │                                                                                                                                 │
+ │ Ready to build?                                                                                                                 │
+ │                                                                                                                                 │
+ │  → 1. Yes, build locally (b)                                                                                                    │
+ │    2. No, propose changes (p or Esc)                                                                                            │
+ │                                                                                                                                 │
+ └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+--START--
+....
+....
+    To-do All done
+    ☒ Add IdentityEntity owner param to all ComponentEntity constructors, remove public setOwner()
+    ☒ Update LifecycleComponentEntity constructors to pass owner through
+    ☒ Update AbstractExecutionSessionEntity and SimpleExecutionSessionEntity constructors
+    ☒ Update OfferSetEntity constructor and OfferSetEntityFactoryImpl call site
+    ☒ Update IdentityEntity to pass null owner to super, keep setSelfOwner()
+    ☒ Update AbstractStorageResourceEntity, AbstractExecutableEntity, AbstractDataResourceEntity, AbstractComputeResourceEntity,
+      AbstractVolumeMountEntity to derive owner from session/parent
+    ☒ Verify clean compilation
+
+  All done. Here's a summary of what was implemented:
+
+  1. ComponentEntity.java — Added IdentityEntity owner parameter to all three non-JPA constructors, assigned it in the body.
+     Changed setOwner() from public to protected (retained only for IdentityEntity.setSelfOwner()). Changed getOwner() return type
+      to IdentityEntity (covariant).
+
+  2. LifecycleComponentEntity.java — Added IdentityEntity owner to both non-JPA constructors, passing it up to super(...).
+
+  3. AbstractExecutionSessionEntity.java — Added IdentityEntity owner parameter, passing it to super(name, owner).
+
+  4. SimpleExecutionSessionEntity.java — Passes context.getOwner() up the constructor chain; removed the explicit
+     this.setOwner(context.getOwner()) call.
+
+  5. OfferSetEntity.java — Added IdentityEntity owner to the factory constructor, passing it to super(name, description, created,
+     owner).
+
+  6. OfferSetEntityFactoryImpl.java — Passes offersetContext.getOwner() directly to the OfferSetEntity constructor instead of
+     calling setOwner() after construction.
+
+  7. IdentityEntity.java — Both constructors pass null as owner to super(username, null). The setSelfOwner() method remains for
+     the self-referencing case.
+
+  8. Child entities (storage, executable, data, compute, volume) — Derive owner from their parent (session.getOwner() or
+     computeResource.getOwner()) and pass it up via the constructor chain.
+
+  Compilation verified clean.
+--END--
+
+
+
 
 

@@ -48,6 +48,7 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.broker.engine.functional.platform.mock.MockPlatform;
@@ -88,11 +89,13 @@ implements LifecycleComponent
      * 
      */
     protected LifecycleComponentEntity(
-        final IvoaComponentMetadata meta
+        final IvoaComponentMetadata meta,
+        final IdentityEntity owner
         ){
         this(
             null,
-            meta
+            meta,
+            owner
             );
         }
     
@@ -101,10 +104,12 @@ implements LifecycleComponent
      */
     public LifecycleComponentEntity(
         final IvoaLifecycleSchedule schedule,
-        final IvoaComponentMetadata meta
+        final IvoaComponentMetadata meta,
+        final IdentityEntity owner
         ){
         super(
-            meta
+            meta,
+            owner
             );
         if (schedule != null)
             {

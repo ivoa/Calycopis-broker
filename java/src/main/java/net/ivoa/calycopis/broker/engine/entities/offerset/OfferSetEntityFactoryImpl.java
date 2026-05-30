@@ -182,9 +182,9 @@ public class OfferSetEntityFactoryImpl
             Instant.now(),
             Instant.now().plusSeconds(
                 DEFAULT_EXPIRY_TIME_SECONDS
-                )
+                ),
+            offersetContext.getOwner()
             );
-        offersetEntity.setOwner(offersetContext.getOwner());
         //
         // Save the OfferSet before we add any offers.
         this.offersetRepository.save(
