@@ -71,7 +71,9 @@ spring:
         name: Ambleck
 
     config:
-        import: file:/etc/calycopis/database.yaml
+        import:
+          - file:/etc/calycopis/database.yaml
+          - file:/etc/calycopis/admin.yaml
 
     # https://stackoverflow.com/a/55679297
     mvc:

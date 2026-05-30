@@ -38,6 +38,16 @@
  *       "value": 50,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T11:37:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 10,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -47,7 +57,10 @@ package net.ivoa.calycopis.broker.spring.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -69,15 +82,37 @@ public class SecurityConfig
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri:}")
     private String jwtIssuerUri;
 
+    private final AdminAuthenticationProvider adminAuthenticationProvider;
+    private final LocalAuthenticationProvider localAuthenticationProvider;
+
+    public SecurityConfig(
+        @Lazy final AdminAuthenticationProvider adminAuthenticationProvider,
+        @Lazy final LocalAuthenticationProvider localAuthenticationProvider
+        ){
+        this.adminAuthenticationProvider = adminAuthenticationProvider;
+        this.localAuthenticationProvider = localAuthenticationProvider;
+        }
+
+    @Bean
+    public AuthenticationManager authenticationManager()
+        {
+        return new ProviderManager(
+            this.adminAuthenticationProvider,
+            this.localAuthenticationProvider
+            );
+        }
+
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception
         {
         http
+            .authenticationManager(authenticationManager())
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.GET).permitAll()
                 .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/admin/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
                 )
             .httpBasic(basic -> {});

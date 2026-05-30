@@ -18,10 +18,8 @@ Usage:
   CALYCOPIS_URL=http://host:port pytest tests/test_resource_registration.py -v
 """
 
-import os
 import pytest
 
-from calycopis_schema_client.wrappers.execution_client import ExecutionBrokerClient
 from calycopis_schema_client.models import (
     ExecutionRequest,
     OfferSetResponse,
@@ -38,7 +36,6 @@ from calycopis_schema_client.models.component_metadata import ComponentMetadata
 # Configuration
 # ---------------------------------------------------------------------------
 
-CALYCOPIS_URL = os.environ.get("CALYCOPIS_URL", "http://localhost:8082")
 
 # Kind discriminator URIs (must match the Java TYPE_DISCRIMINATOR constants)
 DOCKER_CONTAINER_KIND = (
@@ -54,36 +51,6 @@ SIMPLE_VOLUME_KIND = (
     "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/volume/simple-volume-mount-1.0"
 )
 
-
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
-def _server_reachable() -> bool:
-    """Return True if the Calycopis broker is responding."""
-    import urllib.request
-    import urllib.error
-    try:
-        urllib.request.urlopen(CALYCOPIS_URL, timeout=5)
-        return True
-    except urllib.error.HTTPError:
-        # Any HTTP response (including 404) means the server is up.
-        return True
-    except Exception:
-        return False
-
-
-# Skip the entire module if the server is not reachable.
-pytestmark = pytest.mark.skipif(
-    not _server_reachable(),
-    reason=f"Calycopis broker not reachable at {CALYCOPIS_URL}",
-)
-
-
-@pytest.fixture(scope="module")
-def client() -> ExecutionBrokerClient:
-    """Create a shared ExecutionBrokerClient for the test module."""
-    return ExecutionBrokerClient(host=CALYCOPIS_URL)
 
 
 def _make_executable(name: str = "test-container") -> DockerContainer:
@@ -102,7 +69,7 @@ def _make_executable(name: str = "test-container") -> DockerContainer:
 # Helper to submit and return the OfferSetResponse
 # ---------------------------------------------------------------------------
 
-def _submit(client: ExecutionBrokerClient, request: ExecutionRequest) -> OfferSetResponse:
+def _submit(client, request: ExecutionRequest) -> OfferSetResponse:
     """Submit a request and return the OfferSetResponse."""
     response = client.submit_execution(request, follow_redirect=True)
     assert isinstance(response, OfferSetResponse), (

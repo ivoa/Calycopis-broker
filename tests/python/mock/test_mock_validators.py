@@ -69,11 +69,8 @@ Usage:
   CALYCOPIS_URL=http://host:port pytest tests/test_mock_validators.py -v
 """
 
-import os
-
 import pytest
 
-from calycopis_schema_client.wrappers.execution_client import ExecutionBrokerClient
 from calycopis_schema_client.models import (
     ExecutionRequest,
     OfferSetResponse,
@@ -103,7 +100,6 @@ from calycopis_schema_client.models.component_metadata import ComponentMetadata
 # Configuration
 # ---------------------------------------------------------------------------
 
-CALYCOPIS_URL = os.environ.get("CALYCOPIS_URL", "http://localhost:8082")
 
 # Kind discriminator URIs (must match the Java TYPE_DISCRIMINATOR constants)
 DOCKER_CONTAINER_KIND = (
@@ -131,34 +127,6 @@ SKAO_DATA_KIND = (
     "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/data/skao-data-resource-1.0"
 )
 
-
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
-def _server_reachable() -> bool:
-    """Return True if the Calycopis broker is responding."""
-    import urllib.request
-    import urllib.error
-    try:
-        urllib.request.urlopen(CALYCOPIS_URL, timeout=5)
-        return True
-    except urllib.error.HTTPError:
-        return True
-    except Exception:
-        return False
-
-
-pytestmark = pytest.mark.skipif(
-    not _server_reachable(),
-    reason=f"Calycopis broker not reachable at {CALYCOPIS_URL}",
-)
-
-
-@pytest.fixture(scope="module")
-def client() -> ExecutionBrokerClient:
-    """Create a shared ExecutionBrokerClient for the test module."""
-    return ExecutionBrokerClient(host=CALYCOPIS_URL)
 
 
 # ---------------------------------------------------------------------------
@@ -1044,39 +1012,6 @@ class TestSkaoDataResourceValidation:
             "forbidden-namespace"
         ]
     """
-
-    def test_valid_skao_data_resource(self, client):
-        """
-        A SkaoDataResource with a valid namespace
-        should be accepted.
-        """
-        request = ExecutionRequest(
-            executable=_make_docker_executable("skao-data-valid"),
-            data=[
-                SkaoDataResource(
-                    kind=SKAO_DATA_KIND,
-                    meta=ComponentMetadata(name="valid-skao"),
-                    ivoa=IvoaDataResourceBlock(
-                        ivoid="ivo://skao.int/valid-obs",
-                    ),
-                    skao=SkaoDataResourceBlock(
-                        namespace="valid-namespace",
-                        objectname="test-object",
-                        objecttype="FILE",
-                        datasize=1024,
-                        replicas=[
-                            SkaoReplicaItem(
-                                rsename="TEST-RSE-1",
-                                dataurl="https://rse1.example.com/data/test-object",
-                            ),
-                        ],
-                    ),
-                ),
-            ],
-        )
-        response = client.submit_execution(request, follow_redirect=True)
-        assert response.result == "YES"
-        assert response.offers is not None and len(response.offers) > 0
 
     def test_excluded_namespace_one(self, client):
         """

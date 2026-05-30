@@ -62,7 +62,6 @@ from datetime import datetime, timezone
 import docker
 import pytest
 
-from calycopis_schema_client.wrappers.execution_client import ExecutionBrokerClient
 from calycopis_schema_client.models import (
     ExecutionRequest,
     OfferSetResponse,
@@ -81,8 +80,6 @@ from calycopis_schema_client.models.component_metadata import ComponentMetadata
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
-CALYCOPIS_URL = os.environ.get("CALYCOPIS_URL", "http://localhost:8082")
 
 BIND_MOUNT_TEST_FILE = os.environ.get(
     "BIND_MOUNT_TEST_FILE",
@@ -116,31 +113,6 @@ CANTLIEI_DIGEST = "sha256:6e495692cc6f1cae2023f261f433d4691aa70b19416730f8301e45
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
-
-def _server_reachable() -> bool:
-    """Return True if the Calycopis broker is responding."""
-    import urllib.request
-    import urllib.error
-    try:
-        urllib.request.urlopen(CALYCOPIS_URL, timeout=5)
-        return True
-    except urllib.error.HTTPError:
-        return True
-    except Exception:
-        return False
-
-
-pytestmark = pytest.mark.skipif(
-    not _server_reachable(),
-    reason=f"Calycopis broker not reachable at {CALYCOPIS_URL}",
-)
-
-
-@pytest.fixture(scope="module")
-def client() -> ExecutionBrokerClient:
-    """Create a shared ExecutionBrokerClient for the test module."""
-    return ExecutionBrokerClient(host=CALYCOPIS_URL)
-
 
 @pytest.fixture(scope="module")
 def docker_client() -> docker.DockerClient:

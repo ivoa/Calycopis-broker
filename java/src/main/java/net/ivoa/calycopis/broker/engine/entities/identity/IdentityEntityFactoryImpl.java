@@ -86,6 +86,7 @@ public class IdentityEntityFactoryImpl
             username,
             passwordHash
             );
+        this.repository.save(entity);
         entity.setSelfOwner();
         return this.repository.save(entity);
         }
@@ -99,6 +100,7 @@ public class IdentityEntityFactoryImpl
             subject,
             displayName
             );
+        this.repository.save(entity);
         entity.setSelfOwner();
         return this.repository.save(entity);
         }
