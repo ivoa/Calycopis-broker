@@ -58,6 +58,16 @@
  *       "value": 8,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T07:55:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 15,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -76,6 +86,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.identity.Identity;
 import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
@@ -133,14 +144,39 @@ public class SessionsApiDelegateImpl
         final UUID uuid,
         final IvoaAbstractUpdate request
         ){
-       final Optional<SimpleExecutionSessionEntity> found = platform.getExecutionSessionEntityUpdater().update(
+        //
+        // Look up the session to check ownership before allowing the update.
+        final Optional<SimpleExecutionSessionEntity> existing = platform.getExecutionSessionEntityFactory().select(uuid);
+        if (existing.isEmpty())
+            {
+            return new ResponseEntity<IvoaAbstractExecutionSession>(
+                HttpStatus.NOT_FOUND
+                );
+            }
+        //
+        // Check that the caller owns this session.
+        IdentityEntity caller = this.getIdentity();
+        Identity sessionOwner = existing.get().getOwner();
+        if (sessionOwner != null && caller != null)
+            {
+            if (!sessionOwner.getUuid().equals(caller.getUuid()))
+                {
+                log.warn("Authorization denied: caller [{}] does not own session [{}]", caller.getUuid(), uuid);
+                return new ResponseEntity<IvoaAbstractExecutionSession>(
+                    HttpStatus.FORBIDDEN
+                    );
+                }
+            }
+        //
+        // Apply the update.
+        final Optional<SimpleExecutionSessionEntity> updated = platform.getExecutionSessionEntityUpdater().update(
             uuid,
             request
             );
-        if (found.isPresent())
+        if (updated.isPresent())
             {
             return new ResponseEntity<IvoaAbstractExecutionSession>(
-                found.get().makeBean(
+                updated.get().makeBean(
                     this.getURIBuilder()
                     ),
                 HttpStatus.OK

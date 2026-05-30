@@ -98,14 +98,14 @@ public class OfferSetEntityFactoryImpl
 		}
 
     @Override
-    public OfferSetEntity create(final IvoaExecutionRequest offersetRequest, final IdentityEntity owner)
+    public OfferSetEntity create(final IvoaExecutionRequest offersetRequest, final IdentityEntity identity)
     	{
         //
         // Validate the request. 
         OfferSetRequestParserContext offersetContext = offersetRequestParser.stageOne(
             platform,
             offersetRequest,
-            owner
+            identity
             );
         //
         // Create the OfferSetEntity from the context.
@@ -116,14 +116,14 @@ public class OfferSetEntityFactoryImpl
     	}
 
     @Override
-    public SimpleExecutionSessionEntity direct(final IvoaExecutionRequest executionRequest, final IdentityEntity owner)
+    public SimpleExecutionSessionEntity direct(final IvoaExecutionRequest executionRequest, final IdentityEntity identity)
         {
         //
         // Validate the request.
         OfferSetRequestParserContext offersetContext = offersetRequestParser.stageOne(
             platform,
             executionRequest,
-            owner
+            identity
             );
 
         //

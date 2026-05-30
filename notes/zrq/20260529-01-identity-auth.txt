@@ -362,6 +362,36 @@ a parameter to the OfferSetRequestParserContextImpl constructor.
 --END--
 
 
+==START==
+Please implement Phase D.
+==END==
+
+--START--
+....
+....
+  Phase D is complete. Here's what was done:
+
+  SecurityConfig updated:
+  • GET requests remain publicly accessible (unauthenticated)
+  • Actuator endpoints remain publicly accessible
+  • All other requests (POST) require authentication
+  • HTTP Basic authentication enabled
+  • OAuth2 JWT resource server enabled conditionally (only when spring.security.oauth2.resourceserver.jwt.issuer-uri is
+    configured)
+  • CSRF disabled, stateless session management
+
+  Owner-based authorization in SessionsApiDelegateImpl.executionUpdatePost():
+  • Before applying an update, the handler now looks up the session and checks ownership
+  • If the session has an owner and the caller's identity doesn't match, returns 403 FORBIDDEN
+  • If the session has no owner (legacy/anonymous), or the caller is anonymous, the update proceeds (graceful degradation for the
+     transition period)
+
+  Configuration:
+  • The OIDC issuer URI is externalized via spring.security.oauth2.resourceserver.jwt.issuer-uri (or OIDC_ISSUER_URI env var)
+  • When no issuer is configured, the service operates with HTTP Basic auth only
+
+  All four phases are now complete. The project compiles cleanly.
+--END--
 
 
 

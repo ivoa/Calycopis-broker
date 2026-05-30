@@ -107,6 +107,12 @@ spring:
             settings:
                 web-allow-others: true
 
+#   security:
+#       oauth2:
+#           resourceserver:
+#               jwt:
+#                   issuer-uri: ${OIDC_ISSUER_URI:}
+
 calycopis:
   security:
     public-read: true

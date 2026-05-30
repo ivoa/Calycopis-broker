@@ -28,14 +28,26 @@
  *       "value": 100,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T07:55:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 50,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
  */
 package net.ivoa.calycopis.broker.spring.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -45,14 +57,17 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Spring Security configuration.
- * Phase B: permissive configuration — all endpoints are accessible without authentication.
- * Phase D will tighten this to require authentication on POST endpoints.
+ * GET endpoints are publicly accessible (unauthenticated).
+ * POST endpoints require authentication via HTTP Basic or Bearer JWT.
  *
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig
     {
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri:}")
+    private String jwtIssuerUri;
 
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception
@@ -61,8 +76,17 @@ public class SecurityConfig
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .anyRequest().permitAll()
-                );
+                .requestMatchers(HttpMethod.GET).permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                .anyRequest().authenticated()
+                )
+            .httpBasic(basic -> {});
+
+        if (jwtIssuerUri != null && !jwtIssuerUri.isEmpty())
+            {
+            http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}));
+            }
+
         return http.build();
         }
 
