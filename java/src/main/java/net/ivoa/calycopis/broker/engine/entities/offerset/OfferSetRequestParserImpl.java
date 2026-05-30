@@ -48,6 +48,7 @@ import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeRes
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidator;
@@ -84,11 +85,12 @@ implements OfferSetRequestParser
         }
 
     @Override
-    public OfferSetRequestParserContext stageOne(final Platform platform, final IvoaExecutionRequest executionRequest)
+    public OfferSetRequestParserContext stageOne(final Platform platform, final IvoaExecutionRequest executionRequest, final IdentityEntity owner)
         {
         log.debug("process(IvoaOfferSetRequest, OfferSetEntity)");
         OfferSetRequestParserContext offersetContext = new OfferSetRequestParserContextImpl(
-            executionRequest
+            executionRequest,
+            owner
             );
         log.debug("Context valid [{}]", offersetContext.valid());
 

@@ -178,7 +178,7 @@ implements Component
         return this.owner;
         }
 
-    protected void setOwner(final IdentityEntity owner)
+    public void setOwner(final IdentityEntity owner)
         {
         this.owner = owner;
         }

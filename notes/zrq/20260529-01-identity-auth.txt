@@ -304,7 +304,63 @@ Please implement Phase C.
 --START--
 ....
 ....
+    To-do All done
+    ☒ Phase C: Thread identity through factories, delegates, and entity creation
+    ☒ Explore delegate impls, factory chain, and parser context
+    ☒ Modify BaseDelegateImpl and delegate impls to resolve and pass identity
+    ☒ Update OfferSetEntityFactory interface and impl to accept IdentityEntity
+    ☒ Add owner to OfferSetRequestParserContext and propagate through parsing
+    ☒ Update downstream entity factories/constructors to accept and store owner
+    ☒ Verify compilation
+
+  Phase C is complete. Here's a summary of what was done:
+
+  Files modified:
+
+  • BaseDelegateImpl.java — Added IdentityResolver dependency and getIdentity() method that resolves the current SecurityContext
+    authentication to an IdentityEntity
+  • OffersetsApiDelegateImpl.java — Passes IdentityResolver to super; calls getIdentity() and passes it to create(request,
+    identity)
+  • SessionsApiDelegateImpl.java — Passes IdentityResolver to super; calls getIdentity() and passes it to direct(request,
+    identity)
+  • OfferSetEntityFactory.java — Added IdentityEntity owner parameter to create() and direct() methods
+  • OfferSetEntityFactoryImpl.java — Threads owner through: sets it on the parser context, then sets it on the created
+    OfferSetEntity
+  • OfferSetRequestParserContext.java — Added getOwner() / setOwner() methods
+  • OfferSetRequestParserContextImpl.java — Implements the owner getter/setter with a private field
+  • SimpleExecutionSessionEntity.java — Sets owner from context in the constructor used during offer creation
+  • ComponentEntity.java — Changed setOwner from protected to public so factories in other packages can set it
+
+  Identity flow:
+
+  HTTP Request → SecurityFilterChain → SecurityContext
+                                           ↓
+  Delegate.getIdentity() → IdentityResolver.resolve(auth) → IdentityEntity
+                                           ↓
+  OfferSetEntityFactory.create(request, identity)
+                                           ↓
+  OfferSetRequestParserContext.setOwner(identity)
+                                           ↓
+  OfferSetEntity.setOwner(context.getOwner())
+  SimpleExecutionSessionEntity.setOwner(context.getOwner())
+
+  For unauthenticated requests (Phase B's permissive config), getIdentity() returns null, and all entities get null owner —
+  preserving backward compatibility.
 --END--
+
+==START==
+Rather than setting the identity using OfferSetRequestParserContext.setOwner()
+it would be better to pass it as a parameter to stageOne() and then pass it as
+a parameter to the OfferSetRequestParserContextImpl constructor.
+==END==
+
+--START--
+....
+....
+  Done. The owner is now passed as a parameter to stageOne() and through to the OfferSetRequestParserContextImpl constructor,
+  where it's stored as a final field. The setOwner() method has been removed from both the interface and implementation.
+--END--
+
 
 
 

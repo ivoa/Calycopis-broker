@@ -38,6 +38,16 @@
  *       "value": 2,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T06:47:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 10,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -57,8 +67,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
+import net.ivoa.calycopis.broker.spring.security.IdentityResolver;
 import net.ivoa.calycopis.schema.spring.api.OffersetsApiDelegate;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
 import net.ivoa.calycopis.schema.spring.model.IvoaOfferSetResponse;
@@ -74,10 +86,11 @@ public class OffersetsApiDelegateImpl
     @Autowired
     public OffersetsApiDelegateImpl(
         final NativeWebRequest request,
-        final Platform platform
+        final Platform platform,
+        final IdentityResolver identityResolver
         )
         {
-        super(request);
+        super(request, identityResolver);
         this.platform = platform;
         this.platform.initialize();
         }
@@ -108,8 +121,10 @@ public class OffersetsApiDelegateImpl
     public ResponseEntity<IvoaOfferSetResponse> offerSetPost(
         @RequestBody IvoaExecutionRequest request
         ){
+        IdentityEntity identity = this.getIdentity();
         OfferSetEntity entity = this.platform.getOfferSetEntityFactory().create(
-            request
+            request,
+            identity
             );
         IvoaOfferSetResponse response = entity.makeBean(
             this.getURIBuilder()

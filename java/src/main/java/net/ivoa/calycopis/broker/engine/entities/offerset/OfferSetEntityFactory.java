@@ -32,6 +32,16 @@
  *       "value": 2,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T06:47:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 10,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -41,6 +51,7 @@ package net.ivoa.calycopis.broker.engine.entities.offerset;
 import java.util.Optional;
 import java.util.UUID;
 
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
@@ -68,13 +79,13 @@ public interface OfferSetEntityFactory
      * Create a new OfferSet based on an ExecutionRequest.
      *
      */
-    public OfferSetEntity create(final IvoaExecutionRequest request);
+    public OfferSetEntity create(final IvoaExecutionRequest request, final IdentityEntity owner);
 
     /**
      * Create a new ExecutionSessionEntity based on a direct ExecutionRequest.
      *
      */
-    public SimpleExecutionSessionEntity direct(final IvoaExecutionRequest request);
+    public SimpleExecutionSessionEntity direct(final IvoaExecutionRequest request, final IdentityEntity owner);
     
     }
 
