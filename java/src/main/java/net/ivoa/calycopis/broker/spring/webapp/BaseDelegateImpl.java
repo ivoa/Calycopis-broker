@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2024 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,16 @@
  *       "value": 5,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T06:47:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 15,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -37,12 +47,15 @@ package net.ivoa.calycopis.broker.spring.webapp;
 import java.net.URI;
 import java.util.Optional;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
 import net.ivoa.calycopis.broker.engine.util.URIBuilderImpl;
+import net.ivoa.calycopis.broker.spring.security.IdentityResolver;
 
 /**
  * Base class for our delegates.
@@ -54,10 +67,24 @@ public class BaseDelegateImpl
     {
 
     private final NativeWebRequest request;
+    private final IdentityResolver identityResolver;
 
-    public BaseDelegateImpl(NativeWebRequest request)
+    public BaseDelegateImpl(NativeWebRequest request, IdentityResolver identityResolver)
         {
         this.request = request ;
+        this.identityResolver = identityResolver;
+        }
+
+    /**
+     * Resolve the current authenticated caller to an IdentityEntity.
+     * Returns null for anonymous/unauthenticated requests.
+     *
+     */
+    protected IdentityEntity getIdentity()
+        {
+        return this.identityResolver.resolve(
+            SecurityContextHolder.getContext().getAuthentication()
+            );
         }
 
     public Optional<NativeWebRequest> getRequest() {

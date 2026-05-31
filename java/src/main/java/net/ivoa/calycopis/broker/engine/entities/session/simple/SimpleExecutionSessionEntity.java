@@ -38,6 +38,16 @@
  *       "value": 1,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T06:47:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 1,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -139,7 +149,8 @@ implements SimpleExecutionSession
         ){
         super(
             offerset,
-            offerset.getName() + "-" + offerblock.getName()
+            offerset.getName() + "-" + offerblock.getName(),
+            context.getOwner()
             );
         this.phase = IvoaSimpleExecutionSessionPhase.OFFERED;
         this.expires = offerset.getExpires();

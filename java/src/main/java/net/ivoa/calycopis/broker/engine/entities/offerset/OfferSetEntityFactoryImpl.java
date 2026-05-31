@@ -28,6 +28,16 @@
  *       "value": 2,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T06:47:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 12,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -41,6 +51,7 @@ import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
@@ -87,13 +98,14 @@ public class OfferSetEntityFactoryImpl
 		}
 
     @Override
-    public OfferSetEntity create(final IvoaExecutionRequest offersetRequest)
+    public OfferSetEntity create(final IvoaExecutionRequest offersetRequest, final IdentityEntity identity)
     	{
         //
         // Validate the request. 
         OfferSetRequestParserContext offersetContext = offersetRequestParser.stageOne(
             platform,
-            offersetRequest
+            offersetRequest,
+            identity
             );
         //
         // Create the OfferSetEntity from the context.
@@ -104,13 +116,14 @@ public class OfferSetEntityFactoryImpl
     	}
 
     @Override
-    public SimpleExecutionSessionEntity direct(final IvoaExecutionRequest executionRequest)
+    public SimpleExecutionSessionEntity direct(final IvoaExecutionRequest executionRequest, final IdentityEntity identity)
         {
         //
         // Validate the request.
         OfferSetRequestParserContext offersetContext = offersetRequestParser.stageOne(
             platform,
-            executionRequest
+            executionRequest,
+            identity
             );
 
         //
@@ -169,7 +182,8 @@ public class OfferSetEntityFactoryImpl
             Instant.now(),
             Instant.now().plusSeconds(
                 DEFAULT_EXPIRY_TIME_SECONDS
-                )
+                ),
+            offersetContext.getOwner()
             );
         //
         // Save the OfferSet before we add any offers.

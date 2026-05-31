@@ -1,0 +1,80 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Review the IVOA document.
+        Fresh eyes.
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+
+    Initial reaction.
+
+    Simplify Software Discovery
+        Out of scope for this document.
+        Simplest is to include ivoa-execution.yaml in the source code.
+        Example for the NR calculator, Docker, Python, Jupyter.
+        Example for the MD5UM calculator.
+
+    Expand data discovery
+        Example for the MD5UM calculator.
+        Abstract data object in ivoa-execution.yaml
+        Text description for humans to interpret.
+
+
+    to create a metadata document description of the ExecutionBroker session the user wants to execute.
+    to create an _execution request_ describing the ExecutionBroker session the user wants to execute.
+
+        Example for the MD5UM calculator.
+
+    User has two options.
+    a) If they already know which platform they want to run the task on,
+    they can submit the request to the `direct` execution endpoint.
+    The service will validate the request and assuming it is able to perform
+    the requested task, it will schedule the task for execution.
+    If it is not able to execute the task, the service will return an
+    error response containing messages describing why the task
+    could not be executed.
+
+    b) The more flexible option is to submit the request to the
+    execution `request` endpoint.
+    The service will validate the request and assuming it is able to perform
+    the requested task, it will respond with a positive response containing
+    one or more offers.
+    The user then has the choice of which offer to accept.
+    The user, or their agent, can send requests to multiple platforms,
+    compare the resulting offers, and decide which one best represents
+    what they want.
+
+
+
+
+
+
+

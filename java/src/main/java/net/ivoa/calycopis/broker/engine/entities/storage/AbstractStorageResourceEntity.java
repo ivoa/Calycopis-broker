@@ -91,7 +91,8 @@ implements AbstractStorageResource
         final AbstractStorageResourceValidator.Result result
         ){
         super(
-            result.getMeta()
+            result.getMeta(),
+            session.getOwner()
             );
 
         this.session = session;

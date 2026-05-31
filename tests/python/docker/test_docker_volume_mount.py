@@ -57,7 +57,6 @@ from time import sleep as _sleep
 import docker
 import pytest
 
-from calycopis_schema_client.wrappers.execution_client import ExecutionBrokerClient
 from calycopis_schema_client.models import (
     ExecutionRequest,
     SimpleExecutionSessionPhase,
@@ -73,8 +72,6 @@ from calycopis_schema_client.models.component_metadata import ComponentMetadata
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
-CALYCOPIS_URL = os.environ.get("CALYCOPIS_URL", "http://localhost:8082")
 
 PHASE_TIMEOUT = float(os.environ.get("PHASE_TIMEOUT", "300"))
 
@@ -110,30 +107,6 @@ HTTP_TEST_URL = os.environ.get(
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
-
-def _server_reachable() -> bool:
-    """Return True if the Calycopis broker is responding."""
-    import urllib.request
-    import urllib.error
-    try:
-        urllib.request.urlopen(CALYCOPIS_URL, timeout=5)
-        return True
-    except urllib.error.HTTPError:
-        return True
-    except Exception:
-        return False
-
-
-pytestmark = pytest.mark.skipif(
-    not _server_reachable(),
-    reason=f"Calycopis broker not reachable at {CALYCOPIS_URL}",
-)
-
-
-@pytest.fixture(scope="module")
-def client() -> ExecutionBrokerClient:
-    return ExecutionBrokerClient(host=CALYCOPIS_URL)
-
 
 @pytest.fixture(scope="module")
 def docker_client() -> docker.DockerClient:

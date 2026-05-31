@@ -36,6 +36,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.message.Message;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSession;
@@ -83,12 +84,13 @@ implements OfferSet
      * Protected constructor used by our Factories.
      *  
      */
-    protected OfferSetEntity(final String name, final String description, final Instant created, final Instant expires)
+    protected OfferSetEntity(final String name, final String description, final Instant created, final Instant expires, final IdentityEntity owner)
         {
         super(
             name,
             description,
-            created
+            created,
+            owner
             );
         this.expires = expires;
         }

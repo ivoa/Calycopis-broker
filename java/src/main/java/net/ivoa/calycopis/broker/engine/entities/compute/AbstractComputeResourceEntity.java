@@ -79,7 +79,8 @@ implements AbstractComputeResource
         final SimpleComputeResourceOffer offer
         ){
         super(
-            result.getMeta()
+            result.getMeta(),
+            session.getOwner()
             );
         this.session = session;
         this.session.setComputeResource(

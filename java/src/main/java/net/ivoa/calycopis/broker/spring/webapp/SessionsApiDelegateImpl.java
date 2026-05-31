@@ -48,6 +48,26 @@
  *       "value": 2,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T06:47:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 8,
+ *       "units": "%"
+ *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T07:55:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 15,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -66,8 +86,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.identity.Identity;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
+import net.ivoa.calycopis.broker.spring.security.IdentityResolver;
 import net.ivoa.calycopis.schema.spring.api.SessionsApiDelegate;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutionSession;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractUpdate;
@@ -85,9 +108,10 @@ public class SessionsApiDelegateImpl
     @Autowired
     public SessionsApiDelegateImpl(
         final NativeWebRequest request,
-        final Platform platform
+        final Platform platform,
+        final IdentityResolver identityResolver
         ){
-        super(request);
+        super(request, identityResolver);
         this.platform = platform ;
         this.platform.initialize();
         }
@@ -120,14 +144,39 @@ public class SessionsApiDelegateImpl
         final UUID uuid,
         final IvoaAbstractUpdate request
         ){
-       final Optional<SimpleExecutionSessionEntity> found = platform.getExecutionSessionEntityUpdater().update(
+        //
+        // Look up the session to check ownership before allowing the update.
+        final Optional<SimpleExecutionSessionEntity> existing = platform.getExecutionSessionEntityFactory().select(uuid);
+        if (existing.isEmpty())
+            {
+            return new ResponseEntity<IvoaAbstractExecutionSession>(
+                HttpStatus.NOT_FOUND
+                );
+            }
+        //
+        // Check that the caller owns this session.
+        IdentityEntity caller = this.getIdentity();
+        Identity sessionOwner = existing.get().getOwner();
+        if (sessionOwner != null && caller != null)
+            {
+            if (!sessionOwner.getUuid().equals(caller.getUuid()))
+                {
+                log.warn("Authorization denied: caller [{}] does not own session [{}]", caller.getUuid(), uuid);
+                return new ResponseEntity<IvoaAbstractExecutionSession>(
+                    HttpStatus.FORBIDDEN
+                    );
+                }
+            }
+        //
+        // Apply the update.
+        final Optional<SimpleExecutionSessionEntity> updated = platform.getExecutionSessionEntityUpdater().update(
             uuid,
             request
             );
-        if (found.isPresent())
+        if (updated.isPresent())
             {
             return new ResponseEntity<IvoaAbstractExecutionSession>(
-                found.get().makeBean(
+                updated.get().makeBean(
                     this.getURIBuilder()
                     ),
                 HttpStatus.OK
@@ -145,9 +194,10 @@ public class SessionsApiDelegateImpl
         IvoaExecutionRequest request
         ){
         log.debug("directExecutionPost(IvoaExecutionRequest)");
+        IdentityEntity identity = this.getIdentity();
         //
         // Process the request to create a new execution session.
-        SimpleExecutionSessionEntity entity = platform.getOfferSetEntityFactory().direct(request);
+        SimpleExecutionSessionEntity entity = platform.getOfferSetEntityFactory().direct(request, identity);
         log.debug("Session entity [{}][{}][{}]", entity.getUuid(), entity.getPhase(), entity.getClass().getSimpleName());
 
         IvoaAbstractExecutionSession bean = entity.makeBean(

@@ -28,6 +28,16 @@
  *       "value": 1,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T06:47:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 2,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -47,6 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidator;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.message.Message;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
@@ -76,10 +87,12 @@ implements OfferSetRequestParserContext
      *
      */
     public OfferSetRequestParserContextImpl(
-        final IvoaExecutionRequest originalRequest
+        final IvoaExecutionRequest originalRequest,
+        final IdentityEntity owner
         ){
         this.originalRequest  = originalRequest;
         this.validatedRequest = new IvoaExecutionRequest();
+        this.owner = owner;
         }
 
     private final IvoaExecutionRequest originalRequest;
@@ -934,5 +947,13 @@ implements OfferSetRequestParserContext
                 values
                 )
             );
+        }
+
+    private final IdentityEntity owner;
+
+    @Override
+    public IdentityEntity getOwner()
+        {
+        return this.owner;
         }
     }

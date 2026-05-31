@@ -71,13 +71,11 @@ Usage:
 import os
 import sys
 import time
-import threading
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
 
-from calycopis_schema_client.wrappers.execution_client import ExecutionBrokerClient
 from calycopis_schema_client.models import (
     ExecutionRequest,
     OfferSetResponse,
@@ -93,7 +91,6 @@ from calycopis_schema_client.models.component_metadata import ComponentMetadata
 # Configuration
 # ---------------------------------------------------------------------------
 
-CALYCOPIS_URL = os.environ.get("CALYCOPIS_URL", "http://localhost:8082")
 STRESS_COUNT = int(os.environ.get("STRESS_COUNT", "100"))
 PAUSE_SECONDS = int(os.environ.get("STRESS_PAUSE", "5"))
 POLL_INTERVAL = float(os.environ.get("STRESS_POLL_INTERVAL", "5.0"))
@@ -128,28 +125,6 @@ TERMINAL_PHASES = {
 
 
 # ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
-def _server_reachable() -> bool:
-    import urllib.request
-    import urllib.error
-    try:
-        urllib.request.urlopen(CALYCOPIS_URL, timeout=5)
-        return True
-    except urllib.error.HTTPError:
-        return True
-    except Exception:
-        return False
-
-
-pytestmark = pytest.mark.skipif(
-    not _server_reachable(),
-    reason=f"Calycopis broker not reachable at {CALYCOPIS_URL}",
-)
-
-
-# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -181,7 +156,7 @@ def _format_phase_bar(counts: Counter, total: int) -> str:
 
 class TestStress:
 
-    def test_concurrent_sessions(self):
+    def test_concurrent_sessions(self, client):
         """
         Launch STRESS_COUNT concurrent execution requests and track
         all sessions through the full lifecycle to completion.
@@ -194,8 +169,6 @@ class TestStress:
         print(f"Stress test: {total} concurrent sessions, "
               f"{PAUSE_SECONDS}s container pause")
         print(f"{'='*70}")
-
-        client = ExecutionBrokerClient(host=CALYCOPIS_URL)
         errors = []
         sessions = {}
         timestamps = {}
@@ -237,8 +210,7 @@ class TestStress:
                 return index, None, f"No valid offer for request {index}"
             offer = resp.offers[0]
             uuid = offer.meta.uuid
-            c = ExecutionBrokerClient(host=CALYCOPIS_URL)
-            c.set_session_phase(uuid, SimpleExecutionSessionPhase.ACCEPTED)
+            client.set_session_phase(uuid, SimpleExecutionSessionPhase.ACCEPTED)
             return index, uuid, None
 
         with ThreadPoolExecutor(max_workers=SUBMIT_WORKERS) as pool:
@@ -292,8 +264,7 @@ class TestStress:
             still_active = set()
 
             def _poll_one(uuid):
-                c = ExecutionBrokerClient(host=CALYCOPIS_URL)
-                session = c.get_session(uuid)
+                session = client.get_session(uuid)
                 return uuid, session.phase
 
             with ThreadPoolExecutor(max_workers=SUBMIT_WORKERS) as pool:

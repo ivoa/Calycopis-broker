@@ -66,12 +66,10 @@ Usage:
   CALYCOPIS_URL=http://host:port pytest tests/python/test_docker_direct_execution.py -v
 """
 
-import os
 import time
 
 import pytest
 
-from calycopis_schema_client.wrappers.execution_client import ExecutionBrokerClient
 from calycopis_schema_client.models import (
     ExecutionRequest,
     AbstractExecutionSession,
@@ -89,8 +87,6 @@ from calycopis_schema_client.models.component_metadata import ComponentMetadata
 # Configuration
 # ---------------------------------------------------------------------------
 
-CALYCOPIS_URL = os.environ.get("CALYCOPIS_URL", "http://localhost:8082")
-
 DOCKER_CONTAINER_KIND = (
     "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/docker-container-1.0"
 )
@@ -102,35 +98,6 @@ SIMPLE_COMPUTE_KIND = (
 # with a configurable exit code.
 CANTLIEI_IMAGE = "ghcr.io/zarquan/heliophorus-cantliei:sha-831ee57"
 CANTLIEI_DIGEST = "sha256:6e495692cc6f1cae2023f261f433d4691aa70b19416730f8301e45fbb74bc526"
-
-
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
-def _server_reachable() -> bool:
-    """Return True if the Calycopis broker is responding."""
-    import urllib.request
-    import urllib.error
-    try:
-        urllib.request.urlopen(CALYCOPIS_URL, timeout=5)
-        return True
-    except urllib.error.HTTPError:
-        return True
-    except Exception:
-        return False
-
-
-pytestmark = pytest.mark.skipif(
-    not _server_reachable(),
-    reason=f"Calycopis broker not reachable at {CALYCOPIS_URL}",
-)
-
-
-@pytest.fixture(scope="module")
-def client() -> ExecutionBrokerClient:
-    """Create a shared ExecutionBrokerClient for the test module."""
-    return ExecutionBrokerClient(host=CALYCOPIS_URL)
 
 
 # ---------------------------------------------------------------------------

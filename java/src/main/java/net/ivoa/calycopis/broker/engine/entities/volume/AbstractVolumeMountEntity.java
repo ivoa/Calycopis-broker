@@ -85,7 +85,7 @@ implements AbstractVolumeMount
         final AbstractDataResourceEntity dataResource,
         final IvoaComponentMetadata meta
         ){
-        super(meta);
+        super(meta, computeResource.getOwner());
         this.computeResource = computeResource;
         computeResource.addVolumeMount(
             this
@@ -105,7 +105,7 @@ implements AbstractVolumeMount
         final AbstractStorageResourceEntity storageResource,
         final IvoaComponentMetadata meta
         ){
-        super(meta);
+        super(meta, computeResource.getOwner());
         this.computeResource = computeResource;
         computeResource.addVolumeMount(
             this

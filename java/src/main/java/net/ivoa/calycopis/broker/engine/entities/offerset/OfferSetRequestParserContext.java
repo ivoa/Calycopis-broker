@@ -28,6 +28,16 @@
  *       "value": 2,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-30T06:47:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -42,6 +52,7 @@ import org.threeten.extra.Interval;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidator;
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageSubject;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidator;
@@ -380,6 +391,10 @@ extends MessageSubject
      */
     public Long getTotalPrepareTime();
 
-    
-    
+    /**
+     * Get the owner identity for entities created from this context.
+     *
+     */
+    public IdentityEntity getOwner();
+
     }

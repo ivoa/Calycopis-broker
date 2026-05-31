@@ -21,6 +21,7 @@
  */
 package net.ivoa.calycopis.broker.engine.entities.offerset;
 
+import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
 import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
@@ -36,7 +37,7 @@ extends FactoryBase
      * Validate a Request and populate a ParserContext.
      *
      */
-    public OfferSetRequestParserContext stageOne(final Platform platform, final IvoaExecutionRequest offersetRequest);
+    public OfferSetRequestParserContext stageOne(final Platform platform, final IvoaExecutionRequest offersetRequest, final IdentityEntity owner);
 
     /**
      * Populate an OfferSetEntity based on the contents of a ParserContext.
