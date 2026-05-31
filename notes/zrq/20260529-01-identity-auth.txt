@@ -883,3 +883,223 @@ EOF
     >     not the plaintext passwords.
 
 
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Try running the Python tests.
+#[user@desktop]
+
+    testdata=${HOME}/temp
+
+    podman exec \
+        --tty \
+        --env "TESTDATA=${testdata}" \
+        --interactive \
+            calycopis-dev \
+                bash
+
+    pip install pytest
+    pip install docker
+
+    pip install --edit /calycopis/Calycopis-schema/github-zrq/codegen/python/client/build
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+            pushd docker
+
+                pytest test_docker_volume_mount.py
+
+            popd
+        popd
+    popd
+
+    >   ====================================================== ERRORS ======================================================
+    >   __________________________ ERROR at setup of TestDockerVolumeMount.test_session_completes __________________________
+    >   file /calycopis/Calycopis-broker/github-zrq/tests/python/docker/test_docker_volume_mount.py, line 215
+    >         def test_session_completes(self, client):
+    >   E       fixture 'client' not found
+    >   >       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, docker_client, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+    >   >       use 'pytest --fixtures [testpath]' for help on them.
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Ask Cursor to explain how to use the new tests.
+#[user@desktop]
+
+    podman exec \
+        --tty \
+        --interactive \
+            calycopis-dev \
+                bash
+
+        curl https://cursor.com/install -fsS | bash
+
+        agent --resume=2c7048d4-036b-4206-b205-f707e2386022
+
+    ?   Can you explain the steps needed to run the Python tests mnaually.
+
+    >   ....
+    >   ....
+    >     Here are the steps to run the Python tests manually:
+    >   
+    >     1. Ensure PostgreSQL is running
+    >   
+    >     The broker requires a PostgreSQL database. The connection details are configured in
+    >     /etc/calycopis/database.yaml.
+    >   
+    >     2. Set up the admin configuration
+    >   
+    >     Create /etc/calycopis/admin.yaml with admin credentials for the identity-seeding endpoint:
+    >   
+    >     calycopis:
+    >         admin:
+    >             username: <your-admin-username>
+    >             password: <your-admin-password>
+    >   
+    >     3. Start the broker service
+    >   
+    >     From the Java project directory:
+    >   
+    >     cd /calycopis/Calycopis-broker/github-zrq/java
+    >     # For the mock platform:
+    >     ./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=mock
+    >     --spring.config.import=file:/etc/calycopis/database.yaml,file:/etc/calycopis/admin.yaml"
+    >     # For the docker platform:
+    >     ./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=docker
+    >     --spring.config.import=file:/etc/calycopis/database.yaml,file:/etc/calycopis/admin.yaml"
+    >   
+    >     Wait until the processing loop messages appear (indicating the service is ready).
+    >   
+    >     4. Set environment variables for the tests
+    >   
+    >     The Python conftest.py reads these (with defaults shown):
+    >   
+    >     export CALYCOPIS_URL="http://localhost:8082"
+    >     export CALYCOPIS_ADMIN_USERNAME="<same as admin.yaml>"
+    >     export CALYCOPIS_ADMIN_PASSWORD="<same as admin.yaml>"
+    >   
+    >     If you're using the defaults (admin / admin-secret) and the service is on localhost:8082, you can skip this step
+    >      — but the admin credentials must match what's in /etc/calycopis/admin.yaml.
+    >   
+    >     5. Run the tests
+    >   
+    >     From the project root:
+    >   
+    >     cd /calycopis/Calycopis-broker/github-zrq
+    >     # Mock platform tests:
+    >     python3 -m pytest tests/python/mock/ -v
+    >     # Docker platform tests:
+    >     python3 -m pytest tests/python/docker/ -v
+    >     # Auth/identity tests:
+    >     python3 -m pytest tests/python/any/ -v
+    >     # Or run everything:
+    >     python3 -m pytest tests/python/ -v
+    >   
+    >     What happens automatically (via conftest.py):
+    >   
+    >     • Two test users (alice-<random>, bob-<random>) are created by calling POST /admin/identities with the admin
+    >       credentials
+    >     • An authenticated client is created for each user (using HTTP Basic auth)
+    >     • An unauthenticated client is also created
+    >     • All test files receive the client fixture (which is alice_client) automatically
+
+    #
+    # OK, give it a try.
+    #
+
+    yq '.' /etc/calycopis/admin.yaml
+
+    >   calycopis:
+    >     admin:
+    >       username: admin
+    >       password: admin-secret
+
+    yq \
+        '.calycopis.admin.username' \
+        /etc/calycopis/admin.yaml
+
+
+  export CALYCOPIS_URL="http://localhost:8082"
+
+  export CALYCOPIS_ADMIN_USERNAME="$(
+    yq \
+        '.calycopis.admin.username' \
+        /etc/calycopis/admin.yaml
+    )"
+
+  export CALYCOPIS_ADMIN_PASSWORD="$(
+    yq \
+        '.calycopis.admin.password' \
+        /etc/calycopis/admin.yaml
+    )"
+
+
+    pytest test_docker_volume_mount.py
+
+    >   ....
+    >   ....
+    >   ====================================================== ERRORS ======================================================
+    >   __________________________ ERROR at setup of TestDockerVolumeMount.test_session_completes __________________________
+    >   file /calycopis/Calycopis-broker/github-zrq/tests/python/docker/test_docker_volume_mount.py, line 215
+    >         def test_session_completes(self, client):
+    >   E       fixture 'client' not found
+    >   >       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, docker_client, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+    >   >       use 'pytest --fixtures [testpath]' for help on them.
+
+
+    ?   How do I connect the pytest test code to the client fixture ?
+    ?   I get the following error message when trying to run the test manually.
+    ?   ```
+    ?   ====================================================== ERRORS ======================================================
+    ?   __________________________ ERROR at setup of TestDockerVolumeMount.test_session_completes __________________________
+    ?   file /calycopis/Calycopis-broker/github-zrq/tests/python/docker/test_docker_volume_mount.py, line 215
+    ?         def test_session_completes(self, client):
+    ?   E       fixture 'client' not found
+    ?   >       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, docker_client, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+    ?   >       use 'pytest --fixtures [testpath]' for help on them.
+    ?   ``
+
+    >   ....
+    >   ....
+    >     The conftest.py is at tests/python/conftest.py, so pytest needs to discover it. This happens automatically when
+    >     you run from the project root with the tests/python/ path prefix. The issue is likely that you're running pytest
+    >      from within the tests/python/docker/ directory, or specifying only the test file directly.
+    >   
+    >     You need to run pytest from a directory at or above tests/python/ so that pytest finds the conftest.py. The
+    >     simplest approach:
+    >   
+    >     cd /calycopis/Calycopis-broker/github-zrq
+    >     python3 -m pytest tests/python/docker/test_docker_volume_mount.py -v
+    >   
+    >     If you're already in the tests/python/docker/ directory and run pytest ., it won't look up into tests/python/
+    >     for conftest.py.
+    >   
+    >     Alternatively, you can set rootdir explicitly:
+    >   
+    >     python3 -m pytest --rootdir=/calycopis/Calycopis-broker/github-zrq tests/python/docker/ -v
+    >   
+    >     The key rule: your working directory (or the rootdir) must be at or above tests/python/ for pytest to discover
+    >     the conftest.py that defines client, alice_client, bob_client, etc.
+
+    #
+    # OK, give it a try.
+    #
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+
+            pytest docker/test_docker_volume_mount.py
+
+        popd
+    popd
+
+    >   ....
+    >   ....
+    >   ==================================== 2 passed, 11 warnings in 88.08s (0:01:28) =====================================
+
+    #
+    # Yay - passed.
+    # Warnings are due to our wrapper using datetime.datetime.utcnow().
+    #
+
+
