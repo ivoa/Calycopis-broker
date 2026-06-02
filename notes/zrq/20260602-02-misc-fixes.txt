@@ -51,334 +51,310 @@
 # Ask Cursor to fix the deprecated warning in the client wrapper.
 #[root@calycopis-dev]
 
-==START==
-Please read the AGENTS.md files at
-* /calycopis/Calycopis-broker/github-zrq/AGENTS.md
-* /calycopis/Calycopis-openapi/github-zrq/AGENTS.md
-with particular attention to the Coding standards.
-==END==
+    ?   Please read the AGENTS.md files at
+    ?   * /calycopis/Calycopis-broker/github-zrq/AGENTS.md
+    ?   * /calycopis/Calycopis-openapi/github-zrq/AGENTS.md
+    ?   with particular attention to the Coding standards.
 
 
---START--
-....
-....
-  I've read both files. Let me also read the referenced coding convention files in the agents/ directory.
-
-    Globbed, read 1 glob, 4 files
-    … 2 earlier items hidden
-    Read ...pis-broker/github-zrq/agents/copyright-year.mdc
-    Read ...lycopis-broker/github-zrq/agents/ai-metrics.mdc
-    Read ...oker/github-zrq/agents/unexpected-behaviour.mdc
-
-  I've read both AGENTS.md files and all four supplementary rule files. Here's a summary of the key coding standards:
-
-  Coding conventions (Calycopis-broker):
-
-  • Clarity over brevity — code style should favour readability.
-  • No ternary operator (?:) — always use expanded if/else blocks, with one exception: ternaries are allowed in logging
-    messages.
-  • JPA over Spring annotations — use generic Jakarta Persistence API annotations where possible instead of
-    Spring-specific ones, to keep the domain logic framework-neutral.
-  • No fragile patterns — avoid @Transient + initEntity() helpers, static singletons, ApplicationContextAware lookups,
-    or anything that bypasses normal DI and entity lifecycle. If such a pattern seems necessary, stop and ask the user
-    first.
-
-  File header rules (applied to all created/modified files):
-
-  1. GPL licence header (licence-header.mdc) — every new source file must start with the GPL v3 licence block (adapted
-     to the file's comment syntax). It must appear before any package, import, or other declarations.
-  2. Copyright year (copyright-year.mdc) — when modifying a file with a <meta:licence> block, update the Copyright (c)
-     YYYY year to the current year (2026).
-  3. AIMetrics block (ai-metrics.mdc) — every created or modified file must have an AIMetrics entry recording
-     timestamp, tool name ("Cursor CLI"), model, and contribution percentage. For new files, contribution is 100%; for
-     modifications, estimate based on lines changed.
-
-  Behavioural rule:
-
-  4. Unexpected behaviour (unexpected-behaviour.mdc) — if an API or service behaves unexpectedly (missing headers,
-     undocumented status codes, malformed responses), stop and ask the user before writing workaround code.
-
-  I'm ready to work on these projects with these standards in mind. What would you like to do?
---END--
+    >   ....
+    >   ....
+    >     I've read both files. Let me also read the referenced coding convention files in the agents/ directory.
+    >   
+    >       Globbed, read 1 glob, 4 files
+    >       … 2 earlier items hidden
+    >       Read ...pis-broker/github-zrq/agents/copyright-year.mdc
+    >       Read ...lycopis-broker/github-zrq/agents/ai-metrics.mdc
+    >       Read ...oker/github-zrq/agents/unexpected-behaviour.mdc
+    >   
+    >     I've read both AGENTS.md files and all four supplementary rule files. Here's a summary of the key coding standards:
+    >   
+    >     Coding conventions (Calycopis-broker):
+    >   
+    >     • Clarity over brevity — code style should favour readability.
+    >     • No ternary operator (?:) — always use expanded if/else blocks, with one exception: ternaries are allowed in logging
+    >       messages.
+    >     • JPA over Spring annotations — use generic Jakarta Persistence API annotations where possible instead of
+    >       Spring-specific ones, to keep the domain logic framework-neutral.
+    >     • No fragile patterns — avoid @Transient + initEntity() helpers, static singletons, ApplicationContextAware lookups,
+    >       or anything that bypasses normal DI and entity lifecycle. If such a pattern seems necessary, stop and ask the user
+    >       first.
+    >   
+    >     File header rules (applied to all created/modified files):
+    >   
+    >     1. GPL licence header (licence-header.mdc) — every new source file must start with the GPL v3 licence block (adapted
+    >        to the file's comment syntax). It must appear before any package, import, or other declarations.
+    >     2. Copyright year (copyright-year.mdc) — when modifying a file with a <meta:licence> block, update the Copyright (c)
+    >        YYYY year to the current year (2026).
+    >     3. AIMetrics block (ai-metrics.mdc) — every created or modified file must have an AIMetrics entry recording
+    >        timestamp, tool name ("Cursor CLI"), model, and contribution percentage. For new files, contribution is 100%; for
+    >        modifications, estimate based on lines changed.
+    >   
+    >     Behavioural rule:
+    >   
+    >     4. Unexpected behaviour (unexpected-behaviour.mdc) — if an API or service behaves unexpectedly (missing headers,
+    >        undocumented status codes, malformed responses), stop and ask the user before writing workaround code.
+    >   
+    >     I'm ready to work on these projects with these standards in mind. What would you like to do?
 
 
-==START==
-Regarding the OpenAPI project at `/calycopis/Calycopis-openapi/github-zrq`
-Can you fix an issue with the Python client wrapper that uses a deprecated datetime method.
-```
-test_mock_direct_execution.py: 22 warnings
-  /calycopis/Calycopis-schema/github-zrq/codegen/python/client/build/calycopis_client/wrappers/execution_client.py:219:
-  DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.
-  Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
-    while datetime.utcnow() < deadline:
-```
-==END==
+    ?   Regarding the OpenAPI project at `/calycopis/Calycopis-openapi/github-zrq`
+    ?   Can you fix an issue with the Python client wrapper that uses a deprecated datetime method.
+    ?   ```
+    ?   test_mock_direct_execution.py: 22 warnings
+    ?     /calycopis/Calycopis-schema/github-zrq/codegen/python/client/build/calycopis_client/wrappers/execution_client.py:219:
+    ?     DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.
+    ?     Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    ?       while datetime.utcnow() < deadline:
+    ?   ```
 
---START--
-....
-....
-  The fix is straightforward — three changes in execution_client.py:
-
-  1. Import: added timezone to the from datetime import ... line.
-  2. Line 216: datetime.utcnow() → datetime.now(timezone.utc) (deadline calculation).
-  3. Line 219: datetime.utcnow() → datetime.now(timezone.utc) (polling loop condition).
-
-  This replaces the deprecated naive-UTC method with the recommended timezone-aware equivalent, which eliminates the
-  DeprecationWarning.
---END--
+    >   ....
+    >   ....
+    >     The fix is straightforward — three changes in execution_client.py:
+    >   
+    >     1. Import: added timezone to the from datetime import ... line.
+    >     2. Line 216: datetime.utcnow() → datetime.now(timezone.utc) (deadline calculation).
+    >     3. Line 219: datetime.utcnow() → datetime.now(timezone.utc) (polling loop condition).
+    >   
+    >     This replaces the deprecated naive-UTC method with the recommended timezone-aware equivalent, which eliminates the
+    >     DeprecationWarning.
 
 
-==START==
-The Python tests at `/calycopis/Calycopis-broker/github-zrq/tests/python/`
-all have to set the kind URL for the message objects.
+    ?   The Python tests at `/calycopis/Calycopis-broker/github-zrq/tests/python/`
+    ?   all have to set the kind URL for the message objects.
+    ?   
+    ?   ```
+    ?   DOCKER_CONTAINER_KIND = (
+    ?       "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
+    ?   )
+    ?   ```
+    ?   
+    ?   and
+    ?   ```
+    ?   executable=DockerContainer(
+    ?       kind=DOCKER_CONTAINER_KIND,
+    ?       meta=ComponentMetadata(name=f"{name}-exec"),
+    ?       image=DockerImageSpec(
+    ?           locations=[ANDROCLES_IMAGE],
+    ?           digest=ANDROCLES_DIGEST,
+    ?       ),
+    ?   ```
+    ?   
+    ?   Can you create a plan for adding wrapper classes to the generated
+    ?   classes that provide a default constructor that automatically sets
+    ?   the default kind URL for that class.
 
-```
-DOCKER_CONTAINER_KIND = (
-    "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
-)
-```
-
-and
-```
-executable=DockerContainer(
-    kind=DOCKER_CONTAINER_KIND,
-    meta=ComponentMetadata(name=f"{name}-exec"),
-    image=DockerImageSpec(
-        locations=[ANDROCLES_IMAGE],
-        digest=ANDROCLES_DIGEST,
-    ),
-```
-
-Can you create a plan for adding wrapper classes to the generated
-classes that provide a default constructor that automatically sets
-the default kind URL for that class.
-==END==
-
---START--
-....
-....
-  I now have a complete picture of the codebase. Before I finalize the plan, I have one design question:
-
- ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
- │ Clarifying Questions                                                                                                 │
- │                                                                                                                      │
- │ Question 1 of 1                                                                                                      │
- │                                                                                                                      │
- │ 1. Which discriminated types should get wrapper classes?                                                             │
- │                                                                                                                      │
- │     [ ] Resource/executable types only (11 classes: DockerContainer, SingularityContainer, JupyterNotebook,          │
- │         SimpleComputeResource, SimpleStorageResource, SimpleVolumeMount, SimpleDataResource, S3DataResource,         │
- │         IvoaDataResource, RucioDataResource, SkaoDataResource)                                                       │
- │   › [ ] All client-constructed types (the 11 above + 4 update types + 4 option types = 19 classes)                   │
- │     [ ] All 22 discriminated types including session types (which are normally server responses)                     │
- │     [ ] Other: (type to answer)                                                                                      │
- │                                                                                                                      │
- │ ↑/↓ option · ←/→ question · Space select · Enter next/submit · Esc to skip                                           │
- └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
---END--
+    >   ....
+    >   ....
+    >     I now have a complete picture of the codebase. Before I finalize the plan, I have one design question:
+    >   
+    >    ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >    │ Clarifying Questions                                                                                                 │
+    >    │                                                                                                                      │
+    >    │ Question 1 of 1                                                                                                      │
+    >    │                                                                                                                      │
+    >    │ 1. Which discriminated types should get wrapper classes?                                                             │
+    >    │                                                                                                                      │
+    >    │     [ ] Resource/executable types only (11 classes: DockerContainer, SingularityContainer, JupyterNotebook,          │
+    >    │         SimpleComputeResource, SimpleStorageResource, SimpleVolumeMount, SimpleDataResource, S3DataResource,         │
+    >    │         IvoaDataResource, RucioDataResource, SkaoDataResource)                                                       │
+    >    │   › [ ] All client-constructed types (the 11 above + 4 update types + 4 option types = 19 classes)                   │
+    >    │     [ ] All 22 discriminated types including session types (which are normally server responses)                     │
+    >    │     [ ] Other: (type to answer)                                                                                      │
+    >    │                                                                                                                      │
+    >    │ ↑/↓ option · ←/→ question · Space select · Enter next/submit · Esc to skip                                           │
+    >    └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 
-==START==
- ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
- │ Suggested Plan                                                                                                       │
- │                                                                                                                      │
- │ Default-kind wrapper classes for generated Python models                                                             │
- │                                                                                                                      │
- │ Problem                                                                                                              │
- │                                                                                                                      │
- │ Every test and client that constructs a discriminated model (e.g. DockerContainer, SimpleComputeResource) must       │
- │ manually pass the full kind URI:                                                                                     │
- │                                                                                                                      │
- │ DockerContainer(                                                                                                     │
- │     kind="https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml",       │
- │     ...                                                                                                              │
- │ )                                                                                                                    │
- │                                                                                                                      │
- │ These URIs are long, error-prone, and duplicated across every test file.                                             │
- │                                                                                                                      │
- │ Approach                                                                                                             │
- │                                                                                                                      │
- │ Create Pydantic subclasses in a new file in the existing wrapper layer. Each subclass inherits from the generated    │
- │ model and overrides the kind field with a default value matching the discriminator URI from the schema. The          │
- │ subclass adds no other behaviour -- callers who need to override kind can still pass it explicitly.                  │
- │                                                                                                                      │
- │ from calycopis_schema_client.models import DockerContainer as _DockerContainer                                       │
- │ class DockerContainer(_DockerContainer):                                                                             │
- │     kind: StrictStr = Field(                                                                                         │
- │                                                                                                                      │
- │ default="https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml",        │
- │         description="The component type identifier.",                                                                │
- │     )                                                                                                                │
- │                                                                                                                      │
- │ This is safe because:                                                                                                │
- │ • The generated models are Pydantic BaseModel subclasses; Pydantic v2 supports overriding a required field with      │
- │   a default in a subclass.                                                                                           │
- │ • Direct construction (the use case) bypasses the discriminator dispatch, which only runs in                         │
- │   AbstractBase.from_dict().                                                                                          │
- │ • isinstance checks still pass (DockerContainer is a subclass of _DockerContainer).                                  │
- │                                                                                                                      │
- │ Files to change                                                                                                      │
- │                                                                                                                      │
- │ 1. New file: codegen/python/client/wrappers/models.py (codegen/python/client/wrappers/models.py)                     │
- │                                                                                                                      │
- │ Create wrapper subclasses for all 19 client-constructed discriminated types, organized by category:                  │
- │ Executables (3):                                                                                                     │
- │ • DockerContainer -- ...kinds/executable/docker-container.yaml                                                       │
- │ • SingularityContainer -- ...kinds/executable/singularity-container.yaml                                             │
- │ • JupyterNotebook -- ...kinds/executable/jupyter-notebook.yaml                                                       │
- │                                                                                                                      │
- │ Compute (1):                                                                                                         │
- │ • SimpleComputeResource -- ...kinds/compute/simple-compute-resource.yaml                                             │
- │                                                                                                                      │
- │ Storage (1):                                                                                                         │
- │ • SimpleStorageResource -- ...kinds/storage/simple-storage-resource.yaml                                             │
- │                                                                                                                      │
- │ Volume (1):                                                                                                          │
- │ • SimpleVolumeMount -- ...kinds/volume/simple-volume-mount.yaml                                                      │
- │                                                                                                                      │
- │ Data (5):                                                                                                            │
- │ • SimpleDataResource -- ...kinds/data/simple-data-resource.yaml                                                      │
- │ • S3DataResource -- ...kinds/data/S3-data-resource.yaml                                                              │
- │ • IvoaDataResource -- ...kinds/data/ivoa-data-resource.yaml                                                          │
- │ • RucioDataResource -- ...kinds/data/rucio-data-resource.yaml                                                        │
- │ • SkaoDataResource -- ...kinds/data/skao-data-resource.yaml                                                          │
- │                                                                                                                      │
- │ Options (4):                                                                                                         │
- │ • StringValueOption -- uri:string-value-option                                                                       │
- │ • EnumValueOption -- uri:enum-value-option                                                                           │
- │ • IntegerValueOption -- uri:integer-value-option                                                                     │
- │ • IntegerDeltaOption -- uri:integer-delta-option                                                                     │
- │                                                                                                                      │
- │ Updates (4):                                                                                                         │
- │ • StringValueUpdate -- uri:string-value-update                                                                       │
- │ • EnumValueUpdate -- uri:enum-value-update                                                                           │
- │ • IntegerValueUpdate -- uri:integer-value-update                                                                     │
- │ • IntegerDeltaUpdate -- uri:integer-delta-update                                                                     │
- │                                                                                                                      │
- │ 2. Modify: codegen/python/client/wrappers/__init__.py (codegen/python/client/wrappers/__init__.py)                   │
- │                                                                                                                      │
- │ Add re-exports for all 19 wrapper classes so they can be imported as:                                                │
- │                                                                                                                      │
- │ from calycopis_schema_client.wrappers import DockerContainer, SimpleComputeResource                                  │
- │                                                                                                                      │
- │ What this does NOT change                                                                                            │
- │                                                                                                                      │
- │ • The generated model classes in models/ are untouched (they are auto-generated and should not be edited).           │
- │ • The existing ExecutionBrokerClient in wrappers/execution_client.py is unchanged.                                   │
- │ • Test files in the broker project are not modified in this plan (that would be a separate step).                    │
- │                                                                                                                      │
- │  Saved to root/.cursor/plans/Python kind wrapper classes-6130c738.plan.md                                            │
- │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
- │                                                                                                                      │
- │ Ready to build?                                                                                                      │
- │                                                                                                                      │
- │  → 1. Yes, build locally (b)                                                                                         │
- │    2. No, propose changes (p or Esc)                                                                                 │
- │                                                                                                                      │
- └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-==END==
+    ?    ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    ?    │ Suggested Plan                                                                                                       │
+    ?    │                                                                                                                      │
+    ?    │ Default-kind wrapper classes for generated Python models                                                             │
+    ?    │                                                                                                                      │
+    ?    │ Problem                                                                                                              │
+    ?    │                                                                                                                      │
+    ?    │ Every test and client that constructs a discriminated model (e.g. DockerContainer, SimpleComputeResource) must       │
+    ?    │ manually pass the full kind URI:                                                                                     │
+    ?    │                                                                                                                      │
+    ?    │ DockerContainer(                                                                                                     │
+    ?    │     kind="https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml",       │
+    ?    │     ...                                                                                                              │
+    ?    │ )                                                                                                                    │
+    ?    │                                                                                                                      │
+    ?    │ These URIs are long, error-prone, and duplicated across every test file.                                             │
+    ?    │                                                                                                                      │
+    ?    │ Approach                                                                                                             │
+    ?    │                                                                                                                      │
+    ?    │ Create Pydantic subclasses in a new file in the existing wrapper layer. Each subclass inherits from the generated    │
+    ?    │ model and overrides the kind field with a default value matching the discriminator URI from the schema. The          │
+    ?    │ subclass adds no other behaviour -- callers who need to override kind can still pass it explicitly.                  │
+    ?    │                                                                                                                      │
+    ?    │ from calycopis_schema_client.models import DockerContainer as _DockerContainer                                       │
+    ?    │ class DockerContainer(_DockerContainer):                                                                             │
+    ?    │     kind: StrictStr = Field(                                                                                         │
+    ?    │                                                                                                                      │
+    ?    │ default="https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml",        │
+    ?    │         description="The component type identifier.",                                                                │
+    ?    │     )                                                                                                                │
+    ?    │                                                                                                                      │
+    ?    │ This is safe because:                                                                                                │
+    ?    │ • The generated models are Pydantic BaseModel subclasses; Pydantic v2 supports overriding a required field with      │
+    ?    │   a default in a subclass.                                                                                           │
+    ?    │ • Direct construction (the use case) bypasses the discriminator dispatch, which only runs in                         │
+    ?    │   AbstractBase.from_dict().                                                                                          │
+    ?    │ • isinstance checks still pass (DockerContainer is a subclass of _DockerContainer).                                  │
+    ?    │                                                                                                                      │
+    ?    │ Files to change                                                                                                      │
+    ?    │                                                                                                                      │
+    ?    │ 1. New file: codegen/python/client/wrappers/models.py (codegen/python/client/wrappers/models.py)                     │
+    ?    │                                                                                                                      │
+    ?    │ Create wrapper subclasses for all 19 client-constructed discriminated types, organized by category:                  │
+    ?    │ Executables (3):                                                                                                     │
+    ?    │ • DockerContainer -- ...kinds/executable/docker-container.yaml                                                       │
+    ?    │ • SingularityContainer -- ...kinds/executable/singularity-container.yaml                                             │
+    ?    │ • JupyterNotebook -- ...kinds/executable/jupyter-notebook.yaml                                                       │
+    ?    │                                                                                                                      │
+    ?    │ Compute (1):                                                                                                         │
+    ?    │ • SimpleComputeResource -- ...kinds/compute/simple-compute-resource.yaml                                             │
+    ?    │                                                                                                                      │
+    ?    │ Storage (1):                                                                                                         │
+    ?    │ • SimpleStorageResource -- ...kinds/storage/simple-storage-resource.yaml                                             │
+    ?    │                                                                                                                      │
+    ?    │ Volume (1):                                                                                                          │
+    ?    │ • SimpleVolumeMount -- ...kinds/volume/simple-volume-mount.yaml                                                      │
+    ?    │                                                                                                                      │
+    ?    │ Data (5):                                                                                                            │
+    ?    │ • SimpleDataResource -- ...kinds/data/simple-data-resource.yaml                                                      │
+    ?    │ • S3DataResource -- ...kinds/data/S3-data-resource.yaml                                                              │
+    ?    │ • IvoaDataResource -- ...kinds/data/ivoa-data-resource.yaml                                                          │
+    ?    │ • RucioDataResource -- ...kinds/data/rucio-data-resource.yaml                                                        │
+    ?    │ • SkaoDataResource -- ...kinds/data/skao-data-resource.yaml                                                          │
+    ?    │                                                                                                                      │
+    ?    │ Options (4):                                                                                                         │
+    ?    │ • StringValueOption -- uri:string-value-option                                                                       │
+    ?    │ • EnumValueOption -- uri:enum-value-option                                                                           │
+    ?    │ • IntegerValueOption -- uri:integer-value-option                                                                     │
+    ?    │ • IntegerDeltaOption -- uri:integer-delta-option                                                                     │
+    ?    │                                                                                                                      │
+    ?    │ Updates (4):                                                                                                         │
+    ?    │ • StringValueUpdate -- uri:string-value-update                                                                       │
+    ?    │ • EnumValueUpdate -- uri:enum-value-update                                                                           │
+    ?    │ • IntegerValueUpdate -- uri:integer-value-update                                                                     │
+    ?    │ • IntegerDeltaUpdate -- uri:integer-delta-update                                                                     │
+    ?    │                                                                                                                      │
+    ?    │ 2. Modify: codegen/python/client/wrappers/__init__.py (codegen/python/client/wrappers/__init__.py)                   │
+    ?    │                                                                                                                      │
+    ?    │ Add re-exports for all 19 wrapper classes so they can be imported as:                                                │
+    ?    │                                                                                                                      │
+    ?    │ from calycopis_schema_client.wrappers import DockerContainer, SimpleComputeResource                                  │
+    ?    │                                                                                                                      │
+    ?    │ What this does NOT change                                                                                            │
+    ?    │                                                                                                                      │
+    ?    │ • The generated model classes in models/ are untouched (they are auto-generated and should not be edited).           │
+    ?    │ • The existing ExecutionBrokerClient in wrappers/execution_client.py is unchanged.                                   │
+    ?    │ • Test files in the broker project are not modified in this plan (that would be a separate step).                    │
+    ?    │                                                                                                                      │
+    ?    │  Saved to root/.cursor/plans/Python kind wrapper classes-6130c738.plan.md                                            │
+    ?    │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+    ?    │                                                                                                                      │
+    ?    │ Ready to build?                                                                                                      │
+    ?    │                                                                                                                      │
+    ?    │  → 1. Yes, build locally (b)                                                                                         │
+    ?    │    2. No, propose changes (p or Esc)                                                                                 │
+    ?    │                                                                                                                      │
+    ?    └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
---START--
-....
-....
-  All 19 wrapper classes import correctly, default kind values are set properly, and isinstance checks pass against
-  the generated parent classes.
-
-    To-do All done
-    ☒ Create `codegen/python/client/wrappers/models.py` with 19 Pydantic wrapper subclasses that set default `kind`
-      values
-    ☒ Update `codegen/python/client/wrappers/__init__.py` to re-export all wrapper classes
-
-  Both tasks are done. Here's a summary of what was created:
-
-  New file: codegen/python/client/wrappers/models.py — 19 thin Pydantic subclasses, each setting a default kind value
-  matching the schema discriminator URI.
-
-  Modified file: codegen/python/client/wrappers/__init__.py — re-exports all 19 wrapper classes.
-
-  Tests can now replace verbose patterns like:
-
-  DOCKER_CONTAINER_KIND =
-  "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
-  executable = DockerContainer(kind=DOCKER_CONTAINER_KIND, ...)
-
-  with:
-
-  from calycopis_schema_client.wrappers import DockerContainer
-  executable = DockerContainer(...)
-
-  The kind can still be overridden explicitly if needed. Note that the wrapper files also need to be copied into the
-  build/ directory when the Python client is rebuilt (the buildpythonclient script already handles this via the cp -r
-  codegen/python/client/wrappers step).
---END--
+    >   ....
+    >   ....
+    >     All 19 wrapper classes import correctly, default kind values are set properly, and isinstance checks pass against
+    >     the generated parent classes.
+    >   
+    >       To-do All done
+    >       ☒ Create `codegen/python/client/wrappers/models.py` with 19 Pydantic wrapper subclasses that set default `kind`
+    >         values
+    >       ☒ Update `codegen/python/client/wrappers/__init__.py` to re-export all wrapper classes
+    >   
+    >     Both tasks are done. Here's a summary of what was created:
+    >   
+    >     New file: codegen/python/client/wrappers/models.py — 19 thin Pydantic subclasses, each setting a default kind value
+    >     matching the schema discriminator URI.
+    >   
+    >     Modified file: codegen/python/client/wrappers/__init__.py — re-exports all 19 wrapper classes.
+    >   
+    >     Tests can now replace verbose patterns like:
+    >   
+    >     DOCKER_CONTAINER_KIND =
+    >     "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
+    >     executable = DockerContainer(kind=DOCKER_CONTAINER_KIND, ...)
+    >   
+    >     with:
+    >   
+    >     from calycopis_schema_client.wrappers import DockerContainer
+    >     executable = DockerContainer(...)
+    >   
+    >     The kind can still be overridden explicitly if needed. Note that the wrapper files also need to be copied into the
+    >     build/ directory when the Python client is rebuilt (the buildpythonclient script already handles this via the cp -r
+    >     codegen/python/client/wrappers step).
 
 
-==START==
-Can you update the test classes to use the new wrappers.
-==END==
+    ?   Can you update the test classes to use the new wrappers.
 
---START--
-....
-....
-  All three batches are done. Let me verify the changes by checking for any remaining _KIND references and kind=
-  patterns across the test files.
-
-    To-do All done
-    ☒ Update conftest.py if it defines kind constants
-    ☒ Update tests/python/any/ test files to use wrapper classes
-    ☒ Update tests/python/docker/ test files to use wrapper classes
-    ☒ Update tests/python/mock/ test files to use wrapper classes
-
-    Grepped 3 greps
-    Grepped "_KIND\b" in calycopis/Calycopis-broker/github-zrq/tests/python
-    Grepped "kind=" in calycopis/Calycopis-broker/github-zrq/tests/python
-    Grepped "...e|SkaoDataResource|JupyterNotebook)\b" in calycopis/Calycopis-broker/github-zrq/tests/python
-
-  All clean — zero remaining _KIND constants, zero kind= arguments, and zero direct model imports for wrapped classes
-  across all test files. Let me do a quick spot-check on a couple of files to confirm they look correct.
-
-    Read 3 files
-    Read .../tests/python/any/test_resource_registration.py
-    Read ...b-zrq/tests/python/mock/test_mock_validators.py
-    Read ...zrq/tests/python/docker/test_docker_platform.py
-
-  All files look correct. The changes are clean and consistent across all 11 test files:
-
-  • Imports now use calycopis_schema_client.wrappers for wrapped classes while non-wrapped types remain at their
-    original import locations
-  • All _KIND constants have been removed
-  • All kind= arguments have been removed from constructor calls
-  • AIMetrics have been updated with new entries
-
-  Here's a summary of the 11 files updated:
-
-  ┌───────────┬─────────────────────────────────┬──────────────────┬────────────────────┐
-  │ Directory │ File                            │ Classes switched │ kind= args removed │
-  ├───────────┼─────────────────────────────────┼──────────────────┼────────────────────┤
-  │ any/      │ test_resource_registration.py   │ 4                │ 22                 │
-  │ any/      │ test_identity_auth.py           │ 1                │ 1                  │
-  │ docker/   │ test_docker_volume_mount.py     │ 4                │ 4                  │
-  │ docker/   │ test_docker_stress.py           │ 1                │ 1                  │
-  │ docker/   │ test_docker_platform.py         │ 2                │ 3                  │
-  │ docker/   │ test_docker_direct_execution.py │ 2                │ 2                  │
-  │ docker/   │ test_docker_bind_mount.py       │ 4                │ 4                  │
-  │ docker/   │ test_docker_androcles_md5.py    │ 4                │ 4                  │
-  │ mock/     │ test_mock_validators.py         │ 8                │ 39                 │
-  │ mock/     │ test_mock_stress.py             │ 1                │ 1                  │
-  │ mock/     │ test_mock_direct_execution.py   │ 2                │ 2                  │
-  └───────────┴─────────────────────────────────┴──────────────────┴────────────────────┘
---END--
+    >   ....
+    >   ....
+    >     All three batches are done. Let me verify the changes by checking for any remaining _KIND references and kind=
+    >     patterns across the test files.
+    >   
+    >       To-do All done
+    >       ☒ Update conftest.py if it defines kind constants
+    >       ☒ Update tests/python/any/ test files to use wrapper classes
+    >       ☒ Update tests/python/docker/ test files to use wrapper classes
+    >       ☒ Update tests/python/mock/ test files to use wrapper classes
+    >   
+    >       Grepped 3 greps
+    >       Grepped "_KIND\b" in calycopis/Calycopis-broker/github-zrq/tests/python
+    >       Grepped "kind=" in calycopis/Calycopis-broker/github-zrq/tests/python
+    >       Grepped "...e|SkaoDataResource|JupyterNotebook)\b" in calycopis/Calycopis-broker/github-zrq/tests/python
+    >   
+    >     All clean — zero remaining _KIND constants, zero kind= arguments, and zero direct model imports for wrapped classes
+    >     across all test files. Let me do a quick spot-check on a couple of files to confirm they look correct.
+    >   
+    >       Read 3 files
+    >       Read .../tests/python/any/test_resource_registration.py
+    >       Read ...b-zrq/tests/python/mock/test_mock_validators.py
+    >       Read ...zrq/tests/python/docker/test_docker_platform.py
+    >   
+    >     All files look correct. The changes are clean and consistent across all 11 test files:
+    >   
+    >     • Imports now use calycopis_schema_client.wrappers for wrapped classes while non-wrapped types remain at their
+    >       original import locations
+    >     • All _KIND constants have been removed
+    >     • All kind= arguments have been removed from constructor calls
+    >     • AIMetrics have been updated with new entries
+    >   
+    >     Here's a summary of the 11 files updated:
+    >   
+    >     ┌───────────┬─────────────────────────────────┬──────────────────┬────────────────────┐
+    >     │ Directory │ File                            │ Classes switched │ kind= args removed │
+    >     ├───────────┼─────────────────────────────────┼──────────────────┼────────────────────┤
+    >     │ any/      │ test_resource_registration.py   │ 4                │ 22                 │
+    >     │ any/      │ test_identity_auth.py           │ 1                │ 1                  │
+    >     │ docker/   │ test_docker_volume_mount.py     │ 4                │ 4                  │
+    >     │ docker/   │ test_docker_stress.py           │ 1                │ 1                  │
+    >     │ docker/   │ test_docker_platform.py         │ 2                │ 3                  │
+    >     │ docker/   │ test_docker_direct_execution.py │ 2                │ 2                  │
+    >     │ docker/   │ test_docker_bind_mount.py       │ 4                │ 4                  │
+    >     │ docker/   │ test_docker_androcles_md5.py    │ 4                │ 4                  │
+    >     │ mock/     │ test_mock_validators.py         │ 8                │ 39                 │
+    >     │ mock/     │ test_mock_stress.py             │ 1                │ 1                  │
+    >     │ mock/     │ test_mock_direct_execution.py   │ 2                │ 2                  │
+    >     └───────────┴─────────────────────────────────┴──────────────────┴────────────────────┘
 
 
-==START==
-/quit
-==END==
+    ?   /quit
 
---START--
-....
-....
-  To resume this session: agent --resume=6130c738-dbc3-4c0f-a449-80f8d204c532
---END--
+    >   ....
+    >   ....
+    >     To resume this session: agent --resume=6130c738-dbc3-4c0f-a449-80f8d204c532
 
     #
     # Half way through this month.

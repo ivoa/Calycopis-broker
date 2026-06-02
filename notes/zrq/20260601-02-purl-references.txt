@@ -195,12 +195,10 @@
 
     popd
 
---START--
-origin	git@github.com:Zarquan/Calycopis-openapi.git (fetch)
-origin	git@github.com:Zarquan/Calycopis-openapi.git (push)
-upstream	git@github.com:ivoa/Calycopis-openapi.git (fetch)
-upstream	git@github.com:ivoa/Calycopis-openapi.git (push)
---END--
+    >   origin	git@github.com:Zarquan/Calycopis-openapi.git (fetch)
+    >   origin	git@github.com:Zarquan/Calycopis-openapi.git (push)
+    >   upstream	git@github.com:ivoa/Calycopis-openapi.git (fetch)
+    >   upstream	git@github.com:ivoa/Calycopis-openapi.git (push)
 
     source "${HOME:?}/calycopis.env"
     pushd "${TREBULA_CODE}"
@@ -324,11 +322,9 @@ upstream	git@github.com:ivoa/Calycopis-openapi.git (push)
 
             podman ps
 
---START--
-CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS        PORTS       NAMES
-07b84c768c2e  localhost/podman-pause:5.4.2-1743552000                        15 seconds ago  Up 5 seconds              9107ebcace94-infra
-abba2924d2fa  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 seconds ago   Up 4 seconds              calycopis-dev
---END--
+    >   CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS        PORTS       NAMES
+    >   07b84c768c2e  localhost/podman-pause:5.4.2-1743552000                        15 seconds ago  Up 5 seconds              9107ebcace94-infra
+    >   abba2924d2fa  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 seconds ago   Up 4 seconds              calycopis-dev
 
 
 # -----------------------------------------------------
@@ -341,62 +337,54 @@ abba2924d2fa  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 s
 
         buildschema
 
---START--
-Clean  [false]
-Input  [schema/v1.0/execution-broker.yaml]
-Output [build/execution-broker-1.0.6.yaml]
-....
-....
-Inlining from discriminator mapping: StringValueUpdate
-Inlining from discriminator mapping: EnumValueUpdate
-Inlining from discriminator mapping: IntegerValueUpdate
-Inlining from discriminator mapping: IntegerDeltaUpdate
-✅ All references processed and saved.
---END--
+    >   Clean  [false]
+    >   Input  [schema/v1.0/execution-broker.yaml]
+    >   Output [build/execution-broker-1.0.6.yaml]
+    >   ....
+    >   ....
+    >   Inlining from discriminator mapping: StringValueUpdate
+    >   Inlining from discriminator mapping: EnumValueUpdate
+    >   Inlining from discriminator mapping: IntegerValueUpdate
+    >   Inlining from discriminator mapping: IntegerDeltaUpdate
+    >   ✅ All references processed and saved.
 
 
         installgenerator
 
         buildpythonclient
 
---START--
-....
-....
-adding 'calycopis_schema_client-1.0.6.dist-info/METADATA'
-adding 'calycopis_schema_client-1.0.6.dist-info/WHEEL'
-adding 'calycopis_schema_client-1.0.6.dist-info/top_level.txt'
-adding 'calycopis_schema_client-1.0.6.dist-info/RECORD'
-removing build/bdist.linux-x86_64/wheel
-Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_client-1.0.6-py3-none-any.whl
---END--
+    >   ....
+    >   ....
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/METADATA'
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/WHEEL'
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/top_level.txt'
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/RECORD'
+    >   removing build/bdist.linux-x86_64/wheel
+    >   Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_client-1.0.6-py3-none-any.whl
 
 
         buildjavaclient
 
---START--
-....
-....
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  9.426 s
-[INFO] Finished at: 2026-06-02T04:50:52Z
-[INFO] ------------------------------------------------------------------------
---END--
+    >   ....
+    >   ....
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] BUILD SUCCESS
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] Total time:  9.426 s
+    >   [INFO] Finished at: 2026-06-02T04:50:52Z
+    >   [INFO] ------------------------------------------------------------------------
 
 
         buildjavaspring
 
---START--
-....
-....
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  9.550 s
-[INFO] Finished at: 2026-06-02T04:51:36Z
-[INFO] ------------------------------------------------------------------------
---END--
+    >   ....
+    >   ....
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] BUILD SUCCESS
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] Total time:  9.550 s
+    >   [INFO] Finished at: 2026-06-02T04:51:36Z
+    >   [INFO] ------------------------------------------------------------------------
 
     popd
 
@@ -429,19 +417,15 @@ Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_cli
 
             grep -r 'schema/v1.0/types' .
 
---START--
-./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java:    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/EB/schema/v1.0/types/computer/simple-compute-resource-1.0") ;
-....
-....
---END--
+    >   ./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java:    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/EB/schema/v1.0/types/computer/simple-compute-resource-1.0") ;
+    >   ....
+    >   ....
 
             grep -r -l 'schema/v1.0/types' .
 
---START--
-./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java
-....
-....
---END--
+    >   ./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java
+    >   ....
+    >   ....
 
             #
             # Dry run - print don't change.
@@ -458,13 +442,11 @@ Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_cli
                     "${filename}"
             done
 
---START--
-Filename [./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java]
-    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/computer/simple-compute-resource-1.0") ;
-    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/computer/simple-compute-resource.yaml") ;
-....
-....
---END--
+    >   Filename [./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java]
+    >       public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/computer/simple-compute-resource-1.0") ;
+    >       public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/computer/simple-compute-resource.yaml") ;
+    >   ....
+    >   ....
 
 
             #
@@ -481,15 +463,13 @@ Filename [./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleCompu
                     "${filename}"
             done
 
---START--
-Filename [./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java]
-    public static final URI KIND_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/EB/schema/v1.0/types/computer/simple-compute-resource-1.0") ;
-
-Filename [./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResourceEntity.java]
-        return SimpleComputeResource.KIND_DISCRIMINATOR;
-....
-....
---END--
+    >   Filename [./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java]
+    >       public static final URI KIND_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/EB/schema/v1.0/types/computer/simple-compute-resource-1.0") ;
+    >   
+    >   Filename [./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResourceEntity.java]
+    >           return SimpleComputeResource.KIND_DISCRIMINATOR;
+    >   ....
+    >   ....
 
             #
             # Go for it ....
@@ -564,9 +544,7 @@ EOF
         --env "POSTGRES_PASSWORD=$(yq '.spring.datasource.password' /etc/calycopis/database.yaml)" \
         docker.io/library/postgres:latest
 
---START--
-c40d59ffe5a60704322ed28748c4f0001c95133576eea194c686f27378908f34
---END--
+    >   c40d59ffe5a60704322ed28748c4f0001c95133576eea194c686f27378908f34
 
 
 # -----------------------------------------------------
@@ -612,12 +590,10 @@ c40d59ffe5a60704322ed28748c4f0001c95133576eea194c686f27378908f34
         popd
     popd
 
---START--
-....
-....
-E AttributeError: 'DefaultApi' object has no attribute 'offer_set_post_with_http_info'. Did you mean: 'offer_set_select_with_http_info'?
-/calycopis/Calycopis-openapi/github-zrq/codegen/python/client/build/calycopis_schema_client/wrappers/execution_client.py:100: AttributeError
---END--
+    >   ....
+    >   ....
+    >   E AttributeError: 'DefaultApi' object has no attribute 'offer_set_post_with_http_info'. Did you mean: 'offer_set_select_with_http_info'?
+    >   /calycopis/Calycopis-openapi/github-zrq/codegen/python/client/build/calycopis_schema_client/wrappers/execution_client.py:100: AttributeError
 
     #
     # This is a problem with the client wrapper, not the tests.
@@ -642,17 +618,15 @@ E AttributeError: 'DefaultApi' object has no attribute 'offer_set_post_with_http
                 s|direct_execution_post|direct_execution|g p
                 ' execution_client.py
 
---START--
-        resp: ApiResponse[OfferSetResponse] = self._api.execution_request_with_http_info(
-                raise RuntimeError("303 response from execution_request without Location header")
-            return self._api.offer_set_select(offerset_uuid)
-            f"Unexpected status code from execution_request: {resp.status_code}"
-        resp: ApiResponse = self._api.direct_execution_with_http_info(
-                    "303 response from direct_execution without Location header"
-            f"Unexpected status code from direct_execution: {resp.status_code}"
-        return self._api.session_select(session_uuid)
-        return self._api.session_update(session_uuid, update)
---END--
+    >           resp: ApiResponse[OfferSetResponse] = self._api.execution_request_with_http_info(
+    >                   raise RuntimeError("303 response from execution_request without Location header")
+    >               return self._api.offer_set_select(offerset_uuid)
+    >               f"Unexpected status code from execution_request: {resp.status_code}"
+    >           resp: ApiResponse = self._api.direct_execution_with_http_info(
+    >                       "303 response from direct_execution without Location header"
+    >               f"Unexpected status code from direct_execution: {resp.status_code}"
+    >           return self._api.session_select(session_uuid)
+    >           return self._api.session_update(session_uuid, update)
 
             #
             # Go for it.
@@ -681,16 +655,14 @@ E AttributeError: 'DefaultApi' object has no attribute 'offer_set_post_with_http
 
         buildpythonclient
 
---START--
-....
-....
-adding 'calycopis_schema_client-1.0.6.dist-info/METADATA'
-adding 'calycopis_schema_client-1.0.6.dist-info/WHEEL'
-adding 'calycopis_schema_client-1.0.6.dist-info/top_level.txt'
-adding 'calycopis_schema_client-1.0.6.dist-info/RECORD'
-removing build/bdist.linux-x86_64/wheel
-Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_client-1.0.6-py3-none-any.whl
---END--
+    >   ....
+    >   ....
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/METADATA'
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/WHEEL'
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/top_level.txt'
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/RECORD'
+    >   removing build/bdist.linux-x86_64/wheel
+    >   Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_client-1.0.6-py3-none-any.whl
 
 
 # -----------------------------------------------------
@@ -708,28 +680,26 @@ Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_cli
         popd
     popd
 
---START--
-....
-....
-2026-06-02 10:28:59 WARN http-nio-8082-exec-2 DefaultHandlerExceptionResolver
-    logException()
-        Resolved [org.springframework.http.converter.HttpMessageNotReadableException:
-            JSON parse error:
-                Could not resolve type id
-                    'https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/docker-container-1.0'
-                    as a subtype of
-                    `net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable`:
-                    known type ids = [
-                        IvoaAbstractExecutable,
-                        https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml,
-                        https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/jupyter-notebook.yaml,
-                        https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/singularity-container.yaml
-                        ]
-                    (for POJO property 'executable')
-                    ]
-....
-....
---END--
+    >   ....
+    >   ....
+    >   2026-06-02 10:28:59 WARN http-nio-8082-exec-2 DefaultHandlerExceptionResolver
+    >       logException()
+    >           Resolved [org.springframework.http.converter.HttpMessageNotReadableException:
+    >               JSON parse error:
+    >                   Could not resolve type id
+    >                       'https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/docker-container-1.0'
+    >                       as a subtype of
+    >                       `net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable`:
+    >                       known type ids = [
+    >                           IvoaAbstractExecutable,
+    >                           https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml,
+    >                           https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/jupyter-notebook.yaml,
+    >                           https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/singularity-container.yaml
+    >                           ]
+    >                       (for POJO property 'executable')
+    >                       ]
+    >   ....
+    >   ....
 
 # -----------------------------------------------------
 # -----------------------------------------------------
@@ -760,13 +730,11 @@ Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_cli
                     "${filename}"
             done
 
---START--
-Filename [./mock/test_mock_direct_execution.py]
-    "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container-1.0"
-    "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
-....
-....
---END--
+    >   Filename [./mock/test_mock_direct_execution.py]
+    >       "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container-1.0"
+    >       "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
+    >   ....
+    >   ....
 
             #
             # Go go it.
@@ -785,11 +753,9 @@ Filename [./mock/test_mock_direct_execution.py]
 
         popd
 
---START--
-Filename [./mock/test_mock_direct_execution.py]
-....
-....
---END--
+    >   Filename [./mock/test_mock_direct_execution.py]
+    >   ....
+    >   ....
 
 
 # -----------------------------------------------------
@@ -806,11 +772,9 @@ Filename [./mock/test_mock_direct_execution.py]
         popd
     popd
 
---START--
-....
-....
-==================================== 43 passed, 218 warnings in 1246.80s (0:20:46) =====================================
---END--
+    >   ....
+    >   ....
+    >   ==================================== 43 passed, 218 warnings in 1246.80s (0:20:46) =====================================
 
 
 

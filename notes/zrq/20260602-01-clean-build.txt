@@ -66,11 +66,9 @@
 
             podman ps
 
---START--
-CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS        PORTS       NAMES
-2d521394d818  localhost/podman-pause:5.4.2-1743552000                        16 seconds ago  Up 7 seconds              fe157d5e0e78-infra
-07b02a9022a1  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        7 seconds ago   Up 6 seconds              calycopis-dev
---END--
+    >   CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS        PORTS       NAMES
+    >   2d521394d818  localhost/podman-pause:5.4.2-1743552000                        16 seconds ago  Up 7 seconds              fe157d5e0e78-infra
+    >   07b02a9022a1  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        7 seconds ago   Up 6 seconds              calycopis-dev
 
 
 # -----------------------------------------------------
@@ -83,65 +81,57 @@ CONTAINER ID  IMAGE                                              COMMAND     CRE
 
         buildschema
 
---START--
-....
-....
-Inlining from discriminator mapping: StringValueUpdate
-Inlining from discriminator mapping: EnumValueUpdate
-Inlining from discriminator mapping: IntegerValueUpdate
-Inlining from discriminator mapping: IntegerDeltaUpdate
-✅ All references processed and saved.
---END--
+    >   ....
+    >   ....
+    >   Inlining from discriminator mapping: StringValueUpdate
+    >   Inlining from discriminator mapping: EnumValueUpdate
+    >   Inlining from discriminator mapping: IntegerValueUpdate
+    >   Inlining from discriminator mapping: IntegerDeltaUpdate
+    >   ✅ All references processed and saved.
 
 
         installgenerator
 
         buildpythonclient
 
---START--
-....
-....
-adding 'calycopis_schema_client-1.0.6.dist-info/METADATA'
-adding 'calycopis_schema_client-1.0.6.dist-info/WHEEL'
-adding 'calycopis_schema_client-1.0.6.dist-info/top_level.txt'
-adding 'calycopis_schema_client-1.0.6.dist-info/RECORD'
-removing build/bdist.linux-x86_64/wheel
-Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_client-1.0.6-py3-none-any.whl
---END--
+    >   ....
+    >   ....
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/METADATA'
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/WHEEL'
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/top_level.txt'
+    >   adding 'calycopis_schema_client-1.0.6.dist-info/RECORD'
+    >   removing build/bdist.linux-x86_64/wheel
+    >   Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_client-1.0.6-py3-none-any.whl
 
 
         buildjavaclient
 
---START--
-....
-....
-[INFO] --- install:3.1.2:install (default-install) @ calycopis-schema-client ---
-[INFO] Installing /calycopis/Calycopis-openapi/github-zrq/codegen/java/client/pom.xml to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-client/1.0.6-SNAPSHOT/calycopis-schema-client-1.0.6-SNAPSHOT.pom
-[INFO] Installing /calycopis/Calycopis-openapi/github-zrq/codegen/java/client/target/calycopis-schema-client-1.0.6-SNAPSHOT.jar to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-client/1.0.6-SNAPSHOT/calycopis-schema-client-1.0.6-SNAPSHOT.jar
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  10.078 s
-[INFO] Finished at: 2026-06-02T11:58:06Z
-[INFO] ------------------------------------------------------------------------
---END--
+    >   ....
+    >   ....
+    >   [INFO] --- install:3.1.2:install (default-install) @ calycopis-schema-client ---
+    >   [INFO] Installing /calycopis/Calycopis-openapi/github-zrq/codegen/java/client/pom.xml to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-client/1.0.6-SNAPSHOT/calycopis-schema-client-1.0.6-SNAPSHOT.pom
+    >   [INFO] Installing /calycopis/Calycopis-openapi/github-zrq/codegen/java/client/target/calycopis-schema-client-1.0.6-SNAPSHOT.jar to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-client/1.0.6-SNAPSHOT/calycopis-schema-client-1.0.6-SNAPSHOT.jar
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] BUILD SUCCESS
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] Total time:  10.078 s
+    >   [INFO] Finished at: 2026-06-02T11:58:06Z
+    >   [INFO] ------------------------------------------------------------------------
 
 
         buildjavaspring
 
---START--
-....
-....
-[INFO] --- install:3.1.4:install (default-install) @ calycopis-schema-spring ---
-[INFO] Installing /calycopis/Calycopis-openapi/github-zrq/codegen/java/spring/pom.xml to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-spring/1.0.6-SNAPSHOT/calycopis-schema-spring-1.0.6-SNAPSHOT.pom
-[INFO] Installing /calycopis/Calycopis-openapi/github-zrq/codegen/java/spring/target/calycopis-schema-spring-1.0.6-SNAPSHOT.jar to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-spring/1.0.6-SNAPSHOT/calycopis-schema-spring-1.0.6-SNAPSHOT.jar
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  10.096 s
-[INFO] Finished at: 2026-06-02T11:58:34Z
-[INFO] ------------------------------------------------------------------------
---END--
+    >   ....
+    >   ....
+    >   [INFO] --- install:3.1.4:install (default-install) @ calycopis-schema-spring ---
+    >   [INFO] Installing /calycopis/Calycopis-openapi/github-zrq/codegen/java/spring/pom.xml to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-spring/1.0.6-SNAPSHOT/calycopis-schema-spring-1.0.6-SNAPSHOT.pom
+    >   [INFO] Installing /calycopis/Calycopis-openapi/github-zrq/codegen/java/spring/target/calycopis-schema-spring-1.0.6-SNAPSHOT.jar to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-spring/1.0.6-SNAPSHOT/calycopis-schema-spring-1.0.6-SNAPSHOT.jar
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] BUILD SUCCESS
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] Total time:  10.096 s
+    >   [INFO] Finished at: 2026-06-02T11:58:34Z
+    >   [INFO] ------------------------------------------------------------------------
 
     popd
 
@@ -187,10 +177,8 @@ EOF
         --env "POSTGRES_PASSWORD=$(yq '.spring.datasource.password' /etc/calycopis/database.yaml)" \
         docker.io/library/postgres:latest
 
---START--
-....
-....
---END--
+    >   ....
+    >   ....
 
 
 # -----------------------------------------------------
@@ -205,10 +193,8 @@ EOF
         popd
     popd
 
---START--
-....
-....
---END--
+    >   ....
+    >   ....
 
 
 # -----------------------------------------------------
@@ -253,10 +239,8 @@ EOF
         popd
     popd
 
---START--
-....
-....
-==================================== 43 passed, 218 warnings in 1246.80s (0:20:46) =====================================
---END--
+    >   ....
+    >   ....
+    >   ==================================== 43 passed, 218 warnings in 1246.80s (0:20:46) =====================================
 
 
