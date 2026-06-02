@@ -55,9 +55,6 @@
 
 package net.ivoa.calycopis.broker.spring.webapp;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -71,21 +68,21 @@ import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.broker.spring.security.IdentityResolver;
-import net.ivoa.calycopis.schema.spring.api.OffersetsApiDelegate;
+import net.ivoa.calycopis.schema.spring.api.RequestsApiDelegate;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
 import net.ivoa.calycopis.schema.spring.model.IvoaOfferSetResponse;
 
 @Slf4j
 @Service
-public class OffersetsApiDelegateImpl
+public class RequestsApiDelegateImpl
 extends BaseDelegateImpl
-implements OffersetsApiDelegate
+implements RequestsApiDelegate
     {
 
     private Platform platform ;
     
     @Autowired
-    public OffersetsApiDelegateImpl(
+    public RequestsApiDelegateImpl(
         final NativeWebRequest request,
         final Platform platform,
         final IdentityResolver identityResolver
@@ -96,25 +93,27 @@ implements OffersetsApiDelegate
         this.platform.initialize();
         }
 
+
     @Override
-    public ResponseEntity<IvoaOfferSetResponse> offerSetSelect(final UUID uuid)
-        {
-        final Optional<OfferSetEntity> found = this.platform.getOfferSetEntityFactory().select(
-            uuid
+    public ResponseEntity<IvoaOfferSetResponse> executionRequest(
+        @RequestBody IvoaExecutionRequest request
+        ){
+        IdentityEntity identity = this.getIdentity();
+        OfferSetEntity entity = this.platform.getOfferSetEntityFactory().create(
+            request,
+            identity
             );
-        if (found.isPresent())
-            {
-            return new ResponseEntity<IvoaOfferSetResponse>(
-                found.get().makeBean(
-                    this.getURIBuilder()
-                    ),
-                HttpStatus.OK
-                );
-            }
-        else {
-            return new ResponseEntity<IvoaOfferSetResponse>(
-                HttpStatus.NOT_FOUND
-                );
-            }
-        }
+        IvoaOfferSetResponse response = entity.makeBean(
+            this.getURIBuilder()
+            );
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(
+            response.getMeta().getUrl()
+            );
+        return new ResponseEntity<IvoaOfferSetResponse>(
+            response,
+            headers,
+            HttpStatus.SEE_OTHER
+            );
+	    }
     }

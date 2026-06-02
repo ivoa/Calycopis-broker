@@ -75,9 +75,6 @@
 
 package net.ivoa.calycopis.broker.spring.webapp;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -86,27 +83,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import lombok.extern.slf4j.Slf4j;
-import net.ivoa.calycopis.broker.engine.entities.identity.Identity;
 import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.broker.spring.security.IdentityResolver;
-import net.ivoa.calycopis.schema.spring.api.SessionsApiDelegate;
+import net.ivoa.calycopis.schema.spring.api.DirectApiDelegate;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutionSession;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractUpdate;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
 
 @Slf4j
 @Service
-public class SessionsApiDelegateImpl
+public class DirectApiDelegateImpl
 extends BaseDelegateImpl
-implements SessionsApiDelegate
+implements DirectApiDelegate
     {
 
     private Platform platform ;
 
     @Autowired
-    public SessionsApiDelegateImpl(
+    public DirectApiDelegateImpl(
         final NativeWebRequest request,
         final Platform platform,
         final IdentityResolver identityResolver
@@ -117,74 +112,41 @@ implements SessionsApiDelegate
         }
 
     @Override
-    public ResponseEntity<IvoaAbstractExecutionSession> sessionSelect(
-        final UUID uuid
+    public ResponseEntity<IvoaAbstractExecutionSession> directExecution(
+        IvoaExecutionRequest request
         ){
-        final Optional<SimpleExecutionSessionEntity> found = platform.getExecutionSessionEntityFactory().select(
-            uuid
-            );
-        if (found.isPresent())
-            {
-            return new ResponseEntity<IvoaAbstractExecutionSession>(
-                found.get().makeBean(
-                    this.getURIBuilder()
-                    ),
-                HttpStatus.OK
-                );
-            }
-        else {
-            return new ResponseEntity<IvoaAbstractExecutionSession>(
-                HttpStatus.NOT_FOUND
-                );
-            }
-        }
+        log.debug("directExecutionPost(IvoaExecutionRequest)");
+        IdentityEntity identity = this.getIdentity();
+        //
+        // Process the request to create a new execution session.
+        SimpleExecutionSessionEntity entity = platform.getOfferSetEntityFactory().direct(request, identity);
+        log.debug("Session entity [{}][{}][{}]", entity.getUuid(), entity.getPhase(), entity.getClass().getSimpleName());
 
-    @Override
-    public ResponseEntity<IvoaAbstractExecutionSession> sessionUpdate(
-        final UUID uuid,
-        final IvoaAbstractUpdate request
-        ){
-        //
-        // Look up the session to check ownership before allowing the update.
-        final Optional<SimpleExecutionSessionEntity> existing = platform.getExecutionSessionEntityFactory().select(uuid);
-        if (existing.isEmpty())
-            {
-            return new ResponseEntity<IvoaAbstractExecutionSession>(
-                HttpStatus.NOT_FOUND
-                );
-            }
-        //
-        // Check that the caller owns this session.
-        IdentityEntity caller = this.getIdentity();
-        Identity sessionOwner = existing.get().getOwner();
-        if (sessionOwner != null && caller != null)
-            {
-            if (!sessionOwner.getUuid().equals(caller.getUuid()))
-                {
-                log.warn("Authorization denied: caller [{}] does not own session [{}]", caller.getUuid(), uuid);
-                return new ResponseEntity<IvoaAbstractExecutionSession>(
-                    HttpStatus.FORBIDDEN
-                    );
-                }
-            }
-        //
-        // Apply the update.
-        final Optional<SimpleExecutionSessionEntity> updated = platform.getExecutionSessionEntityUpdater().update(
-            uuid,
-            request
+        IvoaAbstractExecutionSession bean = entity.makeBean(
+            this.getURIBuilder()
             );
-        if (updated.isPresent())
+
+        log.debug("Session bean [{}][{}]", bean.getMeta().getUuid(), bean.getMeta().getUrl());
+        //
+        // If we got a real session, then return a redirect to the session details.
+        if (entity.getUuid() != null)
             {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(
+                bean.getMeta().getUrl()
+                );
             return new ResponseEntity<IvoaAbstractExecutionSession>(
-                updated.get().makeBean(
-                    this.getURIBuilder()
-                    ),
-                HttpStatus.OK
+                bean,
+                headers,
+                HttpStatus.SEE_OTHER
                 );
             }
+        //
+        // If the processing failed, return an error response with the details of the failure.
         else {
             return new ResponseEntity<IvoaAbstractExecutionSession>(
-                HttpStatus.NOT_FOUND
+                bean,
+                HttpStatus.BAD_REQUEST
                 );
             }
         }
