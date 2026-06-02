@@ -141,7 +141,7 @@ implements SimpleComputeResourceValidator
         boolean success = true ;
 
         IvoaSimpleComputeResource validated = new IvoaSimpleComputeResource()
-            .kind(SimpleComputeResource.TYPE_DISCRIMINATOR)
+            .kind(SimpleComputeResource.KIND_DISCRIMINATOR)
             .meta(
                 ValidatorTools.makeMeta(
                     requested.getMeta(),

@@ -68,7 +68,7 @@ implements OfferSet
     @Override
     public URI getKind()
         {
-        return OfferSet.TYPE_DISCRIMINATOR ;
+        return OfferSet.KIND_DISCRIMINATOR ;
         }
 
     /**

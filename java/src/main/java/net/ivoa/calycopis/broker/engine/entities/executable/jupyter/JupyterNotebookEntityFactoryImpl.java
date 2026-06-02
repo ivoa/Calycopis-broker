@@ -51,7 +51,7 @@ implements JupyterNotebookEntityFactory
     @Override
     public URI getKind()
         {
-        return JupyterNotebook.TYPE_DISCRIMINATOR;
+        return JupyterNotebook.KIND_DISCRIMINATOR;
         }
 
     /**

@@ -64,6 +64,6 @@ implements SimpleStorageResourceEntityFactory
     @Override
     public URI getKind()
         {
-        return SimpleStorageResource.TYPE_DISCRIMINATOR;
+        return SimpleStorageResource.KIND_DISCRIMINATOR;
         }
     }

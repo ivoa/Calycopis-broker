@@ -39,7 +39,7 @@ extends AbstractDataResource
      * The OpenAPI type identifier.
      * 
      */
-    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/EB/schema/v1.0/types/data/simple-data-resource-1.0") ;
+    public static final URI KIND_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/data/simple-data-resource.yaml") ;
     
     /**
      * Get the data location.

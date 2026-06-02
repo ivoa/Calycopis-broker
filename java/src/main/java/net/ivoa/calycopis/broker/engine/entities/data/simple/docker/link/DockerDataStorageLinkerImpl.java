@@ -190,7 +190,7 @@ implements DockerDataStorageLinker
         ){
 
         IvoaAbstractStorageResource template = new IvoaAbstractStorageResource()
-            .kind(SimpleStorageResource.TYPE_DISCRIMINATOR)
+            .kind(SimpleStorageResource.KIND_DISCRIMINATOR)
             .meta(
                 new IvoaComponentMetadata()
                 .name("BindMount")
@@ -240,7 +240,7 @@ implements DockerDataStorageLinker
         ){
         
         IvoaAbstractStorageResource template = new IvoaAbstractStorageResource()
-            .kind(SimpleStorageResource.TYPE_DISCRIMINATOR)
+            .kind(SimpleStorageResource.KIND_DISCRIMINATOR)
             .meta(
                 new IvoaComponentMetadata()
                 .name("VolumeMount")

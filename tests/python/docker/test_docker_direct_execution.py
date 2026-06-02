@@ -38,6 +38,16 @@
 #       "value": 5,
 #       "units": "%"
 #       }
+#     },
+#     {
+#     "timestamp": "2026-06-02T13:37:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 3,
+#       "units": "%"
+#       }
 #     }
 #   ]
 #
@@ -75,24 +85,19 @@ from calycopis_schema_client.models import (
     AbstractExecutionSession,
     SimpleExecutionSessionPhase,
 )
-from calycopis_schema_client.models.docker_container import DockerContainer
 from calycopis_schema_client.models.docker_image_spec import DockerImageSpec
-from calycopis_schema_client.models.simple_compute_resource import SimpleComputeResource
 from calycopis_schema_client.models.simple_compute_cores import SimpleComputeCores
 from calycopis_schema_client.models.simple_compute_memory import SimpleComputeMemory
 from calycopis_schema_client.models.component_metadata import ComponentMetadata
+from calycopis_schema_client.wrappers import (
+    DockerContainer,
+    SimpleComputeResource,
+)
 
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
-DOCKER_CONTAINER_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/docker-container-1.0"
-)
-SIMPLE_COMPUTE_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/compute/simple-compute-resource-1.0"
-)
 
 # Heliophorus-cantliei test container: waits N seconds then exits
 # with a configurable exit code.
@@ -113,7 +118,6 @@ def _make_cantliei_executable(name: str = "cantliei-direct", pause_seconds: int 
         exit_code: Exit code the container should return (default: 0).
     """
     return DockerContainer(
-        kind=DOCKER_CONTAINER_KIND,
         meta=ComponentMetadata(name=name),
         image=DockerImageSpec(
             locations=[CANTLIEI_IMAGE],
@@ -276,7 +280,6 @@ class TestDirectExecutionBasic:
                 pause_seconds=5,
             ),
             compute=SimpleComputeResource(
-                kind=SIMPLE_COMPUTE_KIND,
                 meta=ComponentMetadata(name="direct-compute"),
                 cores=SimpleComputeCores(min=1, max=2),
                 memory=SimpleComputeMemory(min=1, max=2),

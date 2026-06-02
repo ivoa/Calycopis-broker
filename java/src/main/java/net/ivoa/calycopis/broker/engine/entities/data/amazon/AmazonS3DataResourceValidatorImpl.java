@@ -129,7 +129,7 @@ implements AmazonS3DataResourceValidator
         boolean success = true ;
 
         IvoaS3DataResource validated = new IvoaS3DataResource()
-            .kind(AmazonS3DataResource.TYPE_DISCRIMINATOR)
+            .kind(AmazonS3DataResource.KIND_DISCRIMINATOR)
             .meta(
                 ValidatorTools.makeMeta(
                     requested.getMeta(),

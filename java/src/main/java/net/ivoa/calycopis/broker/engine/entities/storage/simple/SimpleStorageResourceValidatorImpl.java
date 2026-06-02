@@ -114,7 +114,7 @@ implements SimpleStorageResourceValidator
 
         boolean success = true ;
         IvoaSimpleStorageResource validated = new IvoaSimpleStorageResource()
-            .kind(SimpleStorageResource.TYPE_DISCRIMINATOR)
+            .kind(SimpleStorageResource.KIND_DISCRIMINATOR)
             .meta(
                 ValidatorTools.makeMeta(
                     requested.getMeta(),

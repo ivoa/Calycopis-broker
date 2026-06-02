@@ -116,7 +116,7 @@ implements SimpleExecutionSession
     @Override
     public URI getKind()
         {
-        return SimpleExecutionSession.TYPE_DISCRIMINATOR;
+        return SimpleExecutionSession.KIND_DISCRIMINATOR;
         }
 
     /**

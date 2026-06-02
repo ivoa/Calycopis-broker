@@ -46,6 +46,16 @@
 #       "value": 5,
 #       "units": "%"
 #       }
+#     },
+#     {
+#     "timestamp": "2026-06-02T13:37:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 3,
+#       "units": "%"
+#       }
 #     }
 #   ]
 #
@@ -81,10 +91,12 @@ from calycopis_schema_client.models import (
     OfferSetResponse,
     SimpleExecutionSessionPhase,
 )
-from calycopis_schema_client.models.docker_container import DockerContainer
 from calycopis_schema_client.models.docker_image_spec import DockerImageSpec
-from calycopis_schema_client.models.simple_compute_resource import SimpleComputeResource
 from calycopis_schema_client.models.component_metadata import ComponentMetadata
+from calycopis_schema_client.wrappers import (
+    DockerContainer,
+    SimpleComputeResource,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -96,10 +108,6 @@ PAUSE_SECONDS = int(os.environ.get("STRESS_PAUSE", "5"))
 POLL_INTERVAL = float(os.environ.get("STRESS_POLL_INTERVAL", "5.0"))
 TIMEOUT = float(os.environ.get("STRESS_TIMEOUT", "900.0"))
 SUBMIT_WORKERS = int(os.environ.get("STRESS_SUBMIT_WORKERS", "10"))
-
-DOCKER_CONTAINER_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/docker-container-1.0"
-)
 
 CANTLIEI_IMAGE = "ghcr.io/zarquan/heliophorus-cantliei:sha-c9572b0"
 CANTLIEI_DIGEST = "sha256:4911760109f78976d2a95a6491a8d8c77bfee9fd1498b9a4b7dd5b7515826689"
@@ -130,7 +138,6 @@ TERMINAL_PHASES = {
 
 def _make_executable(index: int) -> DockerContainer:
     return DockerContainer(
-        kind=DOCKER_CONTAINER_KIND,
         meta=ComponentMetadata(name=f"stress-{index:04d}"),
         image=DockerImageSpec(
             locations=[CANTLIEI_IMAGE],

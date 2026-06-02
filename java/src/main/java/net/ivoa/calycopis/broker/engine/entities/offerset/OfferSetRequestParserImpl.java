@@ -137,7 +137,7 @@ implements OfferSetRequestParser
         if (computeResource == null)
             {
             computeResource = new IvoaSimpleComputeResource()
-                .kind(SimpleComputeResource.TYPE_DISCRIMINATOR)
+                .kind(SimpleComputeResource.KIND_DISCRIMINATOR)
                 .meta(
                     new IvoaComponentMetadata().name(
                         "Default compute resource"

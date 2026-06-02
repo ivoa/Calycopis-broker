@@ -38,6 +38,16 @@
 #       "value": 1,
 #       "units": "%"
 #       }
+#     },
+#     {
+#     "timestamp": "2026-06-02T13:37:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 5,
+#       "units": "%"
+#       }
 #     }
 #   ]
 #
@@ -75,58 +85,27 @@ from calycopis_schema_client.models import (
     ExecutionRequest,
     OfferSetResponse,
 )
-from calycopis_schema_client.models.docker_container import DockerContainer
 from calycopis_schema_client.models.docker_image_spec import DockerImageSpec
 from calycopis_schema_client.models.docker_internal_port import DockerInternalPort
 from calycopis_schema_client.models.docker_network_port import DockerNetworkPort
 from calycopis_schema_client.models.docker_network_spec import DockerNetworkSpec
-from calycopis_schema_client.models.jupyter_notebook import JupyterNotebook
-from calycopis_schema_client.models.simple_compute_resource import SimpleComputeResource
 from calycopis_schema_client.models.simple_compute_cores import SimpleComputeCores
 from calycopis_schema_client.models.simple_compute_memory import SimpleComputeMemory
-from calycopis_schema_client.models.simple_storage_resource import SimpleStorageResource
 from calycopis_schema_client.models.simple_storage_size import SimpleStorageSize
-from calycopis_schema_client.models.simple_data_resource import SimpleDataResource
-from calycopis_schema_client.models.s3_data_resource import S3DataResource
-from calycopis_schema_client.models.ivoa_data_resource import IvoaDataResource
 from calycopis_schema_client.models.ivoa_data_resource_block import IvoaDataResourceBlock
-from calycopis_schema_client.models.skao_data_resource import SkaoDataResource
 from calycopis_schema_client.models.skao_data_resource_block import SkaoDataResourceBlock
 from calycopis_schema_client.models.skao_replica_item import SkaoReplicaItem
 from calycopis_schema_client.models.component_metadata import ComponentMetadata
-
-
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
-
-
-# Kind discriminator URIs (must match the Java TYPE_DISCRIMINATOR constants)
-DOCKER_CONTAINER_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/docker-container-1.0"
+from calycopis_schema_client.wrappers import (
+    DockerContainer,
+    IvoaDataResource,
+    JupyterNotebook,
+    S3DataResource,
+    SimpleComputeResource,
+    SimpleDataResource,
+    SimpleStorageResource,
+    SkaoDataResource,
 )
-JUPYTER_NOTEBOOK_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/jupyter-notebook-1.0"
-)
-SIMPLE_COMPUTE_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/compute/simple-compute-resource-1.0"
-)
-SIMPLE_STORAGE_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/storage/simple-storage-resource-1.0"
-)
-SIMPLE_DATA_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/data/simple-data-resource-1.0"
-)
-S3_DATA_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/data/S3-data-resource-1.0"
-)
-IVOA_DATA_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/data/ivoa-data-resource-1.0"
-)
-SKAO_DATA_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/data/skao-data-resource-1.0"
-)
-
 
 
 # ---------------------------------------------------------------------------
@@ -146,7 +125,6 @@ def _submit(client: ExecutionBrokerClient, request: ExecutionRequest) -> OfferSe
 def _make_docker_executable(name: str = "test-container") -> DockerContainer:
     """Helper: create a minimal valid DockerContainer executable."""
     return DockerContainer(
-        kind=DOCKER_CONTAINER_KIND,
         meta=ComponentMetadata(name=name),
         image=DockerImageSpec(
             locations=["ghcr.io/ivoa/oligia-webtop:ubuntu-2022.01.13"],
@@ -161,7 +139,6 @@ def _make_jupyter_executable(
 ) -> JupyterNotebook:
     """Helper: create a minimal valid JupyterNotebook executable."""
     return JupyterNotebook(
-        kind=JUPYTER_NOTEBOOK_KIND,
         meta=ComponentMetadata(name=name),
         location=location,
     )
@@ -210,7 +187,6 @@ class TestDockerContainerValidation:
         """
         request = ExecutionRequest(
             executable=DockerContainer(
-                kind=DOCKER_CONTAINER_KIND,
                 meta=ComponentMetadata(name="docker-valid-network"),
                 image=DockerImageSpec(
                     locations=["ghcr.io/ivoa/oligia-webtop:ubuntu-2022.01.13"],
@@ -238,7 +214,6 @@ class TestDockerContainerValidation:
         """
         request = ExecutionRequest(
             executable=DockerContainer(
-                kind=DOCKER_CONTAINER_KIND,
                 meta=ComponentMetadata(name="docker-bad-path"),
                 image=DockerImageSpec(
                     locations=["ghcr.io/ivoa/oligia-webtop:ubuntu-2022.01.13"],
@@ -266,7 +241,6 @@ class TestDockerContainerValidation:
         """
         request = ExecutionRequest(
             executable=DockerContainer(
-                kind=DOCKER_CONTAINER_KIND,
                 meta=ComponentMetadata(name="docker-also-bad-path"),
                 image=DockerImageSpec(
                     locations=["ghcr.io/ivoa/oligia-webtop:ubuntu-2022.01.13"],
@@ -294,7 +268,6 @@ class TestDockerContainerValidation:
         """
         request = ExecutionRequest(
             executable=DockerContainer(
-                kind=DOCKER_CONTAINER_KIND,
                 meta=ComponentMetadata(name="docker-bad-port-1234"),
                 image=DockerImageSpec(
                     locations=["ghcr.io/ivoa/oligia-webtop:ubuntu-2022.01.13"],
@@ -322,7 +295,6 @@ class TestDockerContainerValidation:
         """
         request = ExecutionRequest(
             executable=DockerContainer(
-                kind=DOCKER_CONTAINER_KIND,
                 meta=ComponentMetadata(name="docker-bad-port-5678"),
                 image=DockerImageSpec(
                     locations=["ghcr.io/ivoa/oligia-webtop:ubuntu-2022.01.13"],
@@ -350,7 +322,6 @@ class TestDockerContainerValidation:
         """
         request = ExecutionRequest(
             executable=DockerContainer(
-                kind=DOCKER_CONTAINER_KIND,
                 meta=ComponentMetadata(name="docker-privileged"),
                 image=DockerImageSpec(
                     locations=["ghcr.io/ivoa/oligia-webtop:ubuntu-2022.01.13"],
@@ -369,7 +340,6 @@ class TestDockerContainerValidation:
         """
         request = ExecutionRequest(
             executable=DockerContainer(
-                kind=DOCKER_CONTAINER_KIND,
                 meta=ComponentMetadata(name="docker-bad-protocol"),
                 image=DockerImageSpec(
                     locations=["ghcr.io/ivoa/oligia-webtop:ubuntu-2022.01.13"],
@@ -397,7 +367,6 @@ class TestDockerContainerValidation:
         """
         request = ExecutionRequest(
             executable=DockerContainer(
-                kind=DOCKER_CONTAINER_KIND,
                 meta=ComponentMetadata(name="docker-negative-port"),
                 image=DockerImageSpec(
                     locations=["ghcr.io/ivoa/oligia-webtop:ubuntu-2022.01.13"],
@@ -465,7 +434,6 @@ class TestJupyterNotebookValidation:
         """
         request = ExecutionRequest(
             executable=JupyterNotebook(
-                kind=JUPYTER_NOTEBOOK_KIND,
                 meta=ComponentMetadata(name="notebook-no-location"),
             ),
         )
@@ -494,7 +462,6 @@ class TestSimpleComputeResourceValidation:
         request = ExecutionRequest(
             executable=_make_docker_executable("compute-valid"),
             compute=SimpleComputeResource(
-                kind=SIMPLE_COMPUTE_KIND,
                 meta=ComponentMetadata(name="valid-compute"),
                 cores=SimpleComputeCores(min=4, max=8),
                 memory=SimpleComputeMemory(min=2, max=4),
@@ -522,7 +489,6 @@ class TestSimpleComputeResourceValidation:
         request = ExecutionRequest(
             executable=_make_docker_executable("compute-cores-over"),
             compute=SimpleComputeResource(
-                kind=SIMPLE_COMPUTE_KIND,
                 meta=ComponentMetadata(name="cores-over-limit"),
                 cores=SimpleComputeCores(min=20, max=20),
             ),
@@ -538,7 +504,6 @@ class TestSimpleComputeResourceValidation:
         request = ExecutionRequest(
             executable=_make_docker_executable("compute-cores-capped"),
             compute=SimpleComputeResource(
-                kind=SIMPLE_COMPUTE_KIND,
                 meta=ComponentMetadata(name="cores-capped"),
                 cores=SimpleComputeCores(min=4, max=32),
             ),
@@ -554,7 +519,6 @@ class TestSimpleComputeResourceValidation:
         request = ExecutionRequest(
             executable=_make_docker_executable("compute-memory-over"),
             compute=SimpleComputeResource(
-                kind=SIMPLE_COMPUTE_KIND,
                 meta=ComponentMetadata(name="memory-over-limit"),
                 memory=SimpleComputeMemory(min=20, max=20),
             ),
@@ -570,7 +534,6 @@ class TestSimpleComputeResourceValidation:
         request = ExecutionRequest(
             executable=_make_docker_executable("compute-memory-capped"),
             compute=SimpleComputeResource(
-                kind=SIMPLE_COMPUTE_KIND,
                 meta=ComponentMetadata(name="memory-capped"),
                 memory=SimpleComputeMemory(min=4, max=32),
             ),
@@ -599,14 +562,12 @@ class TestSimpleStorageResourceValidation:
             executable=_make_docker_executable("storage-valid"),
             storage=[
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="valid-storage"),
                     size=SimpleStorageSize(min=100, max=500),
                 ),
             ],
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="storage-test-data"),
                     storage="valid-storage",
                     location="https://example.org/data/test.fits",
@@ -625,14 +586,12 @@ class TestSimpleStorageResourceValidation:
             executable=_make_docker_executable("storage-size-over"),
             storage=[
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="big-storage"),
                     size=SimpleStorageSize(min=2000, max=2000),
                 ),
             ],
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="storage-size-data"),
                     storage="big-storage",
                     location="https://example.org/data/test.fits",
@@ -651,14 +610,12 @@ class TestSimpleStorageResourceValidation:
             executable=_make_docker_executable("storage-size-capped"),
             storage=[
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="capped-storage"),
                     size=SimpleStorageSize(min=100, max=5000),
                 ),
             ],
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="storage-cap-data"),
                     storage="capped-storage",
                     location="https://example.org/data/test.fits",
@@ -693,7 +650,6 @@ class TestSimpleDataResourceValidation:
             executable=_make_docker_executable("simple-data-valid"),
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="valid-data"),
                     location="https://example.org/data/good-file.fits",
                 ),
@@ -710,7 +666,6 @@ class TestSimpleDataResourceValidation:
             executable=_make_docker_executable("simple-data-excluded"),
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="excluded-data"),
                     location="http://example.com/excluded.dat",
                 ),
@@ -728,7 +683,6 @@ class TestSimpleDataResourceValidation:
             executable=_make_docker_executable("simple-data-excluded"),
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="excluded-data"),
                     location="http://example.com/excluded.vot",
                 ),
@@ -746,7 +700,6 @@ class TestSimpleDataResourceValidation:
             executable=_make_docker_executable("simple-data-no-location"),
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="no-location-data"),
                 ),
             ],
@@ -779,7 +732,6 @@ class TestAmazonS3DataResourceValidation:
             executable=_make_docker_executable("s3-data-valid"),
             data=[
                 S3DataResource(
-                    kind=S3_DATA_KIND,
                     meta=ComponentMetadata(name="valid-s3"),
                     endpoint="https://s3.valid.example.com",
                     template="https://s3.valid.example.com/{bucket}/{object}",
@@ -799,7 +751,6 @@ class TestAmazonS3DataResourceValidation:
             executable=_make_docker_executable("s3-data-excluded"),
             data=[
                 S3DataResource(
-                    kind=S3_DATA_KIND,
                     meta=ComponentMetadata(name="excluded-s3"),
                     endpoint="https://s3.excluded-one.example.com",
                     template="https://s3.excluded-one.example.com/{bucket}/{object}",
@@ -819,7 +770,6 @@ class TestAmazonS3DataResourceValidation:
             executable=_make_docker_executable("s3-data-forbidden"),
             data=[
                 S3DataResource(
-                    kind=S3_DATA_KIND,
                     meta=ComponentMetadata(name="forbidden-s3"),
                     endpoint="https://s3.excluded-two.example.com",
                     template="https://s3.excluded-two.example.com/{bucket}/{object}",
@@ -840,7 +790,6 @@ class TestAmazonS3DataResourceValidation:
             executable=_make_docker_executable("s3-data-no-endpoint"),
             data=[
                 S3DataResource(
-                    kind=S3_DATA_KIND,
                     meta=ComponentMetadata(name="no-endpoint-s3"),
                     template="https://s3.example.com/{bucket}/{object}",
                     bucket="my-bucket",
@@ -859,7 +808,6 @@ class TestAmazonS3DataResourceValidation:
             executable=_make_docker_executable("s3-data-no-template"),
             data=[
                 S3DataResource(
-                    kind=S3_DATA_KIND,
                     meta=ComponentMetadata(name="no-template-s3"),
                     endpoint="https://s3.valid.example.com",
                     bucket="my-bucket",
@@ -878,7 +826,6 @@ class TestAmazonS3DataResourceValidation:
             executable=_make_docker_executable("s3-data-no-bucket"),
             data=[
                 S3DataResource(
-                    kind=S3_DATA_KIND,
                     meta=ComponentMetadata(name="no-bucket-s3"),
                     endpoint="https://s3.valid.example.com",
                     template="https://s3.valid.example.com/{bucket}/{object}",
@@ -913,7 +860,6 @@ class TestIvoaDataResourceValidation:
             executable=_make_docker_executable("ivoa-data-valid"),
             data=[
                 IvoaDataResource(
-                    kind=IVOA_DATA_KIND,
                     meta=ComponentMetadata(name="valid-ivoa"),
                     ivoa=IvoaDataResourceBlock(
                         ivoid="ivo://example.com/valid-resource",
@@ -933,7 +879,6 @@ class TestIvoaDataResourceValidation:
             executable=_make_docker_executable("ivoa-data-excluded"),
             data=[
                 IvoaDataResource(
-                    kind=IVOA_DATA_KIND,
                     meta=ComponentMetadata(name="excluded-ivoa"),
                     ivoa=IvoaDataResourceBlock(
                         ivoid="ivo://example.com/excluded",
@@ -952,7 +897,6 @@ class TestIvoaDataResourceValidation:
             executable=_make_docker_executable("ivoa-data-forbidden"),
             data=[
                 IvoaDataResource(
-                    kind=IVOA_DATA_KIND,
                     meta=ComponentMetadata(name="forbidden-ivoa"),
                     ivoa=IvoaDataResourceBlock(
                         ivoid="ivo://example.com/forbidden",
@@ -972,7 +916,6 @@ class TestIvoaDataResourceValidation:
             executable=_make_docker_executable("ivoa-data-no-ivoid"),
             data=[
                 IvoaDataResource(
-                    kind=IVOA_DATA_KIND,
                     meta=ComponentMetadata(name="no-ivoid-ivoa"),
                     ivoa=IvoaDataResourceBlock(),
                 ),
@@ -989,7 +932,6 @@ class TestIvoaDataResourceValidation:
             executable=_make_docker_executable("ivoa-data-no-block"),
             data=[
                 IvoaDataResource(
-                    kind=IVOA_DATA_KIND,
                     meta=ComponentMetadata(name="no-block-ivoa"),
                 ),
             ],
@@ -1021,7 +963,6 @@ class TestSkaoDataResourceValidation:
             executable=_make_docker_executable("skao-data-excluded"),
             data=[
                 SkaoDataResource(
-                    kind=SKAO_DATA_KIND,
                     meta=ComponentMetadata(name="skao-data-excluded-one"),
                     ivoa=IvoaDataResourceBlock(
                         ivoid="ivo://skao.int/skao-data-excluded-one",
@@ -1052,7 +993,6 @@ class TestSkaoDataResourceValidation:
             executable=_make_docker_executable("skao-data-excluded-two"),
             data=[
                 SkaoDataResource(
-                    kind=SKAO_DATA_KIND,
                     meta=ComponentMetadata(name="skao-data-excluded-two"),
                     ivoa=IvoaDataResourceBlock(
                         ivoid="ivo://skao.int/skao-data-excluded-two",

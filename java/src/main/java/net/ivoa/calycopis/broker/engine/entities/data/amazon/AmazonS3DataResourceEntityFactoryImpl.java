@@ -66,6 +66,6 @@ implements AmazonS3DataResourceEntityFactory
     @Override
     public URI getKind()
         {
-        return AmazonS3DataResource.TYPE_DISCRIMINATOR;
+        return AmazonS3DataResource.KIND_DISCRIMINATOR;
         }
     }

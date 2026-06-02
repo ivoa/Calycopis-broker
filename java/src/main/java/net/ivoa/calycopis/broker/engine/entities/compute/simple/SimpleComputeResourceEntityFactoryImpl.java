@@ -66,7 +66,7 @@ implements SimpleComputeResourceEntityFactory
     @Override
     public URI getKind()
         {
-        return SimpleComputeResource.TYPE_DISCRIMINATOR;
+        return SimpleComputeResource.KIND_DISCRIMINATOR;
         }
     }
 

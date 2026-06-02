@@ -50,7 +50,7 @@ implements DockerContainerEntityFactory
     @Override
     public URI getKind()
         {
-        return DockerContainer.TYPE_DISCRIMINATOR;
+        return DockerContainer.KIND_DISCRIMINATOR;
         }
 
     /**

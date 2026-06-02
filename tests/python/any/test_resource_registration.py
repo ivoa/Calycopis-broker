@@ -1,3 +1,18 @@
+#
+# AIMetrics: [
+#     {
+#     "timestamp": "2026-06-02T13:37:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 8,
+#       "units": "%"
+#       }
+#     }
+#   ]
+#
+
 """
 Integration tests for the resource registration fix (GitHub issue #340 follow-up).
 
@@ -24,31 +39,13 @@ from calycopis_schema_client.models import (
     ExecutionRequest,
     OfferSetResponse,
 )
-from calycopis_schema_client.models.docker_container import DockerContainer
 from calycopis_schema_client.models.docker_image_spec import DockerImageSpec
-from calycopis_schema_client.models.simple_data_resource import SimpleDataResource
-from calycopis_schema_client.models.simple_storage_resource import SimpleStorageResource
-from calycopis_schema_client.models.simple_volume_mount import SimpleVolumeMount
 from calycopis_schema_client.models.component_metadata import ComponentMetadata
-
-
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
-
-
-# Kind discriminator URIs (must match the Java TYPE_DISCRIMINATOR constants)
-DOCKER_CONTAINER_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/docker-container-1.0"
-)
-SIMPLE_DATA_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/data/simple-data-resource-1.0"
-)
-SIMPLE_STORAGE_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/storage/simple-storage-resource-1.0"
-)
-SIMPLE_VOLUME_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/volume/simple-volume-mount-1.0"
+from calycopis_schema_client.wrappers import (
+    DockerContainer,
+    SimpleDataResource,
+    SimpleStorageResource,
+    SimpleVolumeMount,
 )
 
 
@@ -56,7 +53,6 @@ SIMPLE_VOLUME_KIND = (
 def _make_executable(name: str = "test-container") -> DockerContainer:
     """Helper: create a minimal DockerContainer executable."""
     return DockerContainer(
-        kind=DOCKER_CONTAINER_KIND,
         meta=ComponentMetadata(name=name),
         image=DockerImageSpec(
             locations=["ghcr.io/ivoa/oligia-webtop:ubuntu-2022.01.13"],
@@ -116,7 +112,6 @@ class TestDataWithDefaultStorage:
             executable=_make_executable("data-default-storage"),
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="my-data"),
                     location="https://example.org/data/test-file.fits",
                 ),
@@ -147,12 +142,10 @@ class TestDataWithDefaultStorage:
             executable=_make_executable("multi-data-default-storage"),
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="data-alpha"),
                     location="https://example.org/data/alpha.fits",
                 ),
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="data-beta"),
                     location="https://example.org/data/beta.fits",
                 ),
@@ -189,13 +182,11 @@ class TestDataReferencingNamedStorage:
             executable=_make_executable("data-refs-storage"),
             storage=[
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="my-storage"),
                 ),
             ],
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="my-data"),
                     storage="my-storage",
                     location="https://example.org/data/test-file.fits",
@@ -238,19 +229,16 @@ class TestDataReferencingNamedStorage:
             executable=_make_executable("multi-data-same-storage"),
             storage=[
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="shared-storage"),
                 ),
             ],
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="data-one"),
                     storage="shared-storage",
                     location="https://example.org/data/one.fits",
                 ),
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="data-two"),
                     storage="shared-storage",
                     location="https://example.org/data/two.fits",
@@ -283,7 +271,6 @@ class TestDataReferencingNamedStorage:
             executable=_make_executable("data-bad-storage-ref"),
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="orphan-data"),
                     storage="nonexistent-storage",
                     location="https://example.org/data/orphan.fits",
@@ -309,13 +296,11 @@ class TestMixedResources:
             executable=_make_executable("named-storage-data"),
             storage=[
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="named-store"),
                 ),
             ],
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="named-data"),
                     storage="named-store",
                     location="https://example.org/data/named.fits",
@@ -345,23 +330,19 @@ class TestMixedResources:
             executable=_make_executable("multi-storage-multi-data"),
             storage=[
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="store-A"),
                 ),
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="store-B"),
                 ),
             ],
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="data-for-A"),
                     storage="store-A",
                     location="https://example.org/data/a.fits",
                 ),
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="data-for-B"),
                     storage="store-B",
                     location="https://example.org/data/b.fits",
@@ -401,19 +382,16 @@ class TestMixedResources:
             executable=_make_executable("mixed-data-storage"),
             storage=[
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="explicit-store"),
                 ),
             ],
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="data-with-storage"),
                     storage="explicit-store",
                     location="https://example.org/data/with-storage.fits",
                 ),
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="data-auto-storage"),
                     location="https://example.org/data/auto-storage.fits",
                 ),
@@ -445,13 +423,11 @@ class TestUuidAssignment:
             executable=_make_executable("uuid-test"),
             storage=[
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="uuid-storage"),
                 ),
             ],
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="uuid-data"),
                     storage="uuid-storage",
                     location="https://example.org/data/uuid-test.fits",
@@ -495,23 +471,19 @@ class TestUuidAssignment:
             executable=_make_executable("uuid-unique-test"),
             storage=[
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="uniq-store-1"),
                 ),
                 SimpleStorageResource(
-                    kind=SIMPLE_STORAGE_KIND,
                     meta=ComponentMetadata(name="uniq-store-2"),
                 ),
             ],
             data=[
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="uniq-data-1"),
                     storage="uniq-store-1",
                     location="https://example.org/data/uniq1.fits",
                 ),
                 SimpleDataResource(
-                    kind=SIMPLE_DATA_KIND,
                     meta=ComponentMetadata(name="uniq-data-2"),
                     storage="uniq-store-2",
                     location="https://example.org/data/uniq2.fits",

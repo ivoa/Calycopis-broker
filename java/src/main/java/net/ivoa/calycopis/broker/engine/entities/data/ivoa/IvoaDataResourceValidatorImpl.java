@@ -134,7 +134,7 @@ implements IvoaDataResourceValidator
         boolean success = true ;
 
         IvoaIvoaDataResource validated = new IvoaIvoaDataResource()
-            .kind(IvoaDataResource.TYPE_DISCRIMINATOR)
+            .kind(IvoaDataResource.KIND_DISCRIMINATOR)
             .meta(
                 ValidatorTools.makeMeta(
                     requested.getMeta(),

@@ -117,7 +117,7 @@ implements DockerContainerValidator
         boolean success = true ;
 
         IvoaDockerContainer validated = new IvoaDockerContainer()
-            .kind(DockerContainer.TYPE_DISCRIMINATOR)
+            .kind(DockerContainer.KIND_DISCRIMINATOR)
             .meta(
                 ValidatorTools.makeMeta(
                     requested.getMeta(),

@@ -120,7 +120,7 @@ implements SimpleVolumeMountValidator
         log.debug("Volume [{}][{}]", requested.getMeta(), requested.getClass().getName());
 
         IvoaSimpleVolumeMount validated = new IvoaSimpleVolumeMount()
-           .kind(SimpleVolumeMount.TYPE_DISCRIMINATOR)
+           .kind(SimpleVolumeMount.KIND_DISCRIMINATOR)
            .meta(
                ValidatorTools.makeMeta(
                     requested.getMeta(),

@@ -48,7 +48,7 @@ extends Component
      * The OpenAPI type identifier.
      * 
      */
-    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/EB/schema/v1.0/types/offerset/execution-offerset-1.0") ;
+    public static final URI KIND_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/offerset/execution-offerset.yaml") ;
     
     /**
      * Get the date/time this OfferSet expires.

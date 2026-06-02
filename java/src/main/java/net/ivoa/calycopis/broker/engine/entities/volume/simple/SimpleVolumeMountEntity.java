@@ -65,7 +65,7 @@ implements SimpleVolumeMount
     @Override
     public URI getKind()
         {
-        return SimpleVolumeMount.TYPE_DISCRIMINATOR;
+        return SimpleVolumeMount.KIND_DISCRIMINATOR;
         }
 
     /**
