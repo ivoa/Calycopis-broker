@@ -112,7 +112,7 @@ implements JupyterNotebookValidator
         boolean success = true ;
 
         IvoaJupyterNotebook validated = new IvoaJupyterNotebook()
-            .kind(JupyterNotebook.TYPE_DISCRIMINATOR)
+            .kind(JupyterNotebook.KIND_DISCRIMINATOR)
             .meta(
                 ValidatorTools.makeMeta(
                     requested.getMeta(),

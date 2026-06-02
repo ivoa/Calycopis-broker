@@ -104,7 +104,7 @@ implements MockDataStorageLinker
             // TODO Replace this with the default storage pool for this platform.
             IvoaSimpleStorageResource template = new IvoaSimpleStorageResource()
                 .kind(
-                    SimpleStorageResource.TYPE_DISCRIMINATOR
+                    SimpleStorageResource.KIND_DISCRIMINATOR
                     )                    
                 .meta(
                     new IvoaComponentMetadata().name(

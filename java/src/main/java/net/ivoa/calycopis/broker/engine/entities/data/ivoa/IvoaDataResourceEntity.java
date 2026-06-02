@@ -70,7 +70,7 @@ implements IvoaDataResource
     @Override
     public URI getKind()
         {
-        return IvoaDataResource.TYPE_DISCRIMINATOR;
+        return IvoaDataResource.KIND_DISCRIMINATOR;
         }
 
     /**

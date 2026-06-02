@@ -17,7 +17,7 @@ public interface JupyterNotebook
      * The OpenAPI type identifier.
      * 
      */
-    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/jupyter-notebook-1.0") ;
+    public static final URI KIND_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/jupyter-notebook.yaml") ;
     
     /**
      * Get the location of the notebook.

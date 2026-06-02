@@ -131,7 +131,7 @@ implements SimpleDataResourceValidator
             );
         
         IvoaSimpleDataResource validated = new IvoaSimpleDataResource()
-            .kind(SimpleDataResource.TYPE_DISCRIMINATOR)
+            .kind(SimpleDataResource.KIND_DISCRIMINATOR)
             .meta(
                 ValidatorTools.makeMeta(
                     requested.getMeta(),

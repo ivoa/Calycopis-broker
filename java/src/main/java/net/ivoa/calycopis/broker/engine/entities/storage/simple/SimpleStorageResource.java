@@ -39,7 +39,7 @@ extends AbstractStorageResource
      * The OpenAPI type identifier.
      * 
      */
-    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/EB/schema/v1.0/types/storage/simple-storage-resource-1.0") ;
+    public static final URI KIND_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/storage/simple-storage-resource.yaml") ;
 
     }
 
