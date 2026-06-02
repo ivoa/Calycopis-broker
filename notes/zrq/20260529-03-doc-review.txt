@@ -72,6 +72,16 @@
     compare the resulting offers, and decide which one best represents
     what they want.
 
+# -----------------------------------------------------
+
+    Simplify the section on aggregators.
+
+    Service discovery
+        Using local list
+        Using local registry
+        Using global registry
+
+    Basically, same as how do we find TAP services ?
 
 
 

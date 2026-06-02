@@ -1,0 +1,89 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Success
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+
+    Create a worked exampled around hash functions.
+
+    https://www.geeksforgeeks.org/python/sha3-in-python/
+    https://stackoverflow.com/questions/3431825/how-to-generate-an-md5-checksum-of-a-file-in-python
+
+    https://pypi.org/project/hashwise/
+    https://docs.rapids.ai/api/cudf/stable/pylibcudf/api_docs/hashing/
+
+https://www.geeksforgeeks.org/python/sha3-in-python/
+https://stackoverflow.com/questions/3431825/how-to-generate-an-md5-checksum-of-a-file-in-python
+https://pypi.org/project/hashwise/
+https://docs.rapids.ai/api/cudf/stable/pylibcudf/api_docs/hashing/
+
+
+# -----------------------------------------------------
+
+    Python program to perform the hash.
+
+    Two examples.
+    Hash a file.
+        Import the target file, perform the hash, output [filename, hash].
+    Hash the files in a directory.
+        Import each file, perform the hash, output a table of [filename, hash].
+
+    Stretch goal - Hash the values in a table.
+        Import the target table, perform the hash, output a table.
+        This is more difficult to explain.
+
+    For each of example:
+
+        Application wrapped in a Docker container.
+            Template ivoa-execution.yaml.
+        Application wrapped in a Jupyter notebook.
+            Template ivoa-execution.yaml.
+
+    The aim is to show what the user (or agent) needs to do to execute a task.
+
+    Select the target, edit the template, run the task.
+
+    Template has a placeholder abstract-data-resource.
+
+    TODO Fix the Purl refeences.
+
+    Create the git repo.
+    Create the Python program.
+    Create the template file.
+
+    Python client to read template and send to service.
+
+
+
+
+
+

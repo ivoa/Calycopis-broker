@@ -1,0 +1,872 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Fix the Purl references.
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+
+    Add Calycopis schema as a sub-module of Execution-broker.
+    Sparse load just the schema directory ?
+    We want to skip one level to avoid schema/schema.
+    Can we use symlinks - no, symlinks don't work in github pages.
+    Can we copy from the sub-module to the docs directory.
+
+    ExecutionBroker
+      external
+        Calycopis-schema
+          schema <--\
+            v1.0    |
+              ....  |
+                    |
+      docs          |
+        schema -----/
+          v1.0
+            ....
+
+    What about the pages generated from VODML ?
+    For now, just the OpenAPI schema.
+    Aha - change the `schema` directory to `openapi`
+    Now we get
+
+      docs
+        schema
+          openapi
+            v1.0
+              ....
+
+    Which allows us to include others later ...
+
+        schema (Calycopis-schema)
+          openapi
+            v1.0
+              ....
+          vodml
+            v1.0
+              ....
+
+    Or, if we want to keep the openapi and vodml schema in separate repositories
+    - Several small repositories rather than one big complicated one.
+    - Does this mean we rename Calycopis-schema to Calycopis-openapi ?
+
+        openapi (Calycopis-schema)
+          schema
+            v1.0
+              ....
+
+        vodml (Calycopis-vodml)
+          schema
+            v1.0
+              ....
+
+
+    2) Publish to the github pages site
+       Automate the publishing process ?
+       - not yet
+
+        https://ivoa-std.github.io/ExecutionBroker/ <-- this works
+        https://ivoa-std.github.io/ExecutionBroker/schema/openapi.yaml
+        https://ivoa-std.github.io/ExecutionBroker/openapi/schema/openapi.yaml
+
+        https://ivoa.github.io/Calycopis-broker/    x-- nothing yet
+        https://ivoa.github.io/Calycopis-schema/    x-- nothing yet
+
+        https://ivoa.github.io/Calycopis-schema/schema/openapi.yaml  -- If we published a site
+        https://ivoa.github.io/Calycopis-openapi/schema/openapi.yaml -- if we renamed to openapi
+
+    3) Get links working using purl.org
+
+        https://www.purl.org/ivoa.net/EB/openapi/schema/v1.0/kinds/compute/simple-compute-resource-1.0.yaml
+
+        # If we use the raw content URL, then we don't need to use the docs.
+        https://raw.githubusercontent.com/ivoa-std/ExecutionBroker/refs/heads/main/openapi/schema/v1.0/kinds/compute/simple-compute-resource-1.0.yaml
+
+        # If we leave the schema in Calycopis-schema for now.
+        https://raw.githubusercontent.com/ivoa/Calycopis-schema/refs/heads/main/schema/v1.0/types/data/simple-data-resource-1.0.yaml
+
+    4) Get W3C links to work.
+
+
+# -----------------------------------------------------
+
+    Ignore github pages for now.
+    Use the raw content URLs.
+
+    Rename ivoa/Calycopis-schema to ivoa/Calycopis-openapi.
+    Rename Zarquan/Calycopis-schema to Zarquan/Calycopis-openapi.
+
+# -----------------------------------------------------
+# Update local copies of git.
+#[user@desktop]
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${TREBULA_CODE}"
+        vi ./.git/config
+    popd
+
+            [remote "origin"]
+	    -       url = git@github.com:Zarquan/Calycopis-schema.git
+	    +       url = git@github.com:Zarquan/Calycopis-openapi.git
+	            fetch = +refs/heads/*:refs/remotes/origin/*
+            [branch "main"]
+	            remote = origin
+	            merge = refs/heads/main
+            [remote "upstream"]
+	    -       url = git@github.com:ivoa/Calycopis-schema.git
+	    +       url = git@github.com:ivoa/Calycopis-openapi.git
+	            fetch = +refs/heads/*:refs/remotes/upstream/*
+
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${TREBULA_HOME}"
+        cd ..
+        mv Calycopis-schema Calycopis-openapi
+    popd
+
+    vi "${HOME:?}/calycopis.env"
+
+        -   TREBULA_REPO='git@github.com:Zarquan/Calycopis-schema.git'
+        +   TREBULA_REPO='git@github.com:Zarquan/Calycopis-openapi.git'
+        -   TREBULA_HOME="${CALYCOPIS_ROOT}/Calycopis-schema"
+        +   TREBULA_HOME="${CALYCOPIS_ROOT}/Calycopis-openapi"
+            TREBULA_CODE="${TREBULA_HOME:?}/github-zrq"
+
+# -----------------------------------------------------
+
+    Update the Purl.Org location
+        https://purl.archive.org/domain/ivoa.net
+
+    Added new PURL
+        https://www.purl.org/ivoa.net/Calycopis-openapi
+        https://raw.githubusercontent.com/ivoa/Calycopis-openapi/refs/heads/main
+
+
+# -----------------------------------------------------
+# Create a new branch.
+#[user@desktop]
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${TREBULA_CODE}"
+
+        branchname=openapi-rename
+        newbranch=$(date '+%Y%m%d')-zrq-${branchname:?}
+
+        git checkout main
+        git checkout -b "${newbranch:?}"
+
+    popd
+
+
+# -----------------------------------------------------
+# Check the remotes.
+#[user@desktop]
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${TREBULA_CODE}"
+
+        git remote -v
+
+    popd
+
+--START--
+origin	git@github.com:Zarquan/Calycopis-openapi.git (fetch)
+origin	git@github.com:Zarquan/Calycopis-openapi.git (push)
+upstream	git@github.com:ivoa/Calycopis-openapi.git (fetch)
+upstream	git@github.com:ivoa/Calycopis-openapi.git (push)
+--END--
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${TREBULA_CODE}"
+        pushd schema/v1.0
+
+            git mv types kinds
+            git commit -m "Renamed types to kinds"
+
+        popd
+    popd
+
+
+# -----------------------------------------------------
+# Update the schema source.
+#[user@desktop]
+
+    ivoa.net/EB/schema/v1.0/types
+    ivoa.net/Calycopis-openapi/schema/v1.0/kinds
+
+    -1.0":
+    -1.0.yaml":
+
+    -1.0.yaml
+    .yaml
+
+    components/utils.yaml
+    utils.yaml
+
+    components/messages.yaml
+    messages.yaml
+
+
+# -----------------------------------------------------
+# Remove version suffix from the filenames.
+#[user@desktop]
+
+    git mv \
+        schema/v1.0/kinds/compute/simple-compute-resource-1.0.yaml \
+        schema/v1.0/kinds/compute/simple-compute-resource.yaml
+
+    git mv \
+	    schema/v1.0/kinds/data/S3-data-resource-1.0.yaml \
+	    schema/v1.0/kinds/data/S3-data-resource.yaml
+
+    git mv \
+	    schema/v1.0/kinds/data/simple-data-resource-1.0.yaml \
+	    schema/v1.0/kinds/data/simple-data-resource.yaml
+
+    git mv \
+	    schema/v1.0/kinds/data/skao-data-resource-1.0.yaml \
+	    schema/v1.0/kinds/data/skao-data-resource.yaml
+
+    git mv \
+	    schema/v1.0/kinds/data/ivoa-data-resource-1.0.yaml \
+	    schema/v1.0/kinds/data/ivoa-data-resource.yaml
+
+    git mv \
+	    schema/v1.0/kinds/data/rucio-data-resource-1.0.yaml \
+	    schema/v1.0/kinds/data/rucio-data-resource.yaml
+
+    git mv \
+	    schema/v1.0/kinds/executable/docker-container-1.0.yaml \
+	    schema/v1.0/kinds/executable/docker-container.yaml
+
+    git mv \
+	    schema/v1.0/kinds/executable/jupyter-notebook-1.0.yaml \
+	    schema/v1.0/kinds/executable/jupyter-notebook.yaml
+
+    git mv \
+	    schema/v1.0/kinds/executable/singularity-container-1.0.yaml \
+	    schema/v1.0/kinds/executable/singularity-container.yaml
+
+    git mv \
+	    schema/v1.0/kinds/storage/simple-storage-resource-1.0.yaml \
+	    schema/v1.0/kinds/storage/simple-storage-resource.yaml
+
+    git mv \
+	    schema/v1.0/kinds/volume/simple-volume-mount-1.0.yaml \
+	    schema/v1.0/kinds/volume/simple-volume-mount.yaml
+
+
+# -----------------------------------------------------
+# Update the version numbers.
+#[user@desktop]
+
+    Removed version suffix from the filenames
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run an instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+--START--
+CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS        PORTS       NAMES
+07b84c768c2e  localhost/podman-pause:5.4.2-1743552000                        15 seconds ago  Up 5 seconds              9107ebcace94-infra
+abba2924d2fa  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 seconds ago   Up 4 seconds              calycopis-dev
+--END--
+
+
+# -----------------------------------------------------
+# Build our schema generated components.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-openapi/github-zrq
+
+        source bin/buildscripts.sh
+
+        buildschema
+
+--START--
+Clean  [false]
+Input  [schema/v1.0/execution-broker.yaml]
+Output [build/execution-broker-1.0.6.yaml]
+....
+....
+Inlining from discriminator mapping: StringValueUpdate
+Inlining from discriminator mapping: EnumValueUpdate
+Inlining from discriminator mapping: IntegerValueUpdate
+Inlining from discriminator mapping: IntegerDeltaUpdate
+✅ All references processed and saved.
+--END--
+
+
+        installgenerator
+
+        buildpythonclient
+
+--START--
+....
+....
+adding 'calycopis_schema_client-1.0.6.dist-info/METADATA'
+adding 'calycopis_schema_client-1.0.6.dist-info/WHEEL'
+adding 'calycopis_schema_client-1.0.6.dist-info/top_level.txt'
+adding 'calycopis_schema_client-1.0.6.dist-info/RECORD'
+removing build/bdist.linux-x86_64/wheel
+Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_client-1.0.6-py3-none-any.whl
+--END--
+
+
+        buildjavaclient
+
+--START--
+....
+....
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  9.426 s
+[INFO] Finished at: 2026-06-02T04:50:52Z
+[INFO] ------------------------------------------------------------------------
+--END--
+
+
+        buildjavaspring
+
+--START--
+....
+....
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  9.550 s
+[INFO] Finished at: 2026-06-02T04:51:36Z
+[INFO] ------------------------------------------------------------------------
+--END--
+
+    popd
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Create a new branch of the broker code.
+#[user@desktop]
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${CALYCOPIS_CODE}"
+
+        branchname=openapi-rename
+        newbranch=$(date '+%Y%m%d')-zrq-${branchname:?}
+
+        git checkout main
+        git checkout -b "${newbranch:?}"
+
+    popd
+
+
+# -----------------------------------------------------
+# Update the discriminator URLs in the broker code.
+#[user@desktop]
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${CALYCOPIS_CODE}"
+
+        pushd java/src/main/java/
+
+            grep -r 'schema/v1.0/types' .
+
+--START--
+./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java:    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/EB/schema/v1.0/types/computer/simple-compute-resource-1.0") ;
+....
+....
+--END--
+
+            grep -r -l 'schema/v1.0/types' .
+
+--START--
+./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java
+....
+....
+--END--
+
+            #
+            # Dry run - print don't change.
+            for filename in $(
+                grep -r -l 'schema/v1.0/types' .
+                )
+            do
+                echo ""
+                echo "Filename [${filename}]"
+                sed -n '
+                    s|EB/schema/v1.0/types|Calycopis-openapi/schema/v1.0/kinds|p
+                    s|-1.0"|.yaml"|p
+                    ' \
+                    "${filename}"
+            done
+
+--START--
+Filename [./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java]
+    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/computer/simple-compute-resource-1.0") ;
+    public static final URI TYPE_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/computer/simple-compute-resource.yaml") ;
+....
+....
+--END--
+
+
+            #
+            # Dry run - print don't change.
+            for filename in $(
+                grep -r -l 'TYPE_DISCRIMINATOR' .
+                )
+            do
+                echo ""
+                echo "Filename [${filename}]"
+                sed -n '
+                    s|TYPE_DISCRIMINATOR|KIND_DISCRIMINATOR|p
+                    ' \
+                    "${filename}"
+            done
+
+--START--
+Filename [./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResource.java]
+    public static final URI KIND_DISCRIMINATOR = URI.create("https://www.purl.org/ivoa.net/EB/schema/v1.0/types/computer/simple-compute-resource-1.0") ;
+
+Filename [./net/ivoa/calycopis/broker/engine/entities/compute/simple/SimpleComputeResourceEntity.java]
+        return SimpleComputeResource.KIND_DISCRIMINATOR;
+....
+....
+--END--
+
+            #
+            # Go for it ....
+            for filename in $(
+                grep -r -l 'schema/v1.0/types' .
+                )
+            do
+                echo ""
+                echo "Filename [${filename}]"
+                sed -i '
+                    s|EB/schema/v1.0/types|Calycopis-openapi/schema/v1.0/kinds|
+                    s|-1.0"|.yaml"|
+                    ' \
+                    "${filename}"
+            done
+
+            for filename in $(
+                grep -r -l 'TYPE_DISCRIMINATOR' .
+                )
+            do
+                echo ""
+                echo "Filename [${filename}]"
+                sed -i '
+                    s|TYPE_DISCRIMINATOR|KIND_DISCRIMINATOR|
+                    ' \
+                    "${filename}"
+            done
+
+        popd
+    popd
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Create our platform configuration files.
+#[root@calycopis-dev]
+
+    mkdir /etc/calycopis
+
+    cat > /etc/calycopis/database.yaml << EOF
+spring:
+    datasource:
+        url: jdbc:postgresql://postgres:5432/calycopis
+        username: $(pwgen 32 1)
+        password: $(pwgen 32 1)
+        driverClassName: org.postgresql.Driver
+        initialize: true
+EOF
+
+
+    cat > /etc/calycopis/admin.yaml << EOF
+calycopis:
+    admin:
+        username: $(pwgen 32 1)
+        password: $(pwgen 32 1)
+EOF
+
+
+# -----------------------------------------------------
+# Start our PostgreSQL database.
+#[root@calycopis-dev]
+
+    podman run \
+        --rm \
+        --detach \
+        --replace \
+        --name postgres \
+        --pod calycopis-pod \
+        --expose 5432 \
+        --env "POSTGRES_DB=calycopis" \
+        --env "POSTGRES_USER=$(yq '.spring.datasource.username' /etc/calycopis/database.yaml)" \
+        --env "POSTGRES_PASSWORD=$(yq '.spring.datasource.password' /etc/calycopis/database.yaml)" \
+        docker.io/library/postgres:latest
+
+--START--
+c40d59ffe5a60704322ed28748c4f0001c95133576eea194c686f27378908f34
+--END--
+
+
+# -----------------------------------------------------
+# Build and launch our service with the docker platform.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd java
+
+            ./mvnw clean spring-boot:run -D calycopis-platform=docker
+
+        popd
+    popd
+
+    >   ....
+    >   ....
+
+
+# -----------------------------------------------------
+# Start another terminal and run our Python tests.
+#[user@desktop]
+
+    testdata=/home/Zarquan/temp
+
+    podman exec \
+        --tty \
+        --env "TESTDATA=${testdata}" \
+        --interactive \
+            calycopis-dev \
+                bash
+
+    pip install pytest
+    pip install docker
+
+    pip install --edit /calycopis/Calycopis-openapi/github-zrq/codegen/python/client/build
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+
+                pytest docker
+
+            popd
+        popd
+    popd
+
+--START--
+....
+....
+E AttributeError: 'DefaultApi' object has no attribute 'offer_set_post_with_http_info'. Did you mean: 'offer_set_select_with_http_info'?
+/calycopis/Calycopis-openapi/github-zrq/codegen/python/client/build/calycopis_schema_client/wrappers/execution_client.py:100: AttributeError
+--END--
+
+    #
+    # This is a problem with the client wrapper, not the tests.
+    #
+
+# -----------------------------------------------------
+# Fix the client wrapper.
+#[user@desktop]
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${TREBULA}"
+
+        pushd codegen/python/client/wrappers/
+
+            #
+            # Dry run - print not change
+            sed -n '
+                s|offer_set_post|execution_request|g p
+                s|offer_set_get|offer_set_select|g p
+                s|execution_session_get|session_select|g p
+                s|execution_update_post|session_update|g p
+                s|direct_execution_post|direct_execution|g p
+                ' execution_client.py
+
+--START--
+        resp: ApiResponse[OfferSetResponse] = self._api.execution_request_with_http_info(
+                raise RuntimeError("303 response from execution_request without Location header")
+            return self._api.offer_set_select(offerset_uuid)
+            f"Unexpected status code from execution_request: {resp.status_code}"
+        resp: ApiResponse = self._api.direct_execution_with_http_info(
+                    "303 response from direct_execution without Location header"
+            f"Unexpected status code from direct_execution: {resp.status_code}"
+        return self._api.session_select(session_uuid)
+        return self._api.session_update(session_uuid, update)
+--END--
+
+            #
+            # Go for it.
+            sed -i '
+                s|offer_set_post|execution_request|g
+                s|offer_set_get|offer_set_select|g
+                s|execution_session_get|session_select|g
+                s|execution_update_post|session_update|g
+                s|direct_execution_post|direct_execution|g
+                ' execution_client.py
+
+
+        popd
+    popd
+
+
+# -----------------------------------------------------
+# Re-build the Python library.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-openapi/github-zrq
+
+        source bin/buildscripts.sh
+
+        installgenerator
+
+        buildpythonclient
+
+--START--
+....
+....
+adding 'calycopis_schema_client-1.0.6.dist-info/METADATA'
+adding 'calycopis_schema_client-1.0.6.dist-info/WHEEL'
+adding 'calycopis_schema_client-1.0.6.dist-info/top_level.txt'
+adding 'calycopis_schema_client-1.0.6.dist-info/RECORD'
+removing build/bdist.linux-x86_64/wheel
+Successfully built calycopis_schema_client-1.0.6.tar.gz and calycopis_schema_client-1.0.6-py3-none-any.whl
+--END--
+
+
+# -----------------------------------------------------
+# Run the Python tests agon.
+#[root@calycopis-dev]
+
+    pip install --edit /calycopis/Calycopis-openapi/github-zrq/codegen/python/client/build
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+
+                pytest docker
+
+            popd
+        popd
+    popd
+
+--START--
+....
+....
+2026-06-02 10:28:59 WARN http-nio-8082-exec-2 DefaultHandlerExceptionResolver
+    logException()
+        Resolved [org.springframework.http.converter.HttpMessageNotReadableException:
+            JSON parse error:
+                Could not resolve type id
+                    'https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/docker-container-1.0'
+                    as a subtype of
+                    `net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable`:
+                    known type ids = [
+                        IvoaAbstractExecutable,
+                        https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml,
+                        https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/jupyter-notebook.yaml,
+                        https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/singularity-container.yaml
+                        ]
+                    (for POJO property 'executable')
+                    ]
+....
+....
+--END--
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Fix the discriminator in the Python tests.
+#[user@desktop]
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${CALYCOPIS_CODE}"
+
+        pushd tests/python
+
+            rm -rf ./any/__pycache__
+            rm -rf ./mock/__pycache__
+            rm -rf ./docker/__pycache__
+
+            #
+            # Dry run - print don't change.
+            for filename in $(
+                grep -r -l 'schema/v1.0/types' .
+                )
+            do
+                echo ""
+                echo "Filename [${filename}]"
+                sed -n '
+                    s|EB/schema/v1.0/types|Calycopis-openapi/schema/v1.0/kinds|p
+                    s|-1.0"|.yaml"|p
+                    ' \
+                    "${filename}"
+            done
+
+--START--
+Filename [./mock/test_mock_direct_execution.py]
+    "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container-1.0"
+    "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
+....
+....
+--END--
+
+            #
+            # Go go it.
+            for filename in $(
+                grep -r -l 'schema/v1.0/types' .
+                )
+            do
+                echo ""
+                echo "Filename [${filename}]"
+                sed -i '
+                    s|EB/schema/v1.0/types|Calycopis-openapi/schema/v1.0/kinds|
+                    s|-1.0"|.yaml"|
+                    ' \
+                    "${filename}"
+            done
+
+        popd
+
+--START--
+Filename [./mock/test_mock_direct_execution.py]
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run the Python tests agon.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+
+                pytest docker
+
+            popd
+        popd
+    popd
+
+--START--
+....
+....
+==================================== 43 passed, 218 warnings in 1246.80s (0:20:46) =====================================
+--END--
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# -----------------------------------------------------
+
+    Add default discriminator URLs to wrappers for generated classes
+
+    Create a new Git project for command line client ..
+    Import the wrapped generated classes.
+
+    Load a template from yaml.
+    Edit it to replace abstract data with real data.
+    Send it to the service.
+    Poll and display status.
+
+    Needs thinking about.
+    Do the steps manually for now.
+
+# -----------------------------------------------------
+
+    Python tests read from admin.yaml.
+
+# -----------------------------------------------------
+
+    Add metrics.
+    Test no metrics - OK
+    Test known metric PASS - OK
+    Test known metric FAIL - OK
+    Test request unknown metric - rejected
+    Test offer unknown metric - ??
+
+
+    Add costs.
+    Test no costs - OK
+    Test offer known cost - OK
+    Test offer unknown cost - ??
+    Test limit known cost - OK
+    Test limit unknown cost - FAIL
+
+
+
+
+
+
+
