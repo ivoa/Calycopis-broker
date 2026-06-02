@@ -28,6 +28,16 @@
 #       "value": 100,
 #       "units": "%"
 #       }
+#     },
+#     {
+#     "timestamp": "2026-06-02T13:37:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 5,
+#       "units": "%"
+#       }
 #     }
 #   ]
 #
@@ -61,12 +71,14 @@ from calycopis_schema_client.models import (
     ExecutionRequest,
     SimpleExecutionSessionPhase,
 )
-from calycopis_schema_client.models.docker_container import DockerContainer
 from calycopis_schema_client.models.docker_image_spec import DockerImageSpec
-from calycopis_schema_client.models.simple_compute_resource import SimpleComputeResource
-from calycopis_schema_client.models.simple_data_resource import SimpleDataResource
-from calycopis_schema_client.models.simple_volume_mount import SimpleVolumeMount
 from calycopis_schema_client.models.component_metadata import ComponentMetadata
+from calycopis_schema_client.wrappers import (
+    DockerContainer,
+    SimpleComputeResource,
+    SimpleDataResource,
+    SimpleVolumeMount,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -78,19 +90,6 @@ PHASE_TIMEOUT = float(os.environ.get("PHASE_TIMEOUT", "300"))
 DOCKER_SOCKET = os.environ.get(
     "DOCKER_SOCKET",
     "unix:///run/podman/podman.sock",
-)
-
-DOCKER_CONTAINER_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/executable/docker-container-1.0"
-)
-SIMPLE_COMPUTE_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/compute/simple-compute-resource-1.0"
-)
-SIMPLE_DATA_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/data/simple-data-resource-1.0"
-)
-SIMPLE_VOLUME_KIND = (
-    "https://www.purl.org/ivoa.net/EB/schema/v1.0/types/volume/simple-volume-mount-1.0"
 )
 
 ANDROCLES_IMAGE = "ghcr.io/zarquan/heliophorus-androcles:sha-9a2513b"
@@ -172,7 +171,6 @@ def _make_http_volume_request(
 
     return ExecutionRequest(
         executable=DockerContainer(
-            kind=DOCKER_CONTAINER_KIND,
             meta=ComponentMetadata(name=f"{name}-exec"),
             image=DockerImageSpec(
                 locations=[ANDROCLES_IMAGE],
@@ -183,17 +181,14 @@ def _make_http_volume_request(
         ),
         data=[
             SimpleDataResource(
-                kind=SIMPLE_DATA_KIND,
                 meta=ComponentMetadata(name=f"{name}-data"),
                 location=data_url,
             ),
         ],
         compute=SimpleComputeResource(
-            kind=SIMPLE_COMPUTE_KIND,
             meta=ComponentMetadata(name=f"{name}-compute"),
             volumes=[
                 SimpleVolumeMount(
-                    kind=SIMPLE_VOLUME_KIND,
                     resource=f"{name}-data",
                     path="/input",
                     mode="READONLY",
