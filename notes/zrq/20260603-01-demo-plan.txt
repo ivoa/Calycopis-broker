@@ -1,0 +1,697 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Create a plan for a demo to demonstrate the benefits of metrics and costs.
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+
+    Rough sketch from previous notes
+
+    Ask cursor to
+    Create Python app that uses <> libraries to calculate shasim of an inpit file and write result to stdout.
+    Wrap the Python app in a Jupyter notebook to experiment with it.
+
+    Create a Docker container that wraps the Jupyter notebook.
+    Create an ivoa-execution.yaml file that describes it.
+    Use the ivoa-execution.yaml file to run the Jupyter notebook on a service.
+
+    Wrap the Python app in a Docker container to experiment with it.
+    Create an ivoa-execution.yaml file that describes it.
+    Use the ivoa-execution.yaml file to run the Docker container on a service.
+
+    Add metrics to the schema.
+    Make the metrics configurable.
+    Add code to quote the maximum metric in an offer and the actual metric in a result.
+
+    Add costs to the schema.
+    Make the costs configurable.
+    Add code to quote the maximum cost in an offer and the actual cost in a result.
+    Deploy 3 services.
+
+    Send requests with minimum metrics and maximum costs.
+    Collate the replies and display to the user.
+    Allow the user to select the option they want.
+    Execute the task and report the result, along with the actual cost and metric.
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run an instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+--START--
+CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS        PORTS       NAMES
+8f361d52cce1  localhost/podman-pause:5.4.2-1743552000                        11 seconds ago  Up 5 seconds              fae52cb85f41-infra
+65fcc03450cf  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 seconds ago   Up 4 seconds              calycopis-dev
+--END--
+
+
+# -----------------------------------------------------
+# Start planning with Cursor.
+#[root@calycopis-dev]
+
+        curl https://cursor.com/install -fsS | bash
+
+        agent
+
+==START==
+Please read the AGENTS.md files at
+* /calycopis/Calycopis-broker/github-zrq/AGENTS.md
+* /calycopis/Calycopis-openapi/github-zrq/AGENTS.md
+with particular attention to the Coding standards.
+==END==
+
+--START--
+....
+....
+  I'm ready to work on these projects following these standards. What would you like me to do?
+--END--
+
+
+==START==
+/plan
+I want to develop a plan to add two new features to the web service API,
+develop configurable implementations of them in the broker,
+and then setup and configure the infrastructure needed to demostrate how
+the features work.
+==END==
+
+--START--
+    AskQuestion Clarifying the new features (2)
+    1. Which two features do you want to add? Please describe them (or point me to an issue, spec section, or notes
+     file that describes them).
+      [x] I'll describe them in my next message
+      [ ] They're described in a file/issue I'll reference
+
+    2. When you say 'configurable implementations in the broker', do you mean adding support under both the mock
+    and docker platform tiers, or just one of them initially?
+      [x] Both mock and docker platforms
+      [ ] Mock platform first, docker later
+      [ ] Docker platform first, mock later
+
+  Go ahead and describe the two features you'd like to add, and I'll research the codebase and put together a plan.
+--END--
+
+==START==
+The features I want to add are metrics and costs.
+* Metrics describe benchmark measurements of the capabilities or performance of the platform.
+  e.g. a numeric representation of the compute performance or IO speed of the platform.
+* Costs describe the expected costs of performing a task.
+  Costs can be anything from an actual monetary cost for using the platform to an estimate
+  of the energy use or carbon cost of performing a task.
+
+The costs and metrics would apply to all of the components in the data model.
+In terms of the schema, this means adding a list of metrics and a list of costs
+to both ExecutionRequest and AbstractComponent.
+
+Where possible the new schema elements should follow the patterns
+established in the rest of the schema.
+
+The following code blocks outline the things I am thinking of.
+```
+file: schema/v1.0/kinds/metrics/abstract-metric-item.yaml
+
+    AbstractMetricItem:
+      description: >
+        An abstract base class for a metric.
+      type: object
+      required:
+        - kind
+      discriminator:
+        propertyName: kind
+        mapping:
+          "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/metrics/abstract-metric-item.yaml": './kinds/costs/abstract-metric-item.yaml#/components/schemas/AbstractMetricItem'
+          "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/metrics/simple-minmax-float-metric.yaml": './kinds/costs/simple-minmax-float-metric.yaml#/components/schemas/SimpleMinMaxFLoatMetric'
+      properties:
+        kind:
+          description: >
+            A URI identifier for the data model class.
+            e.g. A basic min/max numeric metric.
+          type: string
+        type:
+          description: >
+            A URI identifier for the type of metric.
+            e.g. A URI representing a metric for compute or IO performance.
+          type: string
+        description:
+          description: >
+            An optional description of the metric.
+          type: string
+
+    AbstractMetricItemList:
+      description: >
+        A list of metrics.
+      type: array
+      items:
+        $ref: '#/components/schemas/AbstractMetricItem'
+```
+
+```
+file: schema/v1.0/kinds/costs/simple-minmax-float-cost.yaml
+
+    SimpleMinMaxFLoatCost:
+      description: >
+        A basic numeric minimum and maximum value for a cost.
+        Both values are optional.
+        The client can use this kind of cost to specify the maximum cost they are prepared to accept,
+        and the service can quote the minimum and maximum that executing the task will cost.
+      type: object
+      properties:
+        min:
+          type: number
+          format: float
+        max:
+          type: number
+          format: float
+```
+
+```
+file: schema/v1.0/kinds/costs/abstract-cost-item.yaml
+
+    AbstractCostItem:
+      description: >
+        An abstract base class for costs.
+      type: object
+      required:
+        - kind
+      discriminator:
+        propertyName: kind
+        mapping:
+          "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/costs/abstract-cost-item.yaml": './kinds/costs/abstract-cost-item.yaml#/components/schemas/AbstractCostItem'
+          "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/costs/simple-minmax-float-cost.yaml": './kinds/costs/simple-minmax-float-cost.yaml#/components/schemas/SimpleMinMaxFLoatCost'
+      properties:
+        kind:
+          description: >
+            A URI identifier for the data model class.
+            e.g. A basic min/max numeric cost.
+          type: string
+        type:
+          description: >
+            A URI identifier for the type of cost.
+            e.g. A URI representing a monetary cost, energy use, or carbon cost.
+          type: string
+        description:
+          description: >
+            An optional description of the cost.
+          type: string
+
+    AbstractCostItemList:
+      description: >
+        A list of costs.
+      type: array
+      items:
+        $ref: '#/components/schemas/AbstractCostItem'
+```
+
+```
+file: schema/v1.0/kinds/costs/simple-minmax-float-cost.yaml
+
+    SimpleMinMaxFLoatCost:
+      description: >
+        A basic numeric minimum and maximum value for a cost.
+        Both values are optional.
+        The client can use this kind of cost to specify the maximum cost they are prepared to accept,
+        and the service can quote the minimum and maximum that executing the task will cost.
+      type: object
+      properties:
+        min:
+          type: number
+          format: float
+        max:
+          type: number
+          format: float
+```
+
+Then add a list of metrics and costs to ExecutionRequest and AbstractComponent.
+```
+file: schema/v1.0/components.yaml
+
+    AbstractComponent:
+        ....
+        properties:
+          costs:
+            $ref: './kinds/costs/abstract-cost-item.yaml#/components/schemas/AbstractCostItemList'
+          metrics:
+            $ref: './kinds/metrics/abstract-metric-item.yaml#/components/schemas/AbstractMetricItemList'
+
+    ExecutionRequest:
+        ....
+        properties:
+          costs:
+            $ref: './kinds/costs/abstract-cost-item.yaml#/components/schemas/AbstractCostItemList'
+          metrics:
+            $ref: './kinds/metrics/abstract-metric-item.yaml#/components/schemas/AbstractMetricItemList'
+```
+==END==
+
+--START--
+....
+....
+ ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Suggested Plan                                                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ Add Metrics and Costs to the Calycopis Execution Broker                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ Observations on the proposed schema                                                                                                                                                      │
+ │                                                                                                                                                                                          │
+ │ Before starting, two likely typos in the provided schema snippets to confirm:                                                                                                            │
+ │ • Capital L in Float: The names SimpleMinMaxFLoatMetric and SimpleMinMaxFLoatCost have an uppercase L. Suggest normalizing to SimpleMinMaxFloatMetric / SimpleMinMaxFloatCost.           │
+ │ • Wrong path in metric discriminator mapping: The AbstractMetricItem discriminator references './kinds/costs/...' for both mappings. The metric entries should reference                 │
+ │   './kinds/metrics/...'.                                                                                                                                                                 │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ Phase 1: Schema changes (Calycopis-openapi)                                                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ Working directory: /calycopis/Calycopis-openapi/github-zrq/                                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ 1a. Create new schema files                                                                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ Create four new YAML files under schema/v1.0/kinds/, following the pattern established by existing discriminated types (e.g. kinds/compute/simple-compute-resource.yaml):                │
+ │ • schema/v1.0/kinds/costs/abstract-cost-item.yaml — Defines AbstractCostItem (discriminated on kind with PURL URIs), AbstractCostItemList, as provided in the user's sketch.             │
+ │ • schema/v1.0/kinds/costs/simple-minmax-float-cost.yaml — Defines SimpleMinMaxFloatCost using allOf to extend AbstractCostItem, adding min and max float properties.                     │
+ │ • schema/v1.0/kinds/metrics/abstract-metric-item.yaml — Defines AbstractMetricItem (discriminated on kind with PURL URIs), AbstractMetricItemList.                                       │
+ │ • schema/v1.0/kinds/metrics/simple-minmax-float-metric.yaml — Defines SimpleMinMaxFloatMetric using allOf to extend AbstractMetricItem, adding min and max float properties.             │
+ │                                                                                                                                                                                          │
+ │ The concrete types (SimpleMinMaxFloatCost, SimpleMinMaxFloatMetric) must use allOf to extend their abstract base, matching the pattern in e.g.                                           │
+ │ kinds/compute/simple-compute-resource.yaml:                                                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ SimpleMinMaxFloatCost:                                                                                                                                                                   │
+ │   type: object                                                                                                                                                                           │
+ │   title: SimpleMinMaxFloatCost                                                                                                                                                           │
+ │   allOf:                                                                                                                                                                                 │
+ │     - $ref: '../../kinds/costs/abstract-cost-item.yaml#/components/schemas/AbstractCostItem'                                                                                             │
+ │     - type: object                                                                                                                                                                       │
+ │       properties:                                                                                                                                                                        │
+ │         min:                                                                                                                                                                             │
+ │           type: number                                                                                                                                                                   │
+ │           format: float                                                                                                                                                                  │
+ │         max:                                                                                                                                                                             │
+ │           type: number                                                                                                                                                                   │
+ │           format: float                                                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ 1b. Add costs and metrics to AbstractComponent                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ In schema/v1.0/components.yaml (schema/v1.0/components.yaml), add costs and metrics properties to AbstractComponent (currently at line ~108):                                            │
+ │                                                                                                                                                                                          │
+ │ AbstractComponent:                                                                                                                                                                       │
+ │   # ... existing kind and meta ...                                                                                                                                                       │
+ │   properties:                                                                                                                                                                            │
+ │     # ... existing properties ...                                                                                                                                                        │
+ │     costs:                                                                                                                                                                               │
+ │       description: >-                                                                                                                                                                    │
+ │         A list of costs associated with this component.                                                                                                                                  │
+ │       $ref: './kinds/costs/abstract-cost-item.yaml#/components/schemas/AbstractCostItemList'                                                                                             │
+ │     metrics:                                                                                                                                                                             │
+ │       description: >-                                                                                                                                                                    │
+ │         A list of metrics associated with this component.                                                                                                                                │
+ │       $ref: './kinds/metrics/abstract-metric-item.yaml#/components/schemas/AbstractMetricItemList'                                                                                       │
+ │                                                                                                                                                                                          │
+ │ Since all concrete component types (executables, compute, storage, data, sessions) use allOf with AbstractComponent, the costs and metrics properties will propagate to all generated    │
+ │ model classes.                                                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ 1c. Add costs and metrics to ExecutionRequest                                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ In schema/v1.0/components.yaml (schema/v1.0/components.yaml), add to ExecutionRequest (currently at line ~830). Since ExecutionRequest uses allOf with ExecutionRequestComponents, the   │
+ │  cleanest approach is to add costs and metrics alongside the existing schedule property in the inline object:                                                                            │
+ │                                                                                                                                                                                          │
+ │ ExecutionRequest:                                                                                                                                                                        │
+ │   allOf:                                                                                                                                                                                 │
+ │     - $ref: '#/components/schemas/ExecutionRequestComponents'                                                                                                                            │
+ │     - type: object                                                                                                                                                                       │
+ │       properties:                                                                                                                                                                        │
+ │         schedule:                                                                                                                                                                        │
+ │           $ref: '#/components/schemas/RequestedScheduleBlock'                                                                                                                            │
+ │         costs:                                                                                                                                                                           │
+ │           $ref: './kinds/costs/abstract-cost-item.yaml#/components/schemas/AbstractCostItemList'                                                                                         │
+ │         metrics:                                                                                                                                                                         │
+ │           $ref: './kinds/metrics/abstract-metric-item.yaml#/components/schemas/AbstractMetricItemList'                                                                                   │
+ │                                                                                                                                                                                          │
+ │ 1d. Rebuild and regenerate all packages                                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ Run the full build sequence from the Calycopis-openapi project root:                                                                                                                     │
+ │                                                                                                                                                                                          │
+ │ source bin/buildscripts.sh                                                                                                                                                               │
+ │ buildschema true                                                                                                                                                                         │
+ │ buildjavaspring                                                                                                                                                                          │
+ │ buildjavaclient                                                                                                                                                                          │
+ │ buildpythonclient                                                                                                                                                                        │
+ │ pip install --editable codegen/python/client/build                                                                                                                                       │
+ │                                                                                                                                                                                          │
+ │ This regenerates:                                                                                                                                                                        │
+ │ • IvoaAbstractCostItem, IvoaSimpleMinMaxFloatCost, IvoaAbstractMetricItem, IvoaSimpleMinMaxFloatMetric (new generated model classes)                                                     │
+ │ • Updated IvoaAbstractComponent and IvoaExecutionRequest with costs and metrics list properties                                                                                          │
+ │ • Updated Python client models                                                                                                                                                           │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ Phase 2: Broker entity model (Calycopis-broker)                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │ Working directory: /calycopis/Calycopis-broker/github-zrq/java/src/main/java/net/ivoa/calycopis/broker/                                                                                  │
+ │ Costs and metrics are value objects attached to components, similar to how MessageEntity works — using @ManyToOne back-references and @OneToMany on the parent. Unlike messages, they    │
+ │ have a kind discriminator, so they use @Inheritance(JOINED) like the resource entities, but they do NOT need the full 3-tier Entity/Factory/Validator pattern because they are simpler   │
+ │  value annotations rather than independently-lifecycled resources.                                                                                                                       │
+ │                                                                                                                                                                                          │
+ │ 2a. Create cost entity classes                                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ New package: engine/entities/cost/                                                                                                                                                       │
+ │ • AbstractCostItem.java — Interface with getKind(), getType(), getDescription().                                                                                                         │
+ │ • AbstractCostItemEntity.java — JPA @Entity, @Inheritance(JOINED), @ManyToOne to ComponentEntity. Stores kind (URI), type (URI), description (String).                                   │
+ │ • SimpleMinMaxFloatCost.java — Interface extending AbstractCostItem, adding getMin(), getMax().                                                                                          │
+ │ • SimpleMinMaxFloatCostEntity.java — JPA @Entity, @DiscriminatorValue(...). Adds min and max float columns.                                                                              │
+ │ • CostItemBean.java — Adapter class extending IvoaSimpleMinMaxFloatCost that wraps a SimpleMinMaxFloatCostEntity for serialization (like MessageItemBean).                               │
+ │                                                                                                                                                                                          │
+ │ 2b. Create metric entity classes                                                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ New package: engine/entities/metric/                                                                                                                                                     │
+ │ Mirror of the cost package:                                                                                                                                                              │
+ │ • AbstractMetricItem.java — Interface.                                                                                                                                                   │
+ │ • AbstractMetricItemEntity.java — JPA @Entity with @Inheritance(JOINED), @ManyToOne to ComponentEntity.                                                                                  │
+ │ • SimpleMinMaxFloatMetric.java — Interface.                                                                                                                                              │
+ │ • SimpleMinMaxFloatMetricEntity.java — JPA @Entity.                                                                                                                                      │
+ │ • MetricItemBean.java — Adapter extending IvoaSimpleMinMaxFloatMetric.                                                                                                                   │
+ │                                                                                                                                                                                          │
+ │ 2c. Add to ComponentEntity                                                                                                                                                               │
+ │                                                                                                                                                                                          │
+ │ In engine/entities/component/ComponentEntity.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/component/ComponentEntity.java), add @OneToMany relationships for        │
+ │ costs and metrics, following the existing messages pattern:                                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ @OneToMany(                                                                                                                                                                              │
+ │     mappedBy = "parent",                                                                                                                                                                 │
+ │     fetch = FetchType.LAZY,                                                                                                                                                              │
+ │     cascade = CascadeType.ALL,                                                                                                                                                           │
+ │     orphanRemoval = true                                                                                                                                                                 │
+ │     )                                                                                                                                                                                    │
+ │ protected List<AbstractCostItemEntity> costs = new ArrayList<>();                                                                                                                        │
+ │ @OneToMany(                                                                                                                                                                              │
+ │     mappedBy = "parent",                                                                                                                                                                 │
+ │     fetch = FetchType.LAZY,                                                                                                                                                              │
+ │     cascade = CascadeType.ALL,                                                                                                                                                           │
+ │     orphanRemoval = true                                                                                                                                                                 │
+ │     )                                                                                                                                                                                    │
+ │ protected List<AbstractMetricItemEntity> metrics = new ArrayList<>();                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ Add addCost() and addMetric() methods, plus getCostBeans() and getMetricBeans() methods using ListWrapper (same pattern as getMessageBeans()).                                           │
+ │ Update fillMeta() or fillBean() in the relevant entity classes to include costs and metrics in the serialized response.                                                                  │
+ │                                                                                                                                                                                          │
+ │ 2d. Add Spring repositories                                                                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ In spring/jpa/, create:                                                                                                                                                                  │
+ │ • SpringAbstractCostItemEntityRepository.java                                                                                                                                            │
+ │ • SpringAbstractMetricItemEntityRepository.java                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │ These follow the existing pattern (e.g. SpringAbstractComputeResourceEntityRepository.java).                                                                                             │
+ │                                                                                                                                                                                          │
+ │ 2e. Update makeBean serialization                                                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ In engine/entities/session/simple/SimpleExecutionSessionEntity.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/session/simple/SimpleExecutionSessionEntity.java)      │
+ │ (the fillBean method around line 610), add costs and metrics to the response bean. Also update ComponentEntity.fillMeta() to attach cost/metric beans to component metadata or the       │
+ │ component bean directly (depending on where they land in the generated Ivoa model).                                                                                                      │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ Phase 3: Request parsing                                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ 3a. Update OfferSetRequestParserContext                                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ In engine/entities/offerset/OfferSetRequestParserContext.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/offerset/OfferSetRequestParserContext.java), add methods     │
+ │ to store and retrieve request-level costs and metrics:                                                                                                                                   │
+ │                                                                                                                                                                                          │
+ │ public List<IvoaAbstractCostItem> getRequestCosts();                                                                                                                                     │
+ │ public List<IvoaAbstractMetricItem> getRequestMetrics();                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ 3b. Update OfferSetRequestParserImpl                                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ │ In engine/entities/offerset/OfferSetRequestParserImpl.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/offerset/OfferSetRequestParserImpl.java), add parsing of        │
+ │ costs and metrics from the IvoaExecutionRequest in stageOne(). These are stored in the context for platform implementations to use when generating offers.                               │
+ │ In stageTwo(), pass the request costs/metrics to the platform so it can factor them into offer generation (e.g. filtering offers that exceed a cost constraint).                         │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ Phase 4: Platform implementations                                                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ 4a. Mock platform                                                                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ Create configurable mock cost/metric providers. When the mock platform generates offers, it populates each component with configured metrics and costs. For example:                     │
+ │ • Compute metrics: A compute performance benchmark score (e.g. min=80, max=100)                                                                                                          │
+ │ • Compute costs: A monetary cost per hour (e.g. min=0.10, max=0.50)                                                                                                                      │
+ │ • Storage costs: A cost per GB per hour                                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ Implementation: Add cost/metric generation logic in the mock platform's offer-building path. The simplest approach is to add cost/metric population in the mock entity classes'          │
+ │ constructors or in the stageTwo offer-building loop.                                                                                                                                     │
+ │ Define standard type URIs for the demo:                                                                                                                                                  │
+ │ • urn:ivoa:calycopis:metric:compute-performance                                                                                                                                          │
+ │ • urn:ivoa:calycopis:metric:io-throughput                                                                                                                                                │
+ │ • urn:ivoa:calycopis:cost:monetary                                                                                                                                                       │
+ │ • urn:ivoa:calycopis:cost:energy                                                                                                                                                         │
+ │ • urn:ivoa:calycopis:cost:carbon                                                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ 4b. Docker platform                                                                                                                                                                      │
+ │                                                                                                                                                                                          │
+ │ Same pattern as mock, but with values that could reflect real Docker resource measurements. Initially these can be hardcoded values that are more realistic than mock values, with the   │
+ │  architecture in place to derive them from real Docker engine stats in the future.                                                                                                       │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ │                                                                                                                                                                                          |
+ │ Phase 5: Testing and demonstration                                                                                                                                                       │
+ │                                                                                                                                                                                          │
+ │ 5a. Python tests                                                                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ Create a new test file tests/python/any/test_costs_and_metrics.py that works on either platform:                                                                                         │
+ │ • Test 1: Costs and metrics appear on offers — Submit an ExecutionRequest, verify the OfferSetResponse offers contain cost and metric lists on each component.                           │
+ │ • Test 2: Request-level costs — Submit a request with cost constraints (e.g. max monetary cost), verify the broker respects or reports them.                                             │
+ │ • Test 3: Different metric types — Verify that different components have appropriate metric types (compute has performance metrics, storage has IO metrics).                             │
+ │ • Test 4: Cost structure — Verify SimpleMinMaxFloatCost values have sensible min/max ranges.                                                                                             │
+ │                                                                                                                                                                                          │
+ │ 5b. Infrastructure setup                                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ The demonstration requires:                                                                                                                                                              │
+ │ 1. PostgreSQL database (already documented in AGENTS.md)                                                                                                                                 │
+ │ 2. Broker running with mock or docker profile                                                                                                                                            │
+ │ 3. Python client installed from the regenerated schema package                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ A test run script or documented sequence:                                                                                                                                                │
+ │                                                                                                                                                                                          │
+ │ # 1. Rebuild schema and packages (Phase 1d)                                                                                                                                              │
+ │ # 2. Rebuild broker                                                                                                                                                                      │
+ │ cd /calycopis/Calycopis-broker/github-zrq/java                                                                                                                                           │
+ │ ./mvnw clean compile                                                                                                                                                                     │
+ │ # 3. Start broker (mock)                                                                                                                                                                 │
+ │ SPRING_PROFILES_ACTIVE=mock ./mvnw spring-boot:run                                                                                                                                       │
+ │ # 4. Run tests                                                                                                                                                                           │
+ │ cd /calycopis/Calycopis-broker/github-zrq/tests/python                                                                                                                                   │
+ │ pytest any/test_costs_and_metrics.py -v                                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ Dependency flow                                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │ flowchart TD                                                                                                                                                                             │
+ │     subgraph schema [Phase 1 - Schema]                                                                                                                                                   │
+ │         S1[Create cost YAML files]                                                                                                                                                       │
+ │         S2[Create metric YAML files]                                                                                                                                                     │
+ │         S3[Update AbstractComponent]                                                                                                                                                     │
+ │         S4[Update ExecutionRequest]                                                                                                                                                      │
+ │         S5[Rebuild and regenerate]                                                                                                                                                       │
+ │         S1 --> S5                                                                                                                                                                        │
+ │         S2 --> S5                                                                                                                                                                        │
+ │         S3 --> S5                                                                                                                                                                        │
+ │         S4 --> S5                                                                                                                                                                        │
+ │     end                                                                                                                                                                                  │
+ │     subgraph broker [Phase 2-4 - Broker]                                                                                                                                                 │
+ │         B1[Cost entity classes]                                                                                                                                                          │
+ │         B2[Metric entity classes]                                                                                                                                                        │
+ │         B3[Update ComponentEntity]                                                                                                                                                       │
+ │         B4[Spring repositories]                                                                                                                                                          │
+ │         B5[Update request parser]                                                                                                                                                        │
+ │         B6[Mock platform costs/metrics]                                                                                                                                                  │
+ │         B7[Docker platform costs/metrics]                                                                                                                                                │
+ │         B1 --> B3                                                                                                                                                                        │
+ │         B2 --> B3                                                                                                                                                                        │
+ │         B3 --> B4                                                                                                                                                                        │
+ │         B3 --> B5                                                                                                                                                                        │
+ │         B5 --> B6                                                                                                                                                                        │
+ │         B5 --> B7                                                                                                                                                                        │
+ │     end                                                                                                                                                                                  │
+ │     subgraph test [Phase 5 - Testing]                                                                                                                                                    │
+ │         T1[Python test file]                                                                                                                                                             │
+ │         T2[Run demo]                                                                                                                                                                     │
+ │     end                                                                                                                                                                                  │
+ │     S5 --> B1                                                                                                                                                                            │
+ │     S5 --> B2                                                                                                                                                                            │
+ │     B6 --> T1                                                                                                                                                                            │
+ │     B7 --> T1                                                                                                                                                                            │
+ │     T1 --> T2                                                                                                                                                                            │
+ │ ctrl+o to render diagram                                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │  Saved to root/.cursor/plans/Add Metrics and Costs-a14b4c80.plan.md                                                                                                                      │
+ │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+ │                                                                                                                                                                                          │
+ │ Ready to build?                                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │  → 1. Yes, build locally (b)                                                                                                                                                             │
+ │    2. No, propose changes (p or Esc)                                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+
+# -----------------------------------------------------
+# Create branches to work in ...
+#[user@desktop]
+
+    branchname=metrics-costs
+    newbranch=$(date '+%Y%m%d')-zrq-${branchname:?}
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${CALYCOPIS_CODE}"
+
+        git checkout main
+
+        git checkout -b "${newbranch:?}"
+
+    popd
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${TREBULA_CODE}"
+
+        git checkout main
+
+        git checkout -b "${newbranch:?}"
+
+    popd
+
+
+# -----------------------------------------------------
+# Ask Cursor to go ahead.
+#[root@calycopis-dev]
+
+==START==
+    Yes, build locally (b)
+==END==
+
+--START--
+....
+....
+  All 28 tests pass — 12 new costs/metrics tests plus all 16 existing tests.
+
+    To-do All done
+    ☒ Create cost schema YAML files (abstract-cost-item.yaml, simple-minmax-float-cost.yaml) under schema/v1.0/kinds/costs/
+    ☒ Create metric schema YAML files (abstract-metric-item.yaml, simple-minmax-float-metric.yaml) under schema/v1.0/kinds/metrics/
+    ☒ Add costs and metrics lists to AbstractComponent and ExecutionRequest in components.yaml
+    ☒ Rebuild schema and regenerate Java Spring, Java client, and Python client packages
+    ☒ Create cost entity classes (AbstractCostItemEntity, SimpleMinMaxFloatCostEntity, CostItemBean) in engine/entities/cost/
+    ☒ Create metric entity classes (AbstractMetricItemEntity, SimpleMinMaxFloatMetricEntity, MetricItemBean) in engine/entities/metric/
+    ☒ Add @OneToMany cost/metric lists to ComponentEntity with add/get/makeBean methods
+    ☒ Create Spring JPA repositories for cost and metric entities
+    ☒ Update OfferSetRequestParser to parse and store request-level costs and metrics
+    ☒ Add configurable cost/metric generation to mock platform offer building
+    ☒ Add cost/metric generation to docker platform offer building
+    ☒ Create Python test file verifying costs and metrics appear on offers and components
+    ☒ Run end-to-end demo: rebuild, start broker, execute tests
+
+  All 13 tasks are complete. Here's a summary of what was implemented:
+
+  Phase 1 — Schema (Calycopis-openapi)
+  • Created 4 new YAML schema files under schema/v1.0/kinds/costs/ and schema/v1.0/kinds/metrics/ defining AbstractCostItem, SimpleMinMaxFloatCost, AbstractMetricItem, and
+    SimpleMinMaxFloatMetric
+  • Added costs and metrics list properties to both AbstractComponent and ExecutionRequest in components.yaml
+  • Rebuilt the merged schema and regenerated Java Spring, Java client, and Python client packages
+
+  Phase 2 — Broker entity model (Calycopis-broker)
+  • Created cost entity package (engine/entities/cost/) with interface, JPA entity hierarchy using @Inheritance(SINGLE_TABLE), and serialization bean adapter
+  • Created metric entity package (engine/entities/metric/) mirroring the cost pattern
+  • Added @OneToMany relationships for costs and metrics to ComponentEntity with addCost(), addMetric(), getCostBeans(), getMetricBeans() methods using ListWrapper
+  • Updated fillBean methods across all abstract entity types (compute, storage, executable, data, volume, session) to include costs and metrics in serialized output
+  • Created Spring JPA repositories for both entity types
+
+  Phase 3 — Request parsing
+  • Added getRequestCosts() and getRequestMetrics() to OfferSetRequestParserContext interface and implementation
+  • Added populateCostsAndMetrics() to the Platform interface, called during offer building in stageTwo()
+
+  Phase 4 — Platform implementations
+  • Implemented mock platform: attaches monetary cost, energy cost, and compute performance metric to sessions and compute resources
+  • Implemented Docker platform: same pattern with higher performance values reflecting Docker infrastructure
+
+  Phase 5 — Testing
+  • Created test_costs_and_metrics.py with 12 integration tests covering session costs, session metrics, compute resource costs/metrics, min/max value validation, and request-level
+    cost/metric constraints
+  • All 28 tests pass (12 new + 16 existing), confirming no regressions
+
+  Bug fix during testing: Added @JsonTypeName annotations to CostItemBean and MetricItemBean to ensure Jackson serializes the correct PURL URI as the kind discriminator value.
+--END--
+
+
+# -----------------------------------------------------
+# Commit the changes
+#[user@desktop]
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${CALYCOPIS_CODE}"
+
+        git add .
+        git commit -m "Added support for metrics and costs"
+
+    popd
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${TREBULA_CODE}"
+
+        git add .
+        git commit -m "Added support for metrics and costs"
+
+    popd
+

@@ -1,7 +1,7 @@
 /*
  * <meta:header>
  *   <meta:licence>
- *     Copyright (C) 2025 University of Manchester.
+ *     Copyright (C) 2026 University of Manchester.
  *
  *     This information is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,18 @@
  *   </meta:licence>
  * </meta:header>
  *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-06-03T01:33:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
  *
  */
 
@@ -162,6 +174,12 @@ implements AbstractComputeResource
             );
         bean.setSchedule(
             this.makeScheduleBean()
+            );
+        bean.setCosts(
+            this.getCostBeans()
+            );
+        bean.setMetrics(
+            this.getMetricBeans()
             );
         return bean;
         }

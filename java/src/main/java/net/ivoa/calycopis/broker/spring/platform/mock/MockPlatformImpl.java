@@ -128,6 +128,16 @@
  *       "value": 1,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-06-03T01:33:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -177,10 +187,14 @@ import net.ivoa.calycopis.broker.engine.entities.executable.docker.mock.MockDock
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJupyterNotebookEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJupyterNotebookEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJupyterNotebookValidatorImpl;
+import net.ivoa.calycopis.broker.engine.entities.cost.SimpleMinMaxFloatCostEntity;
+import net.ivoa.calycopis.broker.engine.entities.metric.SimpleMinMaxFloatMetricEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParser;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdateHandlerImpl;
@@ -598,6 +612,65 @@ implements MockPlatform
             }
         else {
             return null;
+            }
+        }
+
+    @Override
+    public void populateCostsAndMetrics(
+        final SimpleExecutionSessionEntity sessionEntity,
+        final AbstractComputeResourceEntity computeResourceEntity,
+        final OfferSetRequestParserContext context
+        ){
+        log.debug("populateCostsAndMetrics(mock)");
+
+        sessionEntity.addCost(
+            new SimpleMinMaxFloatCostEntity(
+                sessionEntity,
+                "urn:ivoa:calycopis:cost:monetary",
+                "Estimated monetary cost (mock)",
+                0.05f,
+                0.20f
+                )
+            );
+        sessionEntity.addCost(
+            new SimpleMinMaxFloatCostEntity(
+                sessionEntity,
+                "urn:ivoa:calycopis:cost:energy",
+                "Estimated energy use in kWh (mock)",
+                0.01f,
+                0.05f
+                )
+            );
+        sessionEntity.addMetric(
+            new SimpleMinMaxFloatMetricEntity(
+                sessionEntity,
+                "urn:ivoa:calycopis:metric:compute-performance",
+                "Compute performance benchmark (mock)",
+                80.0f,
+                100.0f
+                )
+            );
+
+        if (computeResourceEntity != null)
+            {
+            computeResourceEntity.addCost(
+                new SimpleMinMaxFloatCostEntity(
+                    computeResourceEntity,
+                    "urn:ivoa:calycopis:cost:monetary",
+                    "Compute cost per hour (mock)",
+                    0.02f,
+                    0.10f
+                    )
+                );
+            computeResourceEntity.addMetric(
+                new SimpleMinMaxFloatMetricEntity(
+                    computeResourceEntity,
+                    "urn:ivoa:calycopis:metric:compute-performance",
+                    "CPU benchmark score (mock)",
+                    80.0f,
+                    100.0f
+                    )
+                );
             }
         }
 

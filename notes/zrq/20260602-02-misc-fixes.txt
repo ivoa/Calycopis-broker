@@ -60,17 +60,17 @@
     >   ....
     >   ....
     >     I've read both files. Let me also read the referenced coding convention files in the agents/ directory.
-    >   
+    >
     >       Globbed, read 1 glob, 4 files
     >       … 2 earlier items hidden
     >       Read ...pis-broker/github-zrq/agents/copyright-year.mdc
     >       Read ...lycopis-broker/github-zrq/agents/ai-metrics.mdc
     >       Read ...oker/github-zrq/agents/unexpected-behaviour.mdc
-    >   
+    >
     >     I've read both AGENTS.md files and all four supplementary rule files. Here's a summary of the key coding standards:
-    >   
+    >
     >     Coding conventions (Calycopis-broker):
-    >   
+    >
     >     • Clarity over brevity — code style should favour readability.
     >     • No ternary operator (?:) — always use expanded if/else blocks, with one exception: ternaries are allowed in logging
     >       messages.
@@ -79,9 +79,9 @@
     >     • No fragile patterns — avoid @Transient + initEntity() helpers, static singletons, ApplicationContextAware lookups,
     >       or anything that bypasses normal DI and entity lifecycle. If such a pattern seems necessary, stop and ask the user
     >       first.
-    >   
+    >
     >     File header rules (applied to all created/modified files):
-    >   
+    >
     >     1. GPL licence header (licence-header.mdc) — every new source file must start with the GPL v3 licence block (adapted
     >        to the file's comment syntax). It must appear before any package, import, or other declarations.
     >     2. Copyright year (copyright-year.mdc) — when modifying a file with a <meta:licence> block, update the Copyright (c)
@@ -89,12 +89,12 @@
     >     3. AIMetrics block (ai-metrics.mdc) — every created or modified file must have an AIMetrics entry recording
     >        timestamp, tool name ("Cursor CLI"), model, and contribution percentage. For new files, contribution is 100%; for
     >        modifications, estimate based on lines changed.
-    >   
+    >
     >     Behavioural rule:
-    >   
+    >
     >     4. Unexpected behaviour (unexpected-behaviour.mdc) — if an API or service behaves unexpectedly (missing headers,
     >        undocumented status codes, malformed responses), stop and ask the user before writing workaround code.
-    >   
+    >
     >     I'm ready to work on these projects with these standards in mind. What would you like to do?
 
 
@@ -111,24 +111,24 @@
     >   ....
     >   ....
     >     The fix is straightforward — three changes in execution_client.py:
-    >   
+    >
     >     1. Import: added timezone to the from datetime import ... line.
     >     2. Line 216: datetime.utcnow() → datetime.now(timezone.utc) (deadline calculation).
     >     3. Line 219: datetime.utcnow() → datetime.now(timezone.utc) (polling loop condition).
-    >   
+    >
     >     This replaces the deprecated naive-UTC method with the recommended timezone-aware equivalent, which eliminates the
     >     DeprecationWarning.
 
 
     ?   The Python tests at `/calycopis/Calycopis-broker/github-zrq/tests/python/`
     ?   all have to set the kind URL for the message objects.
-    ?   
+    ?
     ?   ```
     ?   DOCKER_CONTAINER_KIND = (
     ?       "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
     ?   )
     ?   ```
-    ?   
+    ?
     ?   and
     ?   ```
     ?   executable=DockerContainer(
@@ -139,7 +139,7 @@
     ?           digest=ANDROCLES_DIGEST,
     ?       ),
     ?   ```
-    ?   
+    ?
     ?   Can you create a plan for adding wrapper classes to the generated
     ?   classes that provide a default constructor that automatically sets
     ?   the default kind URL for that class.
@@ -147,7 +147,7 @@
     >   ....
     >   ....
     >     I now have a complete picture of the codebase. Before I finalize the plan, I have one design question:
-    >   
+    >
     >    ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
     >    │ Clarifying Questions                                                                                                 │
     >    │                                                                                                                      │
@@ -268,30 +268,30 @@
     >   ....
     >     All 19 wrapper classes import correctly, default kind values are set properly, and isinstance checks pass against
     >     the generated parent classes.
-    >   
+    >
     >       To-do All done
     >       ☒ Create `codegen/python/client/wrappers/models.py` with 19 Pydantic wrapper subclasses that set default `kind`
     >         values
     >       ☒ Update `codegen/python/client/wrappers/__init__.py` to re-export all wrapper classes
-    >   
+    >
     >     Both tasks are done. Here's a summary of what was created:
-    >   
+    >
     >     New file: codegen/python/client/wrappers/models.py — 19 thin Pydantic subclasses, each setting a default kind value
     >     matching the schema discriminator URI.
-    >   
+    >
     >     Modified file: codegen/python/client/wrappers/__init__.py — re-exports all 19 wrapper classes.
-    >   
+    >
     >     Tests can now replace verbose patterns like:
-    >   
+    >
     >     DOCKER_CONTAINER_KIND =
     >     "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
     >     executable = DockerContainer(kind=DOCKER_CONTAINER_KIND, ...)
-    >   
+    >
     >     with:
-    >   
+    >
     >     from calycopis_schema_client.wrappers import DockerContainer
     >     executable = DockerContainer(...)
-    >   
+    >
     >     The kind can still be overridden explicitly if needed. Note that the wrapper files also need to be copied into the
     >     build/ directory when the Python client is rebuilt (the buildpythonclient script already handles this via the cp -r
     >     codegen/python/client/wrappers step).
@@ -303,36 +303,36 @@
     >   ....
     >     All three batches are done. Let me verify the changes by checking for any remaining _KIND references and kind=
     >     patterns across the test files.
-    >   
+    >
     >       To-do All done
     >       ☒ Update conftest.py if it defines kind constants
     >       ☒ Update tests/python/any/ test files to use wrapper classes
     >       ☒ Update tests/python/docker/ test files to use wrapper classes
     >       ☒ Update tests/python/mock/ test files to use wrapper classes
-    >   
+    >
     >       Grepped 3 greps
     >       Grepped "_KIND\b" in calycopis/Calycopis-broker/github-zrq/tests/python
     >       Grepped "kind=" in calycopis/Calycopis-broker/github-zrq/tests/python
     >       Grepped "...e|SkaoDataResource|JupyterNotebook)\b" in calycopis/Calycopis-broker/github-zrq/tests/python
-    >   
+    >
     >     All clean — zero remaining _KIND constants, zero kind= arguments, and zero direct model imports for wrapped classes
     >     across all test files. Let me do a quick spot-check on a couple of files to confirm they look correct.
-    >   
+    >
     >       Read 3 files
     >       Read .../tests/python/any/test_resource_registration.py
     >       Read ...b-zrq/tests/python/mock/test_mock_validators.py
     >       Read ...zrq/tests/python/docker/test_docker_platform.py
-    >   
+    >
     >     All files look correct. The changes are clean and consistent across all 11 test files:
-    >   
+    >
     >     • Imports now use calycopis_schema_client.wrappers for wrapped classes while non-wrapped types remain at their
     >       original import locations
     >     • All _KIND constants have been removed
     >     • All kind= arguments have been removed from constructor calls
     >     • AIMetrics have been updated with new entries
-    >   
+    >
     >     Here's a summary of the 11 files updated:
-    >   
+    >
     >     ┌───────────┬─────────────────────────────────┬──────────────────┬────────────────────┐
     >     │ Directory │ File                            │ Classes switched │ kind= args removed │
     >     ├───────────┼─────────────────────────────────┼──────────────────┼────────────────────┤
@@ -363,32 +363,6 @@
     #
     # Can I get Cursor to report this during a session ?
     #
-
-    Ask cursor to
-    Create Python app that uses <> libraries to calculate shasim of an inpit file and write result to stdout.
-    Wrap the Python app in a Jupyter notebook to experiment with it.
-
-    Create a Docker container that wraps the Jupyter notebook.
-    Create an ivoa-execution.yaml file that describes it.
-    Use the ivoa-execution.yaml file to run the Jupyter notebook on a service.
-
-    Wrap the Python app in a Docker container to experiment with it.
-    Create an ivoa-execution.yaml file that describes it.
-    Use the ivoa-execution.yaml file to run the Docker container on a service.
-
-    Add metrics to the schema.
-    Make the metrics configurable.
-    Add code to quote the maximum metric in an offer and the actual metric in a result.
-
-    Add costs to the schema.
-    Make the costs configurable.
-    Add code to quote the maximum cost in an offer and the actual cost in a result.
-    Deploy 3 services.
-
-    Send requests with minimum metrics and maximum costs.
-    Collate the replies and display to the user.
-    Allow the user to select the option they want.
-    Execute the task and report the result, along with the actual cost and metric.
 
 # -----------------------------------------------------
 

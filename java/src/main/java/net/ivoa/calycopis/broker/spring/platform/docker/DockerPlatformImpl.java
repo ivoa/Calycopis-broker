@@ -88,6 +88,16 @@
  *       "value": 1,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-06-03T01:33:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -106,6 +116,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.cost.SimpleMinMaxFloatCostEntity;
+import net.ivoa.calycopis.broker.engine.entities.metric.SimpleMinMaxFloatMetricEntity;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
@@ -139,7 +151,9 @@ import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.JupyterNoteb
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParser;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdateHandlerImpl;
@@ -583,6 +597,65 @@ implements DockerPlatform
             }
         else {
             return null;
+            }
+        }
+
+    @Override
+    public void populateCostsAndMetrics(
+        final SimpleExecutionSessionEntity sessionEntity,
+        final AbstractComputeResourceEntity computeResourceEntity,
+        final OfferSetRequestParserContext context
+        ){
+        log.debug("populateCostsAndMetrics(docker)");
+
+        sessionEntity.addCost(
+            new SimpleMinMaxFloatCostEntity(
+                sessionEntity,
+                "urn:ivoa:calycopis:cost:monetary",
+                "Estimated monetary cost (docker)",
+                0.10f,
+                0.50f
+                )
+            );
+        sessionEntity.addCost(
+            new SimpleMinMaxFloatCostEntity(
+                sessionEntity,
+                "urn:ivoa:calycopis:cost:energy",
+                "Estimated energy use in kWh (docker)",
+                0.02f,
+                0.10f
+                )
+            );
+        sessionEntity.addMetric(
+            new SimpleMinMaxFloatMetricEntity(
+                sessionEntity,
+                "urn:ivoa:calycopis:metric:compute-performance",
+                "Compute performance benchmark (docker)",
+                150.0f,
+                200.0f
+                )
+            );
+
+        if (computeResourceEntity != null)
+            {
+            computeResourceEntity.addCost(
+                new SimpleMinMaxFloatCostEntity(
+                    computeResourceEntity,
+                    "urn:ivoa:calycopis:cost:monetary",
+                    "Compute cost per hour (docker)",
+                    0.05f,
+                    0.25f
+                    )
+                );
+            computeResourceEntity.addMetric(
+                new SimpleMinMaxFloatMetricEntity(
+                    computeResourceEntity,
+                    "urn:ivoa:calycopis:metric:compute-performance",
+                    "CPU benchmark score (docker)",
+                    150.0f,
+                    200.0f
+                    )
+                );
             }
         }
     }

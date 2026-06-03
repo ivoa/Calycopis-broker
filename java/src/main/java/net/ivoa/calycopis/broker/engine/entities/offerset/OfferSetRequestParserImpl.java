@@ -47,6 +47,8 @@ import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResource
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResource;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceValidator;
+import net.ivoa.calycopis.broker.engine.entities.cost.SimpleMinMaxFloatCostEntity;
+import net.ivoa.calycopis.broker.engine.entities.metric.SimpleMinMaxFloatMetricEntity;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
@@ -436,6 +438,14 @@ implements OfferSetRequestParser
                             );
                         }
                     }
+
+                //
+                // Add platform costs and metrics to the session.
+                platform.populateCostsAndMetrics(
+                    executionSessionEntity,
+                    computeResourceEntity,
+                    offersetContext
+                    );
 
                 //
                 // Confirm we have at least one result.

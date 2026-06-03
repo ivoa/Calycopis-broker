@@ -48,6 +48,16 @@
  *       "value": 1,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-06-03T01:33:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 10,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -59,11 +69,14 @@ import java.net.URI;
 import java.util.UUID;
 
 import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactory;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdater;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactory;
@@ -165,6 +178,16 @@ extends FactoryBase
      * 
      */
     public SimpleExecutionSessionEntityUpdater getExecutionSessionEntityUpdater();
-    
-    
+
+    /**
+     * Populate costs and metrics on session and component entities.
+     * Called during offer building to attach platform-specific cost and metric data.
+     *
+     */
+    public void populateCostsAndMetrics(
+        final SimpleExecutionSessionEntity sessionEntity,
+        final AbstractComputeResourceEntity computeResourceEntity,
+        final OfferSetRequestParserContext context
+        );
+
     }

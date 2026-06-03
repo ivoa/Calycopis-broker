@@ -38,6 +38,16 @@
  *       "value": 5,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-06-03T01:33:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 3,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -57,7 +67,9 @@ import net.ivoa.calycopis.broker.engine.entities.message.MessageSubject;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidator;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
+import net.ivoa.calycopis.schema.spring.model.IvoaAbstractCostItem;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
+import net.ivoa.calycopis.schema.spring.model.IvoaAbstractMetricItem;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
 import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
@@ -396,5 +408,17 @@ extends MessageSubject
      *
      */
     public IdentityEntity getOwner();
+
+    /**
+     * Get the request-level cost constraints from the client.
+     *
+     */
+    public List<IvoaAbstractCostItem> getRequestCosts();
+
+    /**
+     * Get the request-level metric requirements from the client.
+     *
+     */
+    public List<IvoaAbstractMetricItem> getRequestMetrics();
 
     }

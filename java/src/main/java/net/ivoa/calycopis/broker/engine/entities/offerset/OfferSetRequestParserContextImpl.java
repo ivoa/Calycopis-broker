@@ -38,6 +38,16 @@
  *       "value": 2,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-06-03T01:33:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 3,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -66,7 +76,9 @@ import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
+import net.ivoa.calycopis.schema.spring.model.IvoaAbstractCostItem;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
+import net.ivoa.calycopis.schema.spring.model.IvoaAbstractMetricItem;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
 import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
 import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
@@ -955,5 +967,17 @@ implements OfferSetRequestParserContext
     public IdentityEntity getOwner()
         {
         return this.owner;
+        }
+
+    @Override
+    public List<IvoaAbstractCostItem> getRequestCosts()
+        {
+        return this.originalRequest.getCosts();
+        }
+
+    @Override
+    public List<IvoaAbstractMetricItem> getRequestMetrics()
+        {
+        return this.originalRequest.getMetrics();
         }
     }
