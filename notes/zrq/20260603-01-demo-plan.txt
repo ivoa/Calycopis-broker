@@ -676,6 +676,7 @@ file: schema/v1.0/components.yaml
 
 
 # -----------------------------------------------------
+# -----------------------------------------------------
 # Commit the changes
 #[user@desktop]
 
@@ -694,4 +695,390 @@ file: schema/v1.0/components.yaml
         git commit -m "Added support for metrics and costs"
 
     popd
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Work wioth Cursor to develop the demo.
+#[root@calycopis-dev]
+
+==START==
+/plan
+The next part is to plan a demonstration of how the costs and metrics can be used.
+* The demonstration would use three broker instances configured to run docker containers.
+* Each broker would be configured to have different metrics for compute and IO
+  perforamance, and different energy and carbon costs.
+* The client interface for the demonstration will be an AI agent like Cursor.
+* The user would ask the agent to create a task description and send it to the
+  three brokers.
+* The agent would collect and compare the resulting offers, present a summary to
+  the user and enable them to select the offer they want to accept.
+* The agent would accept the selected offer, monitor the execution, and display
+  a summary of the result.
+* The initial deployment would use four Podman pods.
+* All four pods would be connected to a shared Podman network.
+* See https://stackoverflow.com/a/67128537
+* Three of the pods would contain a database and broker instance.
+* The fourth pod would run a configuration script and the user agent in interactive containers.
+* The configuration script would run in an shell in an interactive container.
+* The configuration script would have access to the admin password for each of the brokers
+  and use it to create demo user accounts in each of the brokers.
+* The user would run the user agent in a shell in an interactive container.
+* The user agent would be configured using a USER-AGENT.md file that describes
+  what functionality it should offer to the user.
+* The user would interact with the user agent via text, asking it to
+  manage tasks on their behalf.
+* For the demonstration the tasks would be calibrated to produce specific
+  results from each broker.
+==END==
+
+--START--
+....
+....
+ ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Suggested Plan                                                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ Multi-Broker Costs and Metrics Demonstration                                                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ Architecture                                                                                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ flowchart TB                                                                                                                                                                             │
+ │     subgraph net [Podman Network: calycopis-demo]                                                                                                                                        │
+ │         subgraph podAlpha [Pod: broker-alpha]                                                                                                                                            │
+ │             pgAlpha[PostgreSQL]                                                                                                                                                          │
+ │             brAlpha["Broker :8082\n(High compute, Low energy)"]                                                                                                                          │
+ │         end                                                                                                                                                                              │
+ │         subgraph podBeta [Pod: broker-beta]                                                                                                                                              │
+ │             pgBeta[PostgreSQL]                                                                                                                                                           │
+ │             brBeta["Broker :8082\n(Medium compute, High IO)"]                                                                                                                            │
+ │         end                                                                                                                                                                              │
+ │         subgraph podGamma [Pod: broker-gamma]                                                                                                                                            │
+ │             pgGamma[PostgreSQL]                                                                                                                                                          │
+ │             brGamma["Broker :8082\n(Low compute, Cheapest monetary)"]                                                                                                                    │
+ │         end                                                                                                                                                                              │
+ │         subgraph podClient [Pod: demo-client]                                                                                                                                            │
+ │             configScript["Config container\n(seeds user accounts)"]                                                                                                                      │
+ │             userAgent["Cursor CLI container\n(interactive)"]                                                                                                                             │
+ │         end                                                                                                                                                                              │
+ │     end                                                                                                                                                                                  │
+ │     userAgent -->|"POST /offersets"| brAlpha                                                                                                                                             │
+ │     userAgent -->|"POST /offersets"| brBeta                                                                                                                                              │
+ │     userAgent -->|"POST /offersets"| brGamma                                                                                                                                             │
+ │ ctrl+o to render diagram                                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ The three broker pods each run a PostgreSQL container and a broker container with the docker Spring profile. Each broker has different cost and metric values loaded from external       │
+ │ YAML configuration. The client pod runs Cursor CLI in an interactive container with a USER-AGENT.md that guides the AI in managing tasks across all three brokers.                       │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ |                                                                                                                                                                                          |
+ │ Phase 1: Externalize cost/metric configuration                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ Currently, cost and metric values are hardcoded in populateCostsAndMetrics() in both platform implementations. We need to externalize them via Spring @ConfigurationProperties so the    │
+ │ same Docker image can be configured differently per broker.                                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ 1a. Create a configuration properties class                                                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ New file: spring/platform/CostsAndMetricsSettingsImpl.java                                                                                                                               │
+ │ Following the existing pattern in DockerPlatformSettingsImpl.java (java/src/main/java/net/ivoa/calycopis/broker/spring/platform/docker/DockerPlatformSettingsImpl.java), create a        │
+ │ @ConfigurationProperties(prefix = "broker.costs-and-metrics") class that binds a structured YAML config:                                                                                 │
+ │                                                                                                                                                                                          │
+ │ broker:                                                                                                                                                                                  │
+ │   costs-and-metrics:                                                                                                                                                                     │
+ │     session:                                                                                                                                                                             │
+ │       costs:                                                                                                                                                                             │
+ │         - type: "urn:ivoa:calycopis:cost:monetary"                                                                                                                                       │
+ │           description: "Estimated monetary cost"                                                                                                                                         │
+ │           min: 0.10                                                                                                                                                                      │
+ │           max: 0.50                                                                                                                                                                      │
+ │         - type: "urn:ivoa:calycopis:cost:energy"                                                                                                                                         │
+ │           description: "Estimated energy use in kWh"                                                                                                                                     │
+ │           min: 0.02                                                                                                                                                                      │
+ │           max: 0.10                                                                                                                                                                      │
+ │         - type: "urn:ivoa:calycopis:cost:carbon"                                                                                                                                         │
+ │           description: "Estimated carbon emissions in gCO2"                                                                                                                              │
+ │           min: 5.0                                                                                                                                                                       │
+ │           max: 25.0                                                                                                                                                                      │
+ │       metrics:                                                                                                                                                                           │
+ │         - type: "urn:ivoa:calycopis:metric:compute-performance"                                                                                                                          │
+ │           description: "Compute performance benchmark"                                                                                                                                   │
+ │           min: 150.0                                                                                                                                                                     │
+ │           max: 200.0                                                                                                                                                                     │
+ │     compute:                                                                                                                                                                             │
+ │       costs:                                                                                                                                                                             │
+ │         - type: "urn:ivoa:calycopis:cost:monetary"                                                                                                                                       │
+ │           description: "Compute cost per hour"                                                                                                                                           │
+ │           min: 0.05                                                                                                                                                                      │
+ │           max: 0.25                                                                                                                                                                      │
+ │       metrics:                                                                                                                                                                           │
+ │         - type: "urn:ivoa:calycopis:metric:compute-performance"                                                                                                                          │
+ │           description: "CPU benchmark score"                                                                                                                                             │
+ │           min: 150.0                                                                                                                                                                     │
+ │           max: 200.0                                                                                                                                                                     │
+ │         - type: "urn:ivoa:calycopis:metric:io-throughput"                                                                                                                                │
+ │           description: "IO throughput in MB/s"                                                                                                                                           │
+ │           min: 100.0                                                                                                                                                                     │
+ │           max: 500.0                                                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ │ The class needs:                                                                                                                                                                         │
+ │ • A nested CostMetricItem record/class with type, description, min, max fields                                                                                                           │
+ │ • A nested ComponentConfig class with List<CostMetricItem> costs and List<CostMetricItem> metrics                                                                                        │
+ │ • Top-level session and compute fields of type ComponentConfig                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ 1b. Create interface in engine package                                                                                                                                                   │
+ │                                                                                                                                                                                          │
+ │ New file: engine/functional/platform/CostsAndMetricsSettings.java                                                                                                                        │
+ │ An interface matching the settings class (following the DockerPlatformSettings / DockerPlatformSettingsImpl split between engine/ and spring/ packages per the coding standards).        │
+ │                                                                                                                                                                                          │
+ │ 1c. Update platform implementations                                                                                                                                                      │
+ │                                                                                                                                                                                          │
+ │ Modify DockerPlatformImpl.populateCostsAndMetrics() (java/src/main/java/net/ivoa/calycopis/broker/spring/platform/docker/DockerPlatformImpl.java) and                                    │
+ │ MockPlatformImpl.populateCostsAndMetrics() (java/src/main/java/net/ivoa/calycopis/broker/spring/platform/mock/MockPlatformImpl.java) to read from the injected settings rather than      │
+ │ using hardcoded values. The existing hardcoded values become defaults in application.yaml.                                                                                               │
+ │                                                                                                                                                                                          │
+ │ 1d. Add a config import for the platform config                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │ Add optional:file:/etc/calycopis/platform.yaml to the spring.config.import list in application.yaml (java/src/main/resources/application.yaml). Using optional: means the broker still   │
+ │  starts without the file (using defaults).                                                                                                                                               │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ |                                                                                                                                                                                          |
+ │ Phase 2: Create per-broker configuration profiles                                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ Three YAML config files defining different cost/metric profiles:                                                                                                                         │
+ │ • broker-alpha -- "Green HPC": Highest compute performance (250-300), highest IO (800-1200 MB/s), moderate monetary cost (0.30-0.80), lowest energy (0.01-0.03 kWh), lowest carbon       │
+ │   (2-8 gCO2)                                                                                                                                                                             │
+ │ • broker-beta -- "General Purpose Cloud": Medium compute (120-160), medium IO (200-400 MB/s), lowest monetary cost (0.05-0.15), medium energy (0.05-0.15 kWh), medium carbon (15-40      │
+ │   gCO2)                                                                                                                                                                                  │
+ │ • broker-gamma -- "Budget Tier": Lowest compute (60-90), lowest IO (50-100 MB/s), cheapest monetary (0.02-0.08), highest energy (0.10-0.30 kWh), highest carbon (30-80 gCO2)             │
+ │                                                                                                                                                                                          │
+ │ These files go in a new directory: demo/config/                                                                                                                                          │
+ │ • demo/config/broker-alpha/platform.yaml                                                                                                                                                 │
+ │ • demo/config/broker-beta/platform.yaml                                                                                                                                                  │
+ │ • demo/config/broker-gamma/platform.yaml                                                                                                                                                 │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ Phase 3: Build broker container image                                                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ 3a. Build the Spring Boot JAR                                                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ From the broker project root, build the fat JAR with the docker platform profile:                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ cd java                                                                                                                                                                                  │
+ │ ./mvnw clean package -DskipTests -D calycopis-platform=docker                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ 3b. Build the runtime image                                                                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ Using the existing docker/java-runtime/Dockerfile (docker/java-runtime/Dockerfile), build the image:                                                                                     │
+ │                                                                                                                                                                                          │
+ │ podman build \                                                                                                                                                                           │
+ │     --build-arg jarfile=calycopis-broker-1.0.6-SNAPSHOT.jar \                                                                                                                            │
+ │     --tag calycopis/broker:latest \                                                                                                                                                      │
+ │     -f docker/java-runtime/Dockerfile \                                                                                                                                                  │
+ │     java/target/                                                                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ ────────────────────────────────────────                                                                                                                                                 |
+ |                                                                                                                                                                                          |
+ │ Phase 4: Podman deployment infrastructure                                                                                                                                                │
+ │                                                                                                                                                                                          │
+ │ 4a. Create deployment script                                                                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ New file: demo/bin/deploy.sh                                                                                                                                                             │
+ │ This script:                                                                                                                                                                             │
+ │ 1. Creates the shared Podman network: podman network create calycopis-demo                                                                                                               │
+ │ 2. For each broker (alpha, beta, gamma):                                                                                                                                                 │
+ │   • Generates database and admin credentials with pwgen                                                                                                                                  │
+ │   • Creates the pod: podman pod create --name broker-{name} --network calycopis-demo                                                                                                     │
+ │   • Starts PostgreSQL in the pod                                                                                                                                                         │
+ │   • Copies config files (database.yaml, admin.yaml, platform.yaml) into the broker container                                                                                             │
+ │   • Starts the broker container in the pod, mounting /etc/calycopis/ from a generated config directory                                                                                   │
+ │ 3. Creates the client pod: podman pod create --name demo-client --network calycopis-demo                                                                                                 │
+ │ 4. Waits for all three brokers to respond on their health endpoints                                                                                                                      │
+ │ 5. Writes a demo-env.sh file with all broker URLs and admin credentials                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ 4b. Network topology                                                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ │ Each broker pod exposes port 8082 internally. Within the Podman network, the brokers are addressable as:                                                                                 │
+ │ • http://broker-alpha:8082                                                                                                                                                               │
+ │ • http://broker-beta:8082                                                                                                                                                                │
+ │ • http://broker-gamma:8082                                                                                                                                                               │
+ │                                                                                                                                                                                          │
+ │ 4c. Create teardown script                                                                                                                                                               │
+ │                                                                                                                                                                                          │
+ │ New file: demo/bin/teardown.sh                                                                                                                                                           │
+ │ Stops and removes all pods and the network.                                                                                                                                              │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ |                                                                                                                                                                                          |
+ │ Phase 5: Configuration script                                                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ New file: demo/bin/configure.sh                                                                                                                                                          │
+ │ This runs inside the client pod (or is exec'd into a container in that pod). It:                                                                                                         │
+ │ 1. Sources demo-env.sh for broker URLs and admin credentials                                                                                                                             │
+ │ 2. For each broker, uses curl or the Python client to POST /admin/identities and create a demo user account (same username/password on all three brokers for convenience)                │
+ │ 3. Writes a demo-user.env file with the demo user credentials and broker URLs                                                                                                            │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ Phase 6: Create USER-AGENT.md                                                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ New file: demo/USER-AGENT.md                                                                                                                                                             │
+ │ This is the Cursor agent instruction file (placed in the working directory so Cursor CLI reads it as AGENTS.md). It defines the agent's capabilities and behavior:                       │
+ │                                                                                                                                                                                          │
+ │ Content outline                                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │ 1. Role: "You are a scientific computing task manager. You help users submit computational tasks to execution brokers, compare offers, and manage executions."                           │
+ │ 2. Available brokers: Lists the three broker endpoints with their profiles (Green HPC, General Purpose Cloud, Budget Tier). Read from environment or a config file.                      │
+ │ 3. Tools and libraries: The agent has access to:                                                                                                                                         │
+ │   • Python 3 with calycopis_schema_client installed                                                                                                                                      │
+ │   • The ExecutionBrokerClient class and its methods (submit_execution, get_session, set_session_phase, wait_for_phase)                                                                   │
+ │   • Shell access for running Python scripts                                                                                                                                              │
+ │ 4. Capabilities the agent should offer:                                                                                                                                                  │
+ │   • Create task: Build an ExecutionRequest from a user's description (Docker image, compute requirements, data resources)                                                                │
+ │   • Submit to all brokers: Send the request to all three brokers and collect OfferSetResponses                                                                                           │
+ │   • Compare offers: Present a summary table showing each broker's costs (monetary, energy, carbon) and metrics (compute performance, IO throughput) side by side                         │
+ │   • Accept an offer: Call set_session_phase(uuid, "ACCEPTED") on the chosen offer                                                                                                        │
+ │   • Monitor execution: Poll get_session() and report phase transitions                                                                                                                   │
+ │   • Display results: Show the final status, connectors, and any messages                                                                                                                 │
+ │ 5. Example interaction patterns: Scripted examples showing the user asking "Run an Alpine container that computes pi to 1000 digits" and the agent creating the request, submitting,     │
+ │    comparing, and managing the result.                                                                                                                                                   │
+ │ 6. Code patterns: Include the Python code snippets for connecting to brokers, creating requests, and comparing offers, so the agent can adapt them.                                      │
+ │ ────────────────────────────────────────                                                                                                                                                 |
+ |                                                                                                                                                                                          |
+ │ Phase 7: Client container                                                                                                                                                                │
+ │                                                                                                                                                                                          │
+ │ 7a. Create client Dockerfile                                                                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ New file: demo/docker/demo-client/Dockerfile                                                                                                                                             │
+ │ Based on calycopis/developer-tools or a simpler Fedora/Ubuntu base. Installs:                                                                                                            │
+ │ • Python 3 + pip                                                                                                                                                                         │
+ │ • calycopis_schema_client package (from the built wheel)                                                                                                                                 │
+ │ • Cursor CLI (via the official install script or npm)                                                                                                                                    │
+ │ • pwgen, curl, jq, yq for the configuration script                                                                                                                                       │
+ │                                                                                                                                                                                          │
+ │ 7b. Run the client container                                                                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ The deployment script starts an interactive container in the client pod:                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ podman run -it \                                                                                                                                                                         │
+ │     --pod demo-client \                                                                                                                                                                  │
+ │     --volume ./demo:/workspace:z \                                                                                                                                                       │
+ │     --env-file demo-user.env \                                                                                                                                                           │
+ │     calycopis/demo-client:latest \                                                                                                                                                       │
+ │     /bin/bash                                                                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ Inside this container, the user:                                                                                                                                                         │
+ │ 1. Authenticates Cursor CLI (one-time cursor auth login)                                                                                                                                 │
+ │ 2. Runs cursor (or cursor agent) in the /workspace directory where AGENTS.md (the USER-AGENT.md) is present                                                                              │
+ │ 3. Interacts with the agent via text                                                                                                                                                     │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ │                                                                                                                                                                                          |
+ │ Phase 8: Demo verification                                                                                                                                                               │
+ │                                                                                                                                                                                          │
+ │ 8a. Automated smoke test                                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ New file: demo/bin/smoke-test.sh                                                                                                                                                         │
+ │ A script that:                                                                                                                                                                           │
+ │ 1. Submits a test request to each broker via curl/Python                                                                                                                                 │
+ │ 2. Verifies each returns offers with different cost/metric values                                                                                                                        │
+ │ 3. Accepts one offer and waits for completion                                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ 8b. Demo scenario                                                                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ A documented walkthrough (in demo/README.md) of the intended demonstration:                                                                                                              │
+ │ 1. User: "Run a Docker container that generates 1000 random numbers and computes statistics"                                                                                             │
+ │ 2. Agent creates the ExecutionRequest and submits to all three brokers                                                                                                                   │
+ │ 3. Agent presents comparison:                                                                                                                                                            │
+ │   • Alpha: Fast (score 275), green (5 gCO2), costs $0.55                                                                                                                                 │
+ │   • Beta: Medium (score 140), moderate (28 gCO2), costs $0.10                                                                                                                            │
+ │   • Gamma: Slow (score 75), dirty (55 gCO2), costs $0.05                                                                                                                                 │
+ │ 4. User selects based on preference (fastest, cheapest, greenest)                                                                                                                        │
+ │ 5. Agent accepts and monitors to completion                                                                                                                                              │
+ │ ────────────────────────────────────────                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ File summary                                                                                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ New files to create:                                                                                                                                                                     │
+ │ • java/.../engine/functional/platform/CostsAndMetricsSettings.java (interface)                                                                                                           │
+ │ • java/.../spring/platform/CostsAndMetricsSettingsImpl.java (Spring config binding)                                                                                                      │
+ │ • demo/config/broker-alpha/platform.yaml                                                                                                                                                 │
+ │ • demo/config/broker-beta/platform.yaml                                                                                                                                                  │
+ │ • demo/config/broker-gamma/platform.yaml                                                                                                                                                 │
+ │ • demo/docker/demo-client/Dockerfile                                                                                                                                                     │
+ │ • demo/bin/deploy.sh                                                                                                                                                                     │
+ │ • demo/bin/teardown.sh                                                                                                                                                                   │
+ │ • demo/bin/configure.sh                                                                                                                                                                  │
+ │ • demo/bin/smoke-test.sh                                                                                                                                                                 │
+ │ • demo/USER-AGENT.md                                                                                                                                                                     │
+ │ • demo/README.md                                                                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ Files to modify:                                                                                                                                                                         │
+ │ • java/.../spring/platform/docker/DockerPlatformImpl.java (use config instead of hardcoded values)                                                                                       │
+ │ • java/.../spring/platform/mock/MockPlatformImpl.java (use config instead of hardcoded values)                                                                                           │
+ │ • java/src/main/resources/application.yaml (add platform.yaml import, default cost/metric values)                                                                                        │
+ │                                                                                                                                                                                          │
+ │  Saved to root/.cursor/plans/Costs Metrics Demo-a14b4c80.plan.md                                                                                                                         │
+ │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+ │                                                                                                                                                                                          │
+ │ Ready to build?                                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │  → 1. Yes, build locally (b)                                                                                                                                                             │
+ │    2. No, propose changes (p or Esc)                                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+
+==START==
+Yes, build locally (b)                                                                                                                                                             │
+==END==
+
+
+--START--
+....
+....
+    To-do All done
+    ☒ Create CostsAndMetricsSettings interface and Spring @ConfigurationProperties implementation with nested cost/metric item structures
+    ☒ Update DockerPlatformImpl and MockPlatformImpl to read cost/metric values from injected settings instead of hardcoded literals
+    ☒ Add optional:file:/etc/calycopis/platform.yaml to config imports and add default cost/metric values to application.yaml
+    ☒ Create three platform.yaml config files in demo/config/ with distinct cost/metric profiles (alpha=HPC, beta=cloud, gamma=budget)
+    ☒ Build the Spring Boot JAR and broker container image using existing java-runtime Dockerfile
+    ☒ Create demo/bin/deploy.sh: Podman network, three broker pods with PostgreSQL, client pod, credential generation
+    ☒ Create demo/bin/teardown.sh to stop and remove all pods and the network
+    ☒ Create demo/bin/configure.sh to seed demo user accounts on all three brokers
+    ☒ Create demo/docker/demo-client/Dockerfile with Python, calycopis_schema_client, and Cursor CLI
+    ☒ Create demo/USER-AGENT.md with agent instructions: broker endpoints, Python code patterns, comparison table format, offer management workflow
+    ☒ Create demo/bin/smoke-test.sh to verify all three brokers return offers with distinct cost/metric values
+    ☒ Create demo/README.md documenting the full deployment and demonstration procedure
+....
+....
+  All 12 to-dos are complete. Here's a summary of everything that was implemented:
+
+  Phase 1 — Externalize cost/metric configuration:
+  • Created CostsAndMetricsSettings.java interface (in engine/functional/platform/) with nested Item and ComponentConfig interfaces
+  • Created CostsAndMetricsSettingsImpl.java (in spring/platform/) as a @ConfigurationProperties(prefix = "broker.costs-and-metrics") Spring bean
+  • Updated both DockerPlatformImpl and MockPlatformImpl to iterate over the injected settings instead of hardcoded values
+  • Added optional:file:/etc/calycopis/platform.yaml to application.yaml config imports and default cost/metric values under broker.costs-and-metrics
+
+  Phase 2 — Per-broker profiles:
+  • Created three platform.yaml files in demo/config/ with distinct profiles:
+    • Alpha (Green HPC): compute 250-300, IO 800-1200, lowest carbon
+    • Beta (Cloud): compute 120-160, IO 200-400, lowest monetary cost
+    • Gamma (Budget): compute 60-90, IO 50-100, cheapest but highest emissions
+
+  Phase 3 — Container image:
+  • Built the Spring Boot JAR and the calycopis/broker:latest container image
+
+  Phase 4-5 — Deployment infrastructure:
+  • demo/bin/deploy.sh — creates Podman network, three broker pods with PostgreSQL, client pod, and generated credentials
+  • demo/bin/teardown.sh — stops and removes all pods and the network
+  • demo/bin/configure.sh — seeds demo user accounts on all three brokers
+
+  Phase 6-7 — Client container and agent:
+  • demo/docker/demo-client/Dockerfile — Fedora-based image with Python, the client library, and tools
+  • demo/USER-AGENT.md — Cursor AI agent instructions with broker endpoints, Python code patterns, comparison table format, and offer management workflow
+
+  Phase 8 — Verification and documentation:
+  • demo/bin/smoke-test.sh — submits requests and verifies distinct cost/metric values
+  • demo/README.md — full deployment and demonstration procedure
+--END--
+
+
+
+
 

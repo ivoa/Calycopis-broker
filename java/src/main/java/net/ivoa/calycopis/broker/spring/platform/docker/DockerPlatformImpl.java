@@ -178,6 +178,7 @@ import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 import net.ivoa.calycopis.broker.engine.functional.platform.docker.DockerClientFactory;
 import net.ivoa.calycopis.broker.engine.functional.platform.docker.DockerClientFactoryImpl;
 import net.ivoa.calycopis.broker.engine.functional.platform.docker.DockerPlatform;
+import net.ivoa.calycopis.broker.engine.functional.platform.CostsAndMetricsSettings;
 import net.ivoa.calycopis.broker.engine.functional.platform.docker.DockerPlatformSettings;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactory;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactoryImpl;
@@ -409,6 +410,9 @@ implements DockerPlatform
 
     @Autowired
     private DockerPlatformSettingsImpl dockerSettings;
+
+    @Autowired
+    private CostsAndMetricsSettings costsAndMetricsSettings;
     @Override
     public DockerPlatformSettings getDockerSettings()
         {
@@ -608,54 +612,59 @@ implements DockerPlatform
         ){
         log.debug("populateCostsAndMetrics(docker)");
 
-        sessionEntity.addCost(
-            new SimpleMinMaxFloatCostEntity(
-                sessionEntity,
-                "urn:ivoa:calycopis:cost:monetary",
-                "Estimated monetary cost (docker)",
-                0.10f,
-                0.50f
-                )
-            );
-        sessionEntity.addCost(
-            new SimpleMinMaxFloatCostEntity(
-                sessionEntity,
-                "urn:ivoa:calycopis:cost:energy",
-                "Estimated energy use in kWh (docker)",
-                0.02f,
-                0.10f
-                )
-            );
-        sessionEntity.addMetric(
-            new SimpleMinMaxFloatMetricEntity(
-                sessionEntity,
-                "urn:ivoa:calycopis:metric:compute-performance",
-                "Compute performance benchmark (docker)",
-                150.0f,
-                200.0f
-                )
-            );
+        CostsAndMetricsSettings.ComponentConfig sessionConfig = costsAndMetricsSettings.getSession();
+        for (CostsAndMetricsSettings.Item item : sessionConfig.getCosts())
+            {
+            sessionEntity.addCost(
+                new SimpleMinMaxFloatCostEntity(
+                    sessionEntity,
+                    item.getType(),
+                    item.getDescription(),
+                    item.getMin(),
+                    item.getMax()
+                    )
+                );
+            }
+        for (CostsAndMetricsSettings.Item item : sessionConfig.getMetrics())
+            {
+            sessionEntity.addMetric(
+                new SimpleMinMaxFloatMetricEntity(
+                    sessionEntity,
+                    item.getType(),
+                    item.getDescription(),
+                    item.getMin(),
+                    item.getMax()
+                    )
+                );
+            }
 
         if (computeResourceEntity != null)
             {
-            computeResourceEntity.addCost(
-                new SimpleMinMaxFloatCostEntity(
-                    computeResourceEntity,
-                    "urn:ivoa:calycopis:cost:monetary",
-                    "Compute cost per hour (docker)",
-                    0.05f,
-                    0.25f
-                    )
-                );
-            computeResourceEntity.addMetric(
-                new SimpleMinMaxFloatMetricEntity(
-                    computeResourceEntity,
-                    "urn:ivoa:calycopis:metric:compute-performance",
-                    "CPU benchmark score (docker)",
-                    150.0f,
-                    200.0f
-                    )
-                );
+            CostsAndMetricsSettings.ComponentConfig computeConfig = costsAndMetricsSettings.getCompute();
+            for (CostsAndMetricsSettings.Item item : computeConfig.getCosts())
+                {
+                computeResourceEntity.addCost(
+                    new SimpleMinMaxFloatCostEntity(
+                        computeResourceEntity,
+                        item.getType(),
+                        item.getDescription(),
+                        item.getMin(),
+                        item.getMax()
+                        )
+                    );
+                }
+            for (CostsAndMetricsSettings.Item item : computeConfig.getMetrics())
+                {
+                computeResourceEntity.addMetric(
+                    new SimpleMinMaxFloatMetricEntity(
+                        computeResourceEntity,
+                        item.getType(),
+                        item.getDescription(),
+                        item.getMin(),
+                        item.getMax()
+                        )
+                    );
+                }
             }
         }
     }
