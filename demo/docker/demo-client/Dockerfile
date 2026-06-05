@@ -44,13 +44,13 @@ RUN dnf install -y \
     pwgen \
     && dnf clean all
 
-COPY calycopis_schema_client-1.0.6-py3-none-any.whl /tmp/
+COPY build/calycopis_schema_client-1.0.6-py3-none-any.whl /tmp/
 RUN pip3 install /tmp/calycopis_schema_client-1.0.6-py3-none-any.whl \
     && rm /tmp/calycopis_schema_client-1.0.6-py3-none-any.whl
 
-# Install Cursor CLI via npm (Node.js required)
-RUN dnf install -y nodejs npm && dnf clean all \
-    && npm install -g @anthropic-ai/cursor-cli 2>/dev/null || true
+# Install Cursor CLI
+RUN curl https://cursor.com/install -fsS | bash \
+    && ln -sf "${HOME}/.local/bin/cursor-agent" /usr/local/bin/cursor-agent
 
 WORKDIR /workspace
 

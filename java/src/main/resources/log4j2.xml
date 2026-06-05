@@ -32,12 +32,18 @@
         <Console name="STDOUT" target="SYSTEM_OUT">
             <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss} %level{length=5} %thread %logger{1} %method() %message%n"/>
         </Console>
-        <!-- Async Loggers will auto-flush in batches, so switch off immediateFlush. -->
-        <RandomAccessFile name="RandomAccessFile" fileName="target/async.log" immediateFlush="false" append="false">
+        <RollingFile name="LogFile"
+                     fileName="/var/log/calycopis/broker.log"
+                     filePattern="/var/log/calycopis/broker-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout>
                 <Pattern>%date{yyyy-MM-dd HH:mm:ss} %level{length=5} %thread %logger{1} %method() %message%n</Pattern>
             </PatternLayout>
-        </RandomAccessFile>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="7"/>
+        </RollingFile>
     </Appenders>
     <Loggers>
         <!--+
@@ -53,10 +59,11 @@
             +-->
         <Logger name="org.springframework.orm.jpa" level="INFO" additivity="false">
             <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="LogFile"/>
         </Logger>
         <Root level="INFO" includeLocation="false">
-            <!--AppenderRef ref="RandomAccessFile"/-->
             <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="LogFile"/>
         </Root>
     </Loggers>
 </Configuration>

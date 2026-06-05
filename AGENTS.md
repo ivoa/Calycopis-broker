@@ -284,6 +284,10 @@ To add an entirely new resource type (e.g. `gpu`):
 
 ## Coding conventions
 
+ * **No binary files in the source tree.** Do not add compiled artefacts, wheel files (`.whl`), JAR files, container images, or any other binary blobs to the version-controlled source tree. Build outputs should be written to a dedicated `build/` or `target/` directory that is excluded via `.gitignore`. If a binary file is needed as a build input (e.g. a wheel copied into a Docker build context), place it in a `build/` sub-directory with a `.gitignore` that excludes its contents.
+
+ * **Do not suppress errors.** Never redirect output to `/dev/null`, pipe stderr to `/dev/null`, or use `|| true` to hide failures in build scripts, Dockerfiles, or CI pipelines. If a command might legitimately fail (e.g. an optional tool that may not be available), handle the failure explicitly with a clear comment explaining why it is acceptable to continue, and ensure the error output remains visible for debugging.
+
  * Detailed rules for handling file headers are defined in the `agents/` directory:
    * [`agents/licence-header.mdc`](agents/licence-header.mdc) — GPL licence header that must be added to all new source files.
    * [`agents/copyright-year.mdc`](agents/copyright-year.mdc) — Copyright year in the licence header must be updated to the current year when a file is modified.
@@ -635,7 +639,8 @@ SPRING_PROFILES_ACTIVE=docker ./mvnw spring-boot:run
 ### Curl tests
 
 The `tests/curl` directory contains a set of worked examples that use curl to send and receive messages to the service.
-
+Many of the tests are out of date and will not run.
+Use them for reference only.
 
 ### Java tests
 

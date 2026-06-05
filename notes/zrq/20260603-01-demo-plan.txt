@@ -30,6 +30,7 @@
     Result:
 
         Work in progress ...
+        To resume this session: agent --resume=a14b4c80-cdc0-4be3-a1db-66ca2b3386b5
 
 # -----------------------------------------------------
 
@@ -131,13 +132,13 @@
     >        file that describes them).
     >         [x] I'll describe them in my next message
     >         [ ] They're described in a file/issue I'll reference
-    >   
+    >
     >       2. When you say 'configurable implementations in the broker', do you mean adding support under both the mock
     >       and docker platform tiers, or just one of them initially?
     >         [x] Both mock and docker platforms
     >         [ ] Mock platform first, docker later
     >         [ ] Docker platform first, mock later
-    >   
+    >
     >     Go ahead and describe the two features you'd like to add, and I'll research the codebase and put together a plan.
 
     ?   The features I want to add are metrics and costs.
@@ -146,18 +147,18 @@
     ?   * Costs describe the expected costs of performing a task.
     ?     Costs can be anything from an actual monetary cost for using the platform to an estimate
     ?     of the energy use or carbon cost of performing a task.
-    ?   
+    ?
     ?   The costs and metrics would apply to all of the components in the data model.
     ?   In terms of the schema, this means adding a list of metrics and a list of costs
     ?   to both ExecutionRequest and AbstractComponent.
-    ?   
+    ?
     ?   Where possible the new schema elements should follow the patterns
     ?   established in the rest of the schema.
-    ?   
+    ?
     ?   The following code blocks outline the things I am thinking of.
     ?   ```
     ?   file: schema/v1.0/kinds/metrics/abstract-metric-item.yaml
-    ?   
+    ?
     ?       AbstractMetricItem:
     ?         description: >
     ?           An abstract base class for a metric.
@@ -184,7 +185,7 @@
     ?             description: >
     ?               An optional description of the metric.
     ?             type: string
-    ?   
+    ?
     ?       AbstractMetricItemList:
     ?         description: >
     ?           A list of metrics.
@@ -192,10 +193,10 @@
     ?         items:
     ?           $ref: '#/components/schemas/AbstractMetricItem'
     ?   ```
-    ?   
+    ?
     ?   ```
     ?   file: schema/v1.0/kinds/costs/simple-minmax-float-cost.yaml
-    ?   
+    ?
     ?       SimpleMinMaxFLoatCost:
     ?         description: >
     ?           A basic numeric minimum and maximum value for a cost.
@@ -211,10 +212,10 @@
     ?             type: number
     ?             format: float
     ?   ```
-    ?   
+    ?
     ?   ```
     ?   file: schema/v1.0/kinds/costs/abstract-cost-item.yaml
-    ?   
+    ?
     ?       AbstractCostItem:
     ?         description: >
     ?           An abstract base class for costs.
@@ -241,7 +242,7 @@
     ?             description: >
     ?               An optional description of the cost.
     ?             type: string
-    ?   
+    ?
     ?       AbstractCostItemList:
     ?         description: >
     ?           A list of costs.
@@ -249,10 +250,10 @@
     ?         items:
     ?           $ref: '#/components/schemas/AbstractCostItem'
     ?   ```
-    ?   
+    ?
     ?   ```
     ?   file: schema/v1.0/kinds/costs/simple-minmax-float-cost.yaml
-    ?   
+    ?
     ?       SimpleMinMaxFLoatCost:
     ?         description: >
     ?           A basic numeric minimum and maximum value for a cost.
@@ -268,11 +269,11 @@
     ?             type: number
     ?             format: float
     ?   ```
-    ?   
+    ?
     ?   Then add a list of metrics and costs to ExecutionRequest and AbstractComponent.
     ?   ```
     ?   file: schema/v1.0/components.yaml
-    ?   
+    ?
     ?       AbstractComponent:
     ?           ....
     ?           properties:
@@ -280,7 +281,7 @@
     ?               $ref: './kinds/costs/abstract-cost-item.yaml#/components/schemas/AbstractCostItemList'
     ?             metrics:
     ?               $ref: './kinds/metrics/abstract-metric-item.yaml#/components/schemas/AbstractMetricItemList'
-    ?   
+    ?
     ?       ExecutionRequest:
     ?           ....
     ?           properties:
@@ -610,7 +611,7 @@
     >   ....
     >   ....
     >     All 28 tests pass — 12 new costs/metrics tests plus all 16 existing tests.
-    >   
+    >
     >       To-do All done
     >       ☒ Create cost schema YAML files (abstract-cost-item.yaml, simple-minmax-float-cost.yaml) under schema/v1.0/kinds/costs/
     >       ☒ Create metric schema YAML files (abstract-metric-item.yaml, simple-minmax-float-metric.yaml) under schema/v1.0/kinds/metrics/
@@ -625,35 +626,35 @@
     >       ☒ Add cost/metric generation to docker platform offer building
     >       ☒ Create Python test file verifying costs and metrics appear on offers and components
     >       ☒ Run end-to-end demo: rebuild, start broker, execute tests
-    >   
+    >
     >     All 13 tasks are complete. Here's a summary of what was implemented:
-    >   
+    >
     >     Phase 1 — Schema (Calycopis-openapi)
     >     • Created 4 new YAML schema files under schema/v1.0/kinds/costs/ and schema/v1.0/kinds/metrics/ defining AbstractCostItem, SimpleMinMaxFloatCost, AbstractMetricItem, and
     >       SimpleMinMaxFloatMetric
     >     • Added costs and metrics list properties to both AbstractComponent and ExecutionRequest in components.yaml
     >     • Rebuilt the merged schema and regenerated Java Spring, Java client, and Python client packages
-    >   
+    >
     >     Phase 2 — Broker entity model (Calycopis-broker)
     >     • Created cost entity package (engine/entities/cost/) with interface, JPA entity hierarchy using @Inheritance(SINGLE_TABLE), and serialization bean adapter
     >     • Created metric entity package (engine/entities/metric/) mirroring the cost pattern
     >     • Added @OneToMany relationships for costs and metrics to ComponentEntity with addCost(), addMetric(), getCostBeans(), getMetricBeans() methods using ListWrapper
     >     • Updated fillBean methods across all abstract entity types (compute, storage, executable, data, volume, session) to include costs and metrics in serialized output
     >     • Created Spring JPA repositories for both entity types
-    >   
+    >
     >     Phase 3 — Request parsing
     >     • Added getRequestCosts() and getRequestMetrics() to OfferSetRequestParserContext interface and implementation
     >     • Added populateCostsAndMetrics() to the Platform interface, called during offer building in stageTwo()
-    >   
+    >
     >     Phase 4 — Platform implementations
     >     • Implemented mock platform: attaches monetary cost, energy cost, and compute performance metric to sessions and compute resources
     >     • Implemented Docker platform: same pattern with higher performance values reflecting Docker infrastructure
-    >   
+    >
     >     Phase 5 — Testing
     >     • Created test_costs_and_metrics.py with 12 integration tests covering session costs, session metrics, compute resource costs/metrics, min/max value validation, and request-level
     >       cost/metric constraints
     >     • All 28 tests pass (12 new + 16 existing), confirming no regressions
-    >   
+    >
     >     Bug fix during testing: Added @JsonTypeName annotations to CostItemBean and MetricItemBean to ensure Jackson serializes the correct PURL URI as the kind discriminator value.
 
 
@@ -681,7 +682,7 @@
 
 # -----------------------------------------------------
 # -----------------------------------------------------
-# Work wioth Cursor to develop the demo.
+# Work with Cursor to develop the demo.
 #[root@calycopis-dev]
 
     ?   /plan
@@ -1023,31 +1024,31 @@
     >   ....
     >   ....
     >     All 12 to-dos are complete. Here's a summary of everything that was implemented:
-    >   
+    >
     >     Phase 1 — Externalize cost/metric configuration:
     >     • Created CostsAndMetricsSettings.java interface (in engine/functional/platform/) with nested Item and ComponentConfig interfaces
     >     • Created CostsAndMetricsSettingsImpl.java (in spring/platform/) as a @ConfigurationProperties(prefix = "broker.costs-and-metrics") Spring bean
     >     • Updated both DockerPlatformImpl and MockPlatformImpl to iterate over the injected settings instead of hardcoded values
     >     • Added optional:file:/etc/calycopis/platform.yaml to application.yaml config imports and default cost/metric values under broker.costs-and-metrics
-    >   
+    >
     >     Phase 2 — Per-broker profiles:
     >     • Created three platform.yaml files in demo/config/ with distinct profiles:
     >       • Alpha (Green HPC): compute 250-300, IO 800-1200, lowest carbon
     >       • Beta (Cloud): compute 120-160, IO 200-400, lowest monetary cost
     >       • Gamma (Budget): compute 60-90, IO 50-100, cheapest but highest emissions
-    >   
+    >
     >     Phase 3 — Container image:
     >     • Built the Spring Boot JAR and the calycopis/broker:latest container image
-    >   
+    >
     >     Phase 4-5 — Deployment infrastructure:
     >     • demo/bin/deploy.sh — creates Podman network, three broker pods with PostgreSQL, client pod, and generated credentials
     >     • demo/bin/teardown.sh — stops and removes all pods and the network
     >     • demo/bin/configure.sh — seeds demo user accounts on all three brokers
-    >   
+    >
     >     Phase 6-7 — Client container and agent:
     >     • demo/docker/demo-client/Dockerfile — Fedora-based image with Python, the client library, and tools
     >     • demo/USER-AGENT.md — Cursor AI agent instructions with broker endpoints, Python code patterns, comparison table format, and offer management workflow
-    >   
+    >
     >     Phase 8 — Verification and documentation:
     >     • demo/bin/smoke-test.sh — submits requests and verifies distinct cost/metric values
     >     • demo/README.md — full deployment and demonstration procedure

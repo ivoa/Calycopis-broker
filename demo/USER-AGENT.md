@@ -25,14 +25,28 @@ You have access to:
 
 ### 1. Create a task
 
-Build an `ExecutionRequest` from the user's description. Example request for a Docker container:
+Build an `ExecutionRequest` from the user's description using the typed model classes.
 
 ```python
 import base64
 import os
+
 from calycopis_schema_client import ApiClient, Configuration
-from calycopis_schema_client.models import ExecutionRequest
-from calycopis_schema_client.wrappers.execution_client import ExecutionBrokerClient
+from calycopis_schema_client.wrappers import (
+    DockerContainer,
+    ExecutionBrokerClient,
+    SimpleComputeResource,
+)
+from calycopis_schema_client.models import (
+    ComponentMetadata,
+    DockerImageSpec,
+    ExecutionRequest,
+    OfferSetResponse,
+    SimpleExecutionSessionPhase,
+    SimpleMinMaxFloatCost,
+    SimpleMinMaxFloatMetric,
+)
+
 
 def make_client(broker_url):
     username = os.environ["DEMO_USER"]
@@ -43,31 +57,22 @@ def make_client(broker_url):
     api_client.default_headers["Authorization"] = f"Basic {creds}"
     return ExecutionBrokerClient(host=broker_url, api_client=api_client)
 
+
+executable = DockerContainer(
+    meta=ComponentMetadata(name="pi-calculator"),
+    image=DockerImageSpec(
+        locations=["alpine:3"],
+        digest="sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601",
+    ),
+    command=["sh", "-c", "echo 'scale=1000; 4*a(1)' | bc -l"],
+)
+
 request = ExecutionRequest(
-    name="compute-pi",
-    executable={
-        "kind": "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executables/docker-container.yaml",
-        "name": "pi-calculator",
-        "image": "alpine:3",
-        "privileged": False,
-        "environment": {
-            "PI_DIGITS": "1000"
-        },
-        "entrypoint": "sh",
-        "command_line_params": [
-            "-c",
-            "echo 'scale=1000; 4*a(1)' | bc -l"
-        ]
-    },
-    resources={
-        "compute": [
-            {
-                "kind": "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/compute/simple-compute-resource.yaml",
-                "name": "compute-001",
-                "cores": {"min": 1, "max": 2}
-            }
-        ]
-    }
+    executable=executable,
+    compute=SimpleComputeResource(
+        meta=ComponentMetadata(name="compute-001"),
+        cores={"min": 1, "max": 2},
+    ),
 )
 ```
 
@@ -86,6 +91,8 @@ results = {}
 for name, url in brokers.items():
     client = make_client(url)
     response = client.submit_execution(request, follow_redirect=True)
+    assert isinstance(response, OfferSetResponse)
+    assert response.result == "YES"
     results[name] = response
 ```
 
@@ -97,17 +104,27 @@ Extract cost and metric values from the session offers in each response:
 ```python
 def extract_costs_and_metrics(response):
     summary = {"costs": {}, "metrics": {}}
-    if response.offers:
-        offer = response.offers[0]
-        if hasattr(offer, "costs") and offer.costs:
-            for cost in offer.costs:
-                ctype = cost.kind.rsplit("/", 1)[-1] if hasattr(cost, "kind") else cost.type
-                summary["costs"][ctype] = f"{cost.min:.2f} - {cost.max:.2f}"
-        if hasattr(offer, "metrics") and offer.metrics:
-            for metric in offer.metrics:
-                mtype = metric.kind.rsplit("/", 1)[-1] if hasattr(metric, "kind") else metric.type
-                summary["metrics"][mtype] = f"{metric.min:.1f} - {metric.max:.1f}"
+    if not response.offers:
+        return summary
+    offer = response.offers[0]
+    if offer.costs:
+        for cost in offer.costs:
+            label = cost.type or cost.kind
+            summary["costs"][label] = (cost.min, cost.max)
+    if offer.metrics:
+        for metric in offer.metrics:
+            label = metric.type or metric.kind
+            summary["metrics"][label] = (metric.min, metric.max)
     return summary
+
+
+for name, response in results.items():
+    info = extract_costs_and_metrics(response)
+    print(f"Broker {name}:")
+    for label, (lo, hi) in info["costs"].items():
+        print(f"  Cost {label}: {lo:.2f} - {hi:.2f}")
+    for label, (lo, hi) in info["metrics"].items():
+        print(f"  Metric {label}: {lo:.1f} - {hi:.1f}")
 ```
 
 Format the output as a markdown table:
@@ -129,8 +146,6 @@ Then ask the user which broker they want to select based on their priorities.
 When the user selects a broker, accept the first offer from that broker:
 
 ```python
-from calycopis_schema_client.models import SimpleExecutionSessionPhase
-
 offer = results["alpha"].offers[0]
 session_uuid = offer.uuid
 client = make_client(brokers["alpha"])

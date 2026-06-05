@@ -43,6 +43,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEMO_DIR="$(dirname "${SCRIPT_DIR}")"
 ENV_DIR="${DEMO_DIR}/run"
 
+NETWORK_NAME="calycopis-demo"
+
 if [ ! -f "${ENV_DIR}/demo-env.sh" ]; then
     echo "ERROR: ${ENV_DIR}/demo-env.sh not found. Run deploy.sh first."
     exit 1
@@ -68,13 +70,21 @@ create_user() {
     echo -n "  Creating user '${DEMO_USER}' on broker-${broker_name}... "
     local response
     local http_code
-    http_code=$(curl -s -o /dev/null -w "%{http_code}" \
-        -X POST \
-        -H "Content-Type: application/json" \
-        -H "Accept: application/json" \
-        -H "Authorization: Basic ${auth}" \
-        -d "{\"username\": \"${DEMO_USER}\", \"password\": \"${DEMO_PASS}\"}" \
-        "${broker_url}/admin/identities")
+    http_code=$(
+        podman run \
+            --rm \
+            --network "${NETWORK_NAME}" \
+            docker.io/curlimages/curl:latest \
+                --silent \
+                --output /dev/null \
+                -w "%{http_code}" \
+                -X POST \
+                -H "Content-Type: application/json" \
+                -H "Accept: application/json" \
+                -H "Authorization: Basic ${auth}" \
+                -d "{\"username\": \"${DEMO_USER}\", \"password\": \"${DEMO_PASS}\"}" \
+                "${broker_url}/admin/identities"
+        )
 
     if [ "${http_code}" = "200" ] || [ "${http_code}" = "201" ]; then
         echo "OK (${http_code})"

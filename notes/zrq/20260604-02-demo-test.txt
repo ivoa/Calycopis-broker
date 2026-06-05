@@ -1,0 +1,671 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Success
+
+    Result:
+
+        Work in progress ...
+        To resume this session: agent --resume=a49cf3a5-6061-4a0a-9e38-73cbfb2d29d4
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run a new instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+--START--
+CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS        PORTS       NAMES
+5b426b67ae0f  localhost/podman-pause:5.4.2-1743552000                        17 seconds ago  Up 7 seconds              ef4fe14ba868-infra
+bb8f550eddbc  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        7 seconds ago   Up 6 seconds              calycopis-dev
+--END--
+
+
+# -----------------------------------------------------
+# Start planning with Cursor.
+#[root@calycopis-dev]
+
+    curl https://cursor.com/install -fsS | bash
+
+    agent
+
+    /resume a14b4c80-cdc0-4be3-a1db-66ca2b3386b5
+
+==START==
+I have been trying to run the demo deplyment and have run into some issues.
+One of the issues is I cannot find the log files for the brokers.
+Can you modify the Dockerfile for the brokers to put the Spring log files in an accessible location.
+==END==
+
+--START--
+....
+....
+  Done. Here's what changed:
+
+  1. log4j2.xml — Replaced the unused RandomAccessFile appender with a RollingFile appender that writes to
+     /var/log/calycopis/broker.log (rolls daily or at 50MB, keeps 7 archives). Both the Root logger and the JPA logger now
+     write to both STDOUT and the file.
+
+  2. Dockerfile — Added mkdir -p /var/log/calycopis and declared it as a VOLUME.
+
+  3. deploy.sh — Each broker container now mounts a host-side log directory (demo/run/<broker>/logs/) to
+     /var/log/calycopis, so you can read logs directly at:
+    • demo/run/alpha/logs/broker.log
+    • demo/run/beta/logs/broker.log
+    • demo/run/gamma/logs/broker.log
+
+  You'll need to rebuild the JAR and container image for this to take effect:
+
+  cd /calycopis/Calycopis-broker/github-zrq/java
+  ./mvnw clean package -DskipTests -Dcalycopis-platform=docker
+  cd ..
+  podman build \
+      --build-arg jarfile=calycopis-broker-1.0.6-SNAPSHOT.jar \
+      --tag calycopis/broker:latest \
+      -f docker/java-runtime/Dockerfile \
+      java/target/
+
+  What are the other issues you've been hitting?
+--END--
+
+
+
+# -----------------------------------------------------
+# Build the Java jar
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd java
+
+            ./mvnw clean package -DskipTests -Dcalycopis-platform=docker
+
+        popd
+    popd
+
+
+--START--
+....
+....
+[INFO] --- spring-boot:3.5.4:repackage (repackage) @ calycopis-broker ---
+[INFO] Replacing main artifact /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  13.424 s
+[INFO] Finished at: 2026-06-04T15:44:35Z
+[INFO] ------------------------------------------------------------------------
+--END--
+
+
+# -----------------------------------------------------
+# Build the Docker container
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+
+        podman build \
+            --build-arg jarfile=calycopis-broker-1.0.6-SNAPSHOT.jar \
+            --tag calycopis/broker:latest \
+            -f docker/java-runtime/Dockerfile \
+            java/target/
+
+    popd
+
+--START--
+....
+....
+COMMIT calycopis/broker:latest
+--> 342dcd6227d6
+Successfully tagged localhost/calycopis/broker:latest
+342dcd6227d674e1059046c5eb1c0c9d2a76af2d24ae776d86798ac736a58e66
+--END--
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Deploy our services.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+
+        demo/bin/deploy.sh
+
+    popd
+
+--START--
+....
+....
+=== Deployment complete ===
+Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
+
+Brokers:
+  broker-alpha: http://broker-alpha:8082
+  broker-beta: http://broker-beta:8082
+  broker-gamma: http://broker-gamma:8082
+--END--
+
+
+# -----------------------------------------------------
+# Configure user accounts
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+
+        demo/bin/configure.sh
+
+    popd
+
+--START--
+....
+....
+=== Seeding demo user accounts ===
+
+  Creating user 'demo-user' on broker-alpha... OK (201)
+  Creating user 'demo-user' on broker-beta... OK (201)
+  Creating user 'demo-user' on broker-gamma... OK (201)
+
+=== Writing demo user credentials ===
+  Written to: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-user.env
+
+=== Configuration complete ===
+  Username: demo-user
+  Password: fcTnVGUHC3K0YCAF7iyZ6Mp6
+--END--
+
+
+# -----------------------------------------------------
+# Run the smoke test
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+
+        demo/bin/smoke-test.sh
+
+    popd
+
+--START--
+....
+....
+=== Testing broker-alpha (http://broker-alpha:8082) ===
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0
+curl: (22) The requested URL returned error: 400
+  FAIL: Could not submit request to broker-alpha
+--END--
+
+
+# -----------------------------------------------------
+# Login to one of the brokers to check the logs.
+#[user@desktop]
+
+    podman exec \
+        -it \
+        broker-svc-alpha \
+            bash
+
+
+--START--
+....
+....
+2026-06-04 15:51:59 WARN http-nio-8082-exec-8
+    DefaultHandlerExceptionResolver logException() Resolved [
+        org.springframework.http.converter.HttpMessageNotReadableException:
+            JSON parse error:
+                Could not resolve type id
+                    'https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executables/docker-container.yaml'
+                as a subtype of `net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable`:
+                known type ids = [
+                    IvoaAbstractExecutable,
+                    https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml,
+                    https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/jupyter-notebook.yaml,
+                    https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/singularity-container.yaml
+                    ]
+                (for POJO property 'executable')
+                ]
+--END--
+
+    #
+    # Fixed the bad JSON bugs.
+    #
+
+    #
+    # Now we get this strange one ..
+    #
+
+--START--
+....
+....
+2026-06-04 16:20:39 DEBUG http-nio-8082-exec-9 DockerPlatformImpl populateCostsAndMetrics() populateCostsAndMetrics(docker)
+2026-06-04 16:20:39 DEBUG http-nio-8082-exec-10 LocalAuthenticationProvider authenticate() Attempting local authentication for [demo-user]
+2026-06-04 16:20:39 DEBUG http-nio-8082-exec-10 LocalAuthenticationProvider authenticate() Local authentication succeeded for [demo-user]
+2026-06-04 16:20:39 WARN http-nio-8082-exec-10 DefaultHandlerExceptionResolver logException() Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'POST' is not supported]
+--END--
+
+    #
+    # The smoke test script doesn't make a GET request ..
+    # .. but it does if we include -L option on the PORT request, and the service returns a 303 'See other' response.
+    # Fixed :-)
+    #
+
+# -----------------------------------------------------
+# Run the smoke test
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+
+        demo/bin/smoke-test.sh
+
+    popd
+
+--START--
+=== Testing broker-alpha (http://broker-alpha:8082) ===
+  Offers returned: 1
+  Costs:
+    urn:ivoa:calycopis:cost:monetary: 0.3 - 0.8
+    urn:ivoa:calycopis:cost:energy: 0.01 - 0.03
+    urn:ivoa:calycopis:cost:carbon: 2.0 - 8.0
+  Metrics:
+    urn:ivoa:calycopis:metric:compute-performance: 250.0 - 300.0
+
+=== Testing broker-beta (http://broker-beta:8082) ===
+  Offers returned: 1
+  Costs:
+    urn:ivoa:calycopis:cost:monetary: 0.05 - 0.15
+    urn:ivoa:calycopis:cost:energy: 0.05 - 0.15
+    urn:ivoa:calycopis:cost:carbon: 15.0 - 40.0
+  Metrics:
+    urn:ivoa:calycopis:metric:compute-performance: 120.0 - 160.0
+
+=== Testing broker-gamma (http://broker-gamma:8082) ===
+  Offers returned: 1
+  Costs:
+    urn:ivoa:calycopis:cost:monetary: 0.02 - 0.08
+    urn:ivoa:calycopis:cost:energy: 0.1 - 0.3
+    urn:ivoa:calycopis:cost:carbon: 30.0 - 80.0
+  Metrics:
+    urn:ivoa:calycopis:metric:compute-performance: 60.0 - 90.0
+
+=== Results: 3 passed, 0 failed ===
+--END--
+
+    #
+    # OK, works.
+    # Bit naff in places, but it works.
+    #
+
+
+# -----------------------------------------------------
+# Start the interactive client
+#[root@calycopis-dev]
+
+    # Need to translate the file locations using $(pwd).
+
+    podman run \
+        -it \
+        --pod demo-client \
+        --volume "$(pwd)/demo:/workspace:z" \
+        --env-file "$(pwd)/demo/run/demo-user.env" \
+        calycopis/demo-client:latest \
+        /bin/bash
+
+    cp /workspace/USER-AGENT.md /workspace/AGENTS.md
+    cursor /workspace
+
+--START--
+bash: cursor: command not found
+--END--
+
+    #
+    # The Dockefile tries to use npm.
+    #
+
+    RUN dnf install -y nodejs npm && dnf clean all \
+        && npm install -g @anthropic-ai/cursor-cli 2>/dev/null || true
+
+    #
+    # Much easier to just use their own installer.
+    #
+
+    curl -fsSL https://claude.ai/install.sh | bash
+
+    cursor /workspace
+
+--START--
+bash: cursor: command not found
+--END--
+
+
+    claude /workspace
+
+--START--
+ Claude Code can be used with your Claude subscription or billed based on API usage through your Console account.
+
+ Select login method:
+
+ ❯ 1. Claude account with subscription · Pro, Max, Team, or Enterprise
+   2. Anthropic Console account · API usage billing
+   3. 3rd-party platform · Amazon Bedrock, Microsoft Foundry, or Vertex AI
+--END--
+
+    #
+    # OK, login to Claude and find out how to login.
+    # https://claude.ai/
+    #
+
+    https://claude.com/cai/oauth/authorize?code=true&client_id=9d1c250a-e61b-44d9-88ed-5944d1962f5e&response_type=code&redirect_uri=https%3A%2F%2Fplatform.claude.com%2Foauth%2Fcode%2Fcallback&scope=org%3Acreate_api_key+user%3Aprofile+user%3Ainference+user%3Asessions%3Aclaude_code+user%3Amcp_servers+user%3Afile_upload&code_challenge=Gy2XE9JrZH2PbZXrbKOXLngxhHbvIMu4lcTUtWE_Qes&code_challenge_method=S256&state=N_uNXXauYuCSVzFWXqkScQqVkU66IfstJ4frypRUuEI
+
+
+# -----------------------------------------------------
+# Go back to Cursor
+#[root@calycopis-dev]
+
+==START==
+\plan
+The Dockerfile for the demo-client container installs the calycopis_schema_client wheel,
+but the smoke-test script and the instructions in the USER-AGENT.md file ignore the Python
+client and use curl to send JSON requests directly.
+Create a plan to make the smoke-test script and the USER-AGENT.md instructions
+to use the Python client.
+==END==
+
+--START--
+  Error: You've hit your usage limit for Opus
+  You've saved $111 on API model usage this month with Pro+. Switch to a different model or set a Spend Limit to continue
+  with Opus. Your usage limits will reset when your monthly cycle ends on 6/17/2026.
+  fallbackModel:
+  spendLimitHit: true
+  chatMessage: *You've saved $111 on API model usage this month with Pro+. Switch to a different model or set a [Spend
+  Limit](https://www.cursor.com/dashboard?tab=settings) to continue with Opus. Your usage limits will reset when your
+  monthly cycle ends on 6/17/2026.*
+--END--
+
+    #
+    # Increased my on-demand to £100
+    # - expensive !!
+    #
+
+--START--
+....
+....
+    To-do All done
+    ☒Create demo/bin/smoke-test.py using ExecutionBrokerClient, typed models, and environment-based configuration; delete
+     smoke-test.sh
+    ☒Rewrite USER-AGENT.md code examples to use typed model classes (DockerContainer, DockerImageSpec, ComponentMetadata,
+     SimpleComputeResource) instead of raw dicts
+    ☒ Update demo/README.md to reference smoke-test.py instead of smoke-test.sh
+
+  All three tasks are complete. Here's what was done:
+
+  1. Replaced smoke-test.sh with smoke-test.py — The new script uses ExecutionBrokerClient with typed model classes
+     (DockerContainer, DockerImageSpec, ComponentMetadata) to submit requests and inspect cost/metric data on offers. It
+     reads credentials from environment variables and exits with appropriate status codes.
+
+  2. Rewrote USER-AGENT.md — All code examples now use the proper typed model API (DockerContainer, SimpleComputeResource,
+     ComponentMetadata, DockerImageSpec) imported from calycopis_schema_client.wrappers and calycopis_schema_client.models,
+      matching the patterns used in the existing test suite.
+
+  3. Updated README.md — The smoke test step now shows source demo/run/demo-user.env && python3 demo/bin/smoke-test.py, and
+      the directory structure listing references smoke-test.py.
+--END--
+
+==START==
+Step 2 in the 'quick start' section of the README.md file copies the Python client wheel
+into the demo/docker/demo-client/ directory so that it can be copied into the docker image.
+```
+cp /path/to/calycopis_schema_client-1.0.6-py3-none-any.whl demo/docker/demo-client/
+```
+The means we end up with a large binary file in the project source code, which could
+end up saved in the git repository.
+Can you change this to use a 'demo/docker/demo-client/build' sub-directory, and
+add a .gitignore file to exclude it.
+==END==
+
+--START--
+Done. Three changes:
+
+  1. Dockerfile — COPY now references build/calycopis_schema_client-1.0.6-py3-none-any.whl instead of the file at the top
+     level.
+  2. build/.gitignore — Excludes everything in the build/ directory (except the .gitignore itself) so wheels won't be
+     committed.
+  3. README.md — The cp command now targets demo/docker/demo-client/build/.
+--END--
+
+==START==
+Can you add a rule to the project level AGENTS.md file that prevents adding binary files to the source tree.
+==END==
+
+--START--
+  Done. I've added a rule to the Coding conventions section of AGENTS.md that prohibits adding binary files to the source
+  tree, with guidance to use .gitignore-excluded build/ or target/ directories instead.
+--END--
+
+==START==
+Step 6 in the 'quick start' section of the README.md file mounts
+the demo directory as a volume, and passes demo/run/demo-user.env
+as an env file.
+Can you use $(pwd) to make these absolute rather than relative
+file paths.
+```
+podman run -it \
+    ....
+    --volume "$(pwd)/demo:/workspace:z" \
+    --env-file "$(pwd)/demo/run/demo-user.env" \
+```
+==END==
+
+--START--
+  Done. The volume mount and env-file paths now use $(pwd) to produce absolute paths.
+--END--
+
+
+==START==
+/plan
+Step 6 in the 'quick start' section of the README.md file
+instructs the user to copy USER-AGENT.md to AGENTS.md
+inside the container. Presumably so that it is picked up by the
+`cursor` agent when we run it inside the container.
+However, because this is a volume mount of the demo directory
+on the host, this will end up creating a new copy in the
+projecty source code that will end up being added to git.
+Is there a better way of passing the agent instructions
+to the `cursor` agent, possibly as a command line option ?
+==END==
+
+--START--
+ ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Suggested Plan                                                                                                           │
+ │                                                                                                                          │
+ │ Bind-mount USER-AGENT.md as AGENTS.md                                                                                    │
+ │                                                                                                                          │
+ │ Problem                                                                                                                  │
+ │                                                                                                                          │
+ │ Step 6 in demo/README.md tells users to cp USER-AGENT.md AGENTS.md inside the container. Since /workspace is a volume    │
+ │ mount of the host's demo/ directory, this creates a new demo/AGENTS.md file on the host that could be accidentally       │
+ │ committed.                                                                                                               │
+ │                                                                                                                          │
+ │ Solution                                                                                                                 │
+ │                                                                                                                          │
+ │ The Cursor CLI has no --rules-file flag; it reads AGENTS.md from the workspace root automatically. However, we can use   │
+ │  a second Podman --volume to bind-mount USER-AGENT.md directly as /workspace/AGENTS.md (read-only). Podman allows        │
+ │ overlaying a specific file path on top of an existing directory mount. No file is created on the host.                   │
+ │                                                                                                                          │
+ │ Change                                                                                                                   │
+ │                                                                                                                          │
+ │ In demo/README.md (/calycopis/Calycopis-broker/github-zrq/demo/README.md), replace the current step 6 block:             │
+ │                                                                                                                          │
+ │ podman run -it \                                                                                                         │
+ │     --pod demo-client \                                                                                                  │
+ │     --volume "$(pwd)/demo:/workspace:z" \                                                                                │
+ │     --env-file "$(pwd)/demo/run/demo-user.env" \                                                                         │
+ │     calycopis/demo-client:latest \                                                                                       │
+ │     /bin/bash                                                                                                            │
+ │                                                                                                                          │
+ │ plus the instruction to manually cp USER-AGENT.md AGENTS.md, with:                                                       │
+ │                                                                                                                          │
+ │ podman run -it \                                                                                                         │
+ │     --pod demo-client \                                                                                                  │
+ │     --volume "$(pwd)/demo:/workspace:z" \                                                                                │
+ │     --volume "$(pwd)/demo/USER-AGENT.md:/workspace/AGENTS.md:ro,z" \                                                     │
+ │     --env-file "$(pwd)/demo/run/demo-user.env" \                                                                         │
+ │     calycopis/demo-client:latest \                                                                                       │
+ │     /bin/bash                                                                                                            │
+ │                                                                                                                          │
+ │ The second --volume presents USER-AGENT.md as AGENTS.md at the workspace root. It is read-only (:ro) since it is an      │
+ │ instruction file that should not be modified. The cp instruction and the paragraph explaining it can be removed.         │
+ │                                                                                                                          │
+ │ Safety net                                                                                                               │
+ │                                                                                                                          │
+ │ As a secondary precaution, add AGENTS.md to demo/.gitignore (or the project root .gitignore) so that if someone does     │
+ │ create the file manually, it still won't be tracked:                                                                     │
+ │                                                                                                                          │
+ │ # Generated at runtime by the demo client                                                                                │
+ │ AGENTS.md                                                                                                                │
+ │                                                                                                                          │
+ │  Saved to root/.cursor/plans/Bind-mount AGENTSmd-a49cf3a5.plan.md                                                        │
+ │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+ │                                                                                                                          │
+ │ Ready to build?                                                                                                          │
+ │                                                                                                                          │
+ │  → 1. Yes, build locally (b)                                                                                             │
+ │    2. No, propose changes (p or Esc)                                                                                     │
+ │                                                                                                                          │
+ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+==START==
+Yes, build locally (b)
+==END==
+
+--START--
+....
+....
+  Done. Two changes:
+
+  1. demo/README.md — Step 6 now uses --volume "$(pwd)/demo/USER-AGENT.md:/workspace/AGENTS.md:ro,z" to bind-mount the
+     instructions file directly. The manual cp step is removed.
+
+  2. demo/.gitignore — Created with entries for run/ (runtime output) and AGENTS.md (safety net in case someone creates it
+     manually).
+--END--
+
+
+==START==
+The Dockerfile for the demo-client container uses npm to install the cursor-cli package.
+```
+RUN dnf install -y nodejs npm && dnf clean all \
+    && npm install -g @anthropic-ai/cursor-cli 2>/dev/null || true
+```
+Piping the output to /dev/null and ORing the result with true suppresses
+errors during the Docker build process.
+Can you add a rule to the project AGENTS.md file that explicitly disallows
+supressing errors in this way.
+==END==
+
+--START--
+  Done. Added the rule to the Coding conventions section of AGENTS.md, between the binary files rule and the file headers rules.
+--END--
+
+    #
+    # I may come to regret that one ...
+    #
+
+==START==
+Running the npm install on its own produces the following error:
+```
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/@anthropic-ai%2fcursor-cli - Not found
+npm error 404
+npm error 404  '@anthropic-ai/cursor-cli@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-06-05T10_10_01_870Z-debug-0.log
+```
+Is there a better way of installing the cursor-cli package ?
+==END==
+
+--START--
+  The correct installation method is curl https://cursor.com/install -fsS | bash — the @anthropic-ai/cursor-cli npm
+  package doesn't exist. Let me fix the Dockerfile.
+
+    Read ...r/github-zrq/demo/docker/demo-client/Dockerfile
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ...r/github-zrq/demo/docker/demo-client/Dockerfile +3 -3                                                               │
+  │                                                                                                                        │
+  │   RUN pip3 install /tmp/calycopis_schema_client-1.0.6-py3-none-any.whl \                                               │
+  │       && rm /tmp/calycopis_schema_client-1.0.6-py3-none-any.whl                                                        │
+  │                                                                                                                        │
+  │ - # Install Cursor CLI via npm (Node.js required)                                                                      │
+  │ - RUN dnf install -y nodejs npm && dnf clean all \                                                                     │
+  │ -     && npm install -g @anthropic-ai/cursor-cli 2>/dev/null || true                                                   │
+  │ + # Install Cursor CLI                                                                                                 │
+  │ + RUN curl https://cursor.com/install -fsS | bash \                                                                    │
+  │ +     && ln -sf "${HOME}/.local/bin/cursor-agent" /usr/local/bin/cursor-agent                                          │
+  │                                                                                                                        │
+  │   WORKDIR /workspace                                                                                                   │
+  │                                                                                                                        │
+  └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  Done. The Dockerfile now uses the official installer (curl https://cursor.com/install -fsS | bash) and symlinks the
+  binary into /usr/local/bin so it's on the PATH. The bogus npm package and the error-suppressing 2>/dev/null || true are
+  removed.
+--END--
+
+

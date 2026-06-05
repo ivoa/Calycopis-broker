@@ -108,6 +108,9 @@ EOF
     echo "  Waiting for PostgreSQL to start..."
     sleep 5
 
+    LOG_DIR="${ENV_DIR}/${broker}/logs"
+    mkdir -p "${LOG_DIR}"
+
     podman run \
         --rm \
         --detach \
@@ -115,9 +118,11 @@ EOF
         --name "${BR_NAME}" \
         --pod "${POD_NAME}" \
         --volume "${CONFIG_DIR}:/etc/calycopis:z" \
+        --volume "${LOG_DIR}:/var/log/calycopis:z" \
         "${BROKER_IMAGE}"
 
     echo "  Broker ${broker}: admin=${ADMIN_USER}"
+    echo "  Broker ${broker}: logs=${LOG_DIR}"
 done
 
 echo ""
@@ -159,9 +164,14 @@ do
     echo -n "  Waiting for broker-${broker}..."
     for i in $(seq 1 60)
     do
-        if podman run --rm --network "${NETWORK_NAME}" \
+        if podman run \
+            --rm \
+            --network "${NETWORK_NAME}" \
             docker.io/curlimages/curl:latest \
-            -sf "${BROKER_URL}/openapi" > /dev/null 2>&1
+                --head \
+                --silent \
+                "http://broker-alpha:8082/frog" \
+                 > /dev/null 2>&1
         then
             echo " ready"
             break

@@ -1,0 +1,5 @@
+# Runtime output from deploy.sh / configure.sh
+run/
+
+# Generated at runtime by the demo client
+AGENTS.md

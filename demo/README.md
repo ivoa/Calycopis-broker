@@ -54,7 +54,7 @@ podman build \
 ### 2. Build the client image
 
 ```bash
-cp /path/to/calycopis_schema_client-1.0.6-py3-none-any.whl demo/docker/demo-client/
+cp /path/to/calycopis_schema_client-1.0.6-py3-none-any.whl demo/docker/demo-client/build/
 
 podman build \
     --tag calycopis/demo-client:latest \
@@ -85,26 +85,29 @@ This creates a `demo-user` account on all three brokers.
 ### 5. Run the smoke test
 
 ```bash
-demo/bin/smoke-test.sh
+source demo/run/demo-user.env
+python3 demo/bin/smoke-test.py
 ```
 
-Verifies each broker returns offers with its configured cost/metric values.
+Verifies each broker returns offers with its configured cost/metric values using the Python client.
 
 ### 6. Start the interactive client
 
 ```bash
 podman run -it \
     --pod demo-client \
-    --volume ./demo:/workspace:z \
-    --env-file demo/run/demo-user.env \
+    --volume "$(pwd)/demo:/workspace:z" \
+    --volume "$(pwd)/demo/USER-AGENT.md:/workspace/AGENTS.md:ro,z" \
+    --env-file "$(pwd)/demo/run/demo-user.env" \
     calycopis/demo-client:latest \
     /bin/bash
 ```
 
-Inside the container, copy `USER-AGENT.md` as `AGENTS.md` and start Cursor:
+The second `--volume` bind-mounts `USER-AGENT.md` as `AGENTS.md` at the
+workspace root so that Cursor picks it up automatically. Inside the
+container, start Cursor:
 
 ```bash
-cp /workspace/USER-AGENT.md /workspace/AGENTS.md
 cursor /workspace
 ```
 
@@ -149,7 +152,7 @@ demo/
 │   ├── deploy.sh                 # Deploy all pods
 │   ├── teardown.sh               # Remove all pods
 │   ├── configure.sh              # Create demo user accounts
-│   └── smoke-test.sh             # Verify deployment
+│   └── smoke-test.py             # Verify deployment (Python client)
 ├── config/
 │   ├── broker-alpha/
 │   │   └── platform.yaml         # Green HPC profile
