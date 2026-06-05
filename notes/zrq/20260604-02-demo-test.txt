@@ -25,7 +25,7 @@
 
     Target:
 
-        Success
+        Test and develop the demo deployment process.
 
     Result:
 
@@ -90,21 +90,21 @@
     >   ....
     >   ....
     >     Done. Here's what changed:
-    >   
+    >
     >     1. log4j2.xml — Replaced the unused RandomAccessFile appender with a RollingFile appender that writes to
     >        /var/log/calycopis/broker.log (rolls daily or at 50MB, keeps 7 archives). Both the Root logger and the JPA logger now
     >        write to both STDOUT and the file.
-    >   
+    >
     >     2. Dockerfile — Added mkdir -p /var/log/calycopis and declared it as a VOLUME.
-    >   
+    >
     >     3. deploy.sh — Each broker container now mounts a host-side log directory (demo/run/<broker>/logs/) to
     >        /var/log/calycopis, so you can read logs directly at:
     >       • demo/run/alpha/logs/broker.log
     >       • demo/run/beta/logs/broker.log
     >       • demo/run/gamma/logs/broker.log
-    >   
+    >
     >     You'll need to rebuild the JAR and container image for this to take effect:
-    >   
+    >
     >     cd /calycopis/Calycopis-broker/github-zrq/java
     >     ./mvnw clean package -DskipTests -Dcalycopis-platform=docker
     >     cd ..
@@ -113,7 +113,7 @@
     >         --tag calycopis/broker:latest \
     >         -f docker/java-runtime/Dockerfile \
     >         java/target/
-    >   
+    >
     >     What are the other issues you've been hitting?
 
 
@@ -181,7 +181,7 @@
     >   ....
     >   === Deployment complete ===
     >   Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
-    >   
+    >
     >   Brokers:
     >     broker-alpha: http://broker-alpha:8082
     >     broker-beta: http://broker-beta:8082
@@ -201,14 +201,14 @@
     >   ....
     >   ....
     >   === Seeding demo user accounts ===
-    >   
+    >
     >     Creating user 'demo-user' on broker-alpha... OK (201)
     >     Creating user 'demo-user' on broker-beta... OK (201)
     >     Creating user 'demo-user' on broker-gamma... OK (201)
-    >   
+    >
     >   === Writing demo user credentials ===
     >     Written to: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-user.env
-    >   
+    >
     >   === Configuration complete ===
     >     Username: demo-user
     >     Password: fcTnVGUHC3K0YCAF7iyZ6Mp6
@@ -301,7 +301,7 @@
     >       urn:ivoa:calycopis:cost:carbon: 2.0 - 8.0
     >     Metrics:
     >       urn:ivoa:calycopis:metric:compute-performance: 250.0 - 300.0
-    >   
+    >
     >   === Testing broker-beta (http://broker-beta:8082) ===
     >     Offers returned: 1
     >     Costs:
@@ -310,7 +310,7 @@
     >       urn:ivoa:calycopis:cost:carbon: 15.0 - 40.0
     >     Metrics:
     >       urn:ivoa:calycopis:metric:compute-performance: 120.0 - 160.0
-    >   
+    >
     >   === Testing broker-gamma (http://broker-gamma:8082) ===
     >     Offers returned: 1
     >     Costs:
@@ -319,7 +319,7 @@
     >       urn:ivoa:calycopis:cost:carbon: 30.0 - 80.0
     >     Metrics:
     >       urn:ivoa:calycopis:metric:compute-performance: 60.0 - 90.0
-    >   
+    >
     >   === Results: 3 passed, 0 failed ===
 
     #
@@ -368,9 +368,9 @@
     claude /workspace
 
     >    Claude Code can be used with your Claude subscription or billed based on API usage through your Console account.
-    >   
+    >
     >    Select login method:
-    >   
+    >
     >    ❯ 1. Claude account with subscription · Pro, Max, Team, or Enterprise
     >      2. Anthropic Console account · API usage billing
     >      3. 3rd-party platform · Amazon Bedrock, Microsoft Foundry, or Vertex AI
@@ -416,17 +416,17 @@
     >       ☒Rewrite USER-AGENT.md code examples to use typed model classes (DockerContainer, DockerImageSpec, ComponentMetadata,
     >        SimpleComputeResource) instead of raw dicts
     >       ☒ Update demo/README.md to reference smoke-test.py instead of smoke-test.sh
-    >   
+    >
     >     All three tasks are complete. Here's what was done:
-    >   
+    >
     >     1. Replaced smoke-test.sh with smoke-test.py — The new script uses ExecutionBrokerClient with typed model classes
     >        (DockerContainer, DockerImageSpec, ComponentMetadata) to submit requests and inspect cost/metric data on offers. It
     >        reads credentials from environment variables and exits with appropriate status codes.
-    >   
+    >
     >     2. Rewrote USER-AGENT.md — All code examples now use the proper typed model API (DockerContainer, SimpleComputeResource,
     >        ComponentMetadata, DockerImageSpec) imported from calycopis_schema_client.wrappers and calycopis_schema_client.models,
     >         matching the patterns used in the existing test suite.
-    >   
+    >
     >     3. Updated README.md — The smoke test step now shows source demo/run/demo-user.env && python3 demo/bin/smoke-test.py, and
     >         the directory structure listing references smoke-test.py.
 
@@ -441,7 +441,7 @@
     ?   add a .gitignore file to exclude it.
 
     >   Done. Three changes:
-    >   
+    >
     >     1. Dockerfile — COPY now references build/calycopis_schema_client-1.0.6-py3-none-any.whl instead of the file at the top
     >        level.
     >     2. build/.gitignore — Excludes everything in the build/ directory (except the .gitignore itself) so wheels won't be
@@ -543,10 +543,10 @@
     >   ....
     >   ....
     >     Done. Two changes:
-    >   
+    >
     >     1. demo/README.md — Step 6 now uses --volume "$(pwd)/demo/USER-AGENT.md:/workspace/AGENTS.md:ro,z" to bind-mount the
     >        instructions file directly. The manual cp step is removed.
-    >   
+    >
     >     2. demo/.gitignore — Created with entries for run/ (runtime output) and AGENTS.md (safety net in case someone creates it
     >        manually).
 
@@ -582,9 +582,9 @@
 
     >     The correct installation method is curl https://cursor.com/install -fsS | bash — the @anthropic-ai/cursor-cli npm
     >     package doesn't exist. Let me fix the Dockerfile.
-    >   
+    >
     >       Read ...r/github-zrq/demo/docker/demo-client/Dockerfile
-    >   
+    >
     >     ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
     >     │ ...r/github-zrq/demo/docker/demo-client/Dockerfile +3 -3                                                               │
     >     │                                                                                                                        │
@@ -601,7 +601,7 @@
     >     │   WORKDIR /workspace                                                                                                   │
     >     │                                                                                                                        │
     >     └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-    >   
+    >
     >     Done. The Dockerfile now uses the official installer (curl https://cursor.com/install -fsS | bash) and symlinks the
     >     binary into /usr/local/bin so it's on the PATH. The bogus npm package and the error-suppressing 2>/dev/null || true are
     >     removed.

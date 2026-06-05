@@ -1,0 +1,225 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Test and develop the demo deployment process.
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run a new instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# Install and run Cursor.
+#[root@calycopis-dev]
+
+    curl https://cursor.com/install -fsS | bash
+
+    agent
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# Start a new terminal and follow the instructions in demo/README.md
+#[root@calycopis-dev]
+
+    podman exec \
+        --tty \
+        --interactive \
+            calycopis-dev \
+                bash
+
+        pushd /calycopis/Calycopis-broker/github-zrq
+
+
+# -----------------------------------------------------
+# 1. Build the broker image
+#[root@calycopis-dev]
+
+    pushd java
+        ./mvnw clean package -DskipTests -Dcalycopis-platform=docker
+    popd
+
+    podman build \
+        --build-arg jarfile=calycopis-broker-1.0.6-SNAPSHOT.jar \
+        --tag  calycopis/broker:latest \
+        --file docker/java-runtime/Dockerfile \
+        java/target/
+
+--START--
+....
+....
+--END--
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# 2. Build the client image
+#[root@calycopis-dev]
+
+    cp \
+        /calycopis/Calycopis-openapi/github-zrq/codegen/python/client/build/dist/calycopis_schema_client-1.0.6-py3-none-any.whl \
+        demo/docker/demo-client/build/
+
+    podman build \
+        --tag  calycopis/demo-client:latest \
+        --file demo/docker/demo-client/Dockerfile \
+        demo/docker/demo-client/
+
+--START--
+....
+....
+--END--
+
+    #
+    # Bit scruffy with the way it updates PATH ..
+    #
+
+# -----------------------------------------------------
+# 3. Deploy
+#[root@calycopis-dev]
+
+    demo/bin/deploy.sh
+
+--START--
+....
+....
+--END--
+
+# -----------------------------------------------------
+# 4. Configure user accounts
+#[root@calycopis-dev]
+
+    demo/bin/configure.sh
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# 6. Start the client container
+#[root@calycopis-dev]
+
+    podman run -it \
+        --pod demo-client \
+        --volume "$(pwd)/demo:/workspace:z" \
+        --volume "$(pwd)/demo/USER-AGENT.md:/workspace/AGENTS.md:ro,z" \
+        --env-file "$(pwd)/demo/run/demo-user.env" \
+        calycopis/demo-client:latest \
+        /bin/bash
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# 5. Run the smoke test
+#[root@demo-client]
+
+    source  run/demo-user.env
+    python3 bin/smoke-test.py
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# 6. Run the Cursor agent.
+#[root@demo-client]
+
+    agent /workspace
+
+--START--
+....
+....
+--END--
+
+
+==START==
+Run an Alpine container that computes pi to 1000 digits
+==END==
+
+--START--
+....
+....
+--END--
+
+
