@@ -67,11 +67,9 @@
 
             podman ps
 
---START--
-CONTAINER ID  IMAGE                                              COMMAND     CREATED             STATUS        PORTS       NAMES
-d43ce3fa5766  localhost/podman-pause:5.4.2-1743552000                        About a minute ago  Up 5 seconds              53d000c0ab15-infra
-ebfced21b20d  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 seconds ago       Up 4 seconds              calycopis-dev
---END--
+    >   CONTAINER ID  IMAGE                                              COMMAND     CREATED             STATUS        PORTS       NAMES
+    >   d43ce3fa5766  localhost/podman-pause:5.4.2-1743552000                        About a minute ago  Up 5 seconds              53d000c0ab15-infra
+    >   ebfced21b20d  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 seconds ago       Up 4 seconds              calycopis-dev
 
 
 # -----------------------------------------------------
@@ -87,19 +85,17 @@ ebfced21b20d  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 s
     popd
 
 
---START--
-....
-....
-[INFO] --- spring-boot:3.5.4:repackage (repackage) @ calycopis-broker ---
-[INFO] Replacing main artifact /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
-[INFO] The original artifact has been renamed to /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar.original
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  13.810 s
-[INFO] Finished at: 2026-06-04T08:13:05Z
-[INFO] ------------------------------------------------------------------------
---END--
+    >   ....
+    >   ....
+    >   [INFO] --- spring-boot:3.5.4:repackage (repackage) @ calycopis-broker ---
+    >   [INFO] Replacing main artifact /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+    >   [INFO] The original artifact has been renamed to /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar.original
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] BUILD SUCCESS
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] Total time:  13.810 s
+    >   [INFO] Finished at: 2026-06-04T08:13:05Z
+    >   [INFO] ------------------------------------------------------------------------
 
 
 # -----------------------------------------------------
@@ -116,12 +112,10 @@ ebfced21b20d  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 s
 
     popd
 
---START--
-....
-....
-Successfully tagged localhost/calycopis/broker:latest
-40789d2d37be9abb9fb69649df763a69f86873d241b763aa69b45f907e8a046a
---END--
+    >   ....
+    >   ....
+    >   Successfully tagged localhost/calycopis/broker:latest
+    >   40789d2d37be9abb9fb69649df763a69f86873d241b763aa69b45f907e8a046a
 
 
 # -----------------------------------------------------
@@ -141,12 +135,10 @@ Successfully tagged localhost/calycopis/broker:latest
 
     popd
 
---START--
-....
-....
-Successfully tagged localhost/calycopis/demo-client:latest
-bd89e012fa5517892e5c1cce10c797c5d8aaa0d4ef02b73fabe7aa8c40fe5730
---END--
+    >   ....
+    >   ....
+    >   Successfully tagged localhost/calycopis/demo-client:latest
+    >   bd89e012fa5517892e5c1cce10c797c5d8aaa0d4ef02b73fabe7aa8c40fe5730
 
 
 # -----------------------------------------------------
@@ -155,22 +147,20 @@ bd89e012fa5517892e5c1cce10c797c5d8aaa0d4ef02b73fabe7aa8c40fe5730
 
     podman images
 
---START--
-REPOSITORY                              TAG               IMAGE ID      CREATED             SIZE
-localhost/calycopis/demo-client         latest            bd89e012fa55  About a minute ago  396 MB
-localhost/calycopis/broker              latest            40789d2d37be  9 minutes ago       412 MB
-<none>                                  <none>            0181b8cb7949  29 hours ago        412 MB
-localhost/podman-pause                  5.4.2-1743552000  51077ee4db12  4 weeks ago         763 kB
-ghcr.io/ivoa/calycopis/developer-tools  2026.05.04        b6c36de62e38  4 weeks ago         1.95 GB
-docker.io/library/fedora                42                8c219b734f78  5 weeks ago         170 MB
-docker.io/library/postgres              latest            e1d95313aae9  6 weeks ago         463 MB
-docker.io/library/alpine                3                 3cb067eab609  7 weeks ago         8.74 MB
-docker.io/library/alpine                3.23              3cb067eab609  7 weeks ago         8.74 MB
-ghcr.io/zarquan/heliophorus-cantliei    sha-831ee57       9725886b87f8  2 months ago        8.73 MB
-ghcr.io/zarquan/heliophorus-cantliei    sha-c9572b0       e6062494261e  3 months ago        8.73 MB
-ghcr.io/zarquan/heliophorus-androcles   sha-9a2513b       72d52bce3228  3 months ago        68.7 MB
-docker.io/library/eclipse-temurin       25.0.1_8-jre      a4746ae0b4f1  4 months ago        314 MB
---END--
+    >   REPOSITORY                              TAG               IMAGE ID      CREATED             SIZE
+    >   localhost/calycopis/demo-client         latest            bd89e012fa55  About a minute ago  396 MB
+    >   localhost/calycopis/broker              latest            40789d2d37be  9 minutes ago       412 MB
+    >   <none>                                  <none>            0181b8cb7949  29 hours ago        412 MB
+    >   localhost/podman-pause                  5.4.2-1743552000  51077ee4db12  4 weeks ago         763 kB
+    >   ghcr.io/ivoa/calycopis/developer-tools  2026.05.04        b6c36de62e38  4 weeks ago         1.95 GB
+    >   docker.io/library/fedora                42                8c219b734f78  5 weeks ago         170 MB
+    >   docker.io/library/postgres              latest            e1d95313aae9  6 weeks ago         463 MB
+    >   docker.io/library/alpine                3                 3cb067eab609  7 weeks ago         8.74 MB
+    >   docker.io/library/alpine                3.23              3cb067eab609  7 weeks ago         8.74 MB
+    >   ghcr.io/zarquan/heliophorus-cantliei    sha-831ee57       9725886b87f8  2 months ago        8.73 MB
+    >   ghcr.io/zarquan/heliophorus-cantliei    sha-c9572b0       e6062494261e  3 months ago        8.73 MB
+    >   ghcr.io/zarquan/heliophorus-androcles   sha-9a2513b       72d52bce3228  3 months ago        68.7 MB
+    >   docker.io/library/eclipse-temurin       25.0.1_8-jre      a4746ae0b4f1  4 months ago        314 MB
 
 
 # -----------------------------------------------------
@@ -179,11 +169,9 @@ docker.io/library/eclipse-temurin       25.0.1_8-jre      a4746ae0b4f1  4 months
 
     podman ps
 
---START--
-CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS         PORTS       NAMES
-d43ce3fa5766  localhost/podman-pause:5.4.2-1743552000                        29 minutes ago  Up 28 minutes              53d000c0ab15-infra
-ebfced21b20d  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        28 minutes ago  Up 28 minutes              calycopis-dev
---END--
+    >   CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS         PORTS       NAMES
+    >   d43ce3fa5766  localhost/podman-pause:5.4.2-1743552000                        29 minutes ago  Up 28 minutes              53d000c0ab15-infra
+    >   ebfced21b20d  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        28 minutes ago  Up 28 minutes              calycopis-dev
 
 
 # -----------------------------------------------------
@@ -196,13 +184,11 @@ ebfced21b20d  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        28 
     # First step failes ..
     #
 
---START--
-=== Creating Podman network: calycopis-demo ===
-Network calycopis-demo already exists
-
-=== Deploying broker-alpha ===
-Error: failed to make pod: unable to find network with name or ID calycopis-demo: network not found
---END--
+    >   === Creating Podman network: calycopis-demo ===
+    >   Network calycopis-demo already exists
+    >   
+    >   === Deploying broker-alpha ===
+    >   Error: failed to make pod: unable to find network with name or ID calycopis-demo: network not found
 
     #
     # Check what networks we have.
@@ -210,11 +196,9 @@ Error: failed to make pod: unable to find network with name or ID calycopis-demo
 
     podman network ls
 
---START--
-NETWORK ID    NAME               DRIVER
-971d73c61fd7  calycopis-network  bridge
-2f259bab93aa  podman             bridge
---END--
+    >   NETWORK ID    NAME               DRIVER
+    >   971d73c61fd7  calycopis-network  bridge
+    >   2f259bab93aa  podman             bridge
 
     #
     # The code causing the problem is:
@@ -243,9 +227,7 @@ NETWORK ID    NAME               DRIVER
 
     podman network create calycopis-demo
 
---START--
-Error: could not find free subnet from subnet pools
---END--
+    >   Error: could not find free subnet from subnet pools
 
     #
     # We get the same error outside.
@@ -256,15 +238,13 @@ Error: could not find free subnet from subnet pools
 
     ifconfig
 
---START--
-enp4s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 10.1.0.2  netmask 255.0.0.0  broadcast 10.255.255.255
-        inet6 2001:8b0:be72:d4eb:a60:6eff:fe71:3a24  prefixlen 64  scopeid 0x0<global>
-        inet6 fe80::a60:6eff:fe71:3a24  prefixlen 64  scopeid 0x20<link>
-        ether 08:60:6e:71:3a:24  txqueuelen 1000  (Ethernet)
-        ....
-        ....
---END--
+    >   enp4s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+    >           inet 10.1.0.2  netmask 255.0.0.0  broadcast 10.255.255.255
+    >           inet6 2001:8b0:be72:d4eb:a60:6eff:fe71:3a24  prefixlen 64  scopeid 0x0<global>
+    >           inet6 fe80::a60:6eff:fe71:3a24  prefixlen 64  scopeid 0x20<link>
+    >           ether 08:60:6e:71:3a:24  txqueuelen 1000  (Ethernet)
+    >           ....
+    >           ....
 
     #
     # Our host IP address is /8, meaning the whole 10. range is reserved.
@@ -284,22 +264,18 @@ exit
 
     cat /etc/containers/containers.conf
 
---START--
-default_subnet_pools = [
-  {"base" = "192.168.129.0/24", "size" = 24},
-  {"base" = "192.168.130.0/24", "size" = 24},
-  {"base" = "192.168.131.0/24", "size" = 24},
-  {"base" = "192.168.132.0/24", "size" = 24},
-]
---END--
+    >   default_subnet_pools = [
+    >     {"base" = "192.168.129.0/24", "size" = 24},
+    >     {"base" = "192.168.130.0/24", "size" = 24},
+    >     {"base" = "192.168.131.0/24", "size" = 24},
+    >     {"base" = "192.168.132.0/24", "size" = 24},
+    >   ]
 
     #
     # Try creating a test network ...
     podman network create frog
 
---START--
-Error: could not find free subnet from subnet pools
---END--
+    >   Error: could not find free subnet from subnet pools
 
     #
     # Adding a fix to the host config.
@@ -310,44 +286,36 @@ EOF
 
     cat /etc/containers/containers.conf
 
---START--
---END--
 
 
     #
     # Try creating a test network ...
     podman network create frog
 
---START--
-Error: could not find free subnet from subnet pools
---END--
+    >   Error: could not find free subnet from subnet pools
 
     #
     # Interesting ..
     # Listing the networks shows we have created a calycopis network at some point.
 
---START--
-NETWORK ID    NAME               DRIVER
-971d73c61fd7  calycopis-network  bridge
-2f259bab93aa  podman             bridge
---END--
+    >   NETWORK ID    NAME               DRIVER
+    >   971d73c61fd7  calycopis-network  bridge
+    >   2f259bab93aa  podman             bridge
 
     #
     # Grepping our notes found one reference.
     # 20260201-01-podman-compose.txt
 
---START--
-....
-....
-#
-# Need to create our network manually because podman-compose has issues.
-podman network \
-    create \
-        --subnet 192.5.0.0/16 \
-        calycopis-network
-....
-....
---END--
+    >   ....
+    >   ....
+    >   #
+    >   # Need to create our network manually because podman-compose has issues.
+    >   podman network \
+    >       create \
+    >           --subnet 192.5.0.0/16 \
+    >           calycopis-network
+    >   ....
+    >   ....
 
     #
     # Delete the unused config.
@@ -370,9 +338,7 @@ podman network \
             --subnet 192.168.129.0/24 \
             calycopis-demo
 
---START--
-Error: subnet 192.168.129.0/24 is already used on the host or by another config
---END--
+    >   Error: subnet 192.168.129.0/24 is already used on the host or by another config
 
 
     podman network \
@@ -380,39 +346,35 @@ Error: subnet 192.168.129.0/24 is already used on the host or by another config
             --subnet 192.168.130.0/24 \
             calycopis-demo
 
---START--
-calycopis-demo
---END--
+    >   calycopis-demo
 
 
     podman network \
         inspect \
             calycopis-demo
 
---START--
-[
-     {
-          "name": "calycopis-demo",
-          "id": "41d1ae90bdb05ae45836316225a426ddbcc4979071735af2ee032de59c75c8a8",
-          "driver": "bridge",
-          "network_interface": "podman1",
-          "created": "2026-06-04T10:21:24.295995402+01:00",
-          "subnets": [
-               {
-                    "subnet": "192.168.130.0/24",
-                    "gateway": "192.168.130.1"
-               }
-          ],
-          "ipv6_enabled": false,
-          "internal": false,
-          "dns_enabled": true,
-          "ipam_options": {
-               "driver": "host-local"
-          },
-          "containers": {}
-     }
-]
---END--
+    >   [
+    >        {
+    >             "name": "calycopis-demo",
+    >             "id": "41d1ae90bdb05ae45836316225a426ddbcc4979071735af2ee032de59c75c8a8",
+    >             "driver": "bridge",
+    >             "network_interface": "podman1",
+    >             "created": "2026-06-04T10:21:24.295995402+01:00",
+    >             "subnets": [
+    >                  {
+    >                       "subnet": "192.168.130.0/24",
+    >                       "gateway": "192.168.130.1"
+    >                  }
+    >             ],
+    >             "ipv6_enabled": false,
+    >             "internal": false,
+    >             "dns_enabled": true,
+    >             "ipam_options": {
+    >                  "driver": "host-local"
+    >             },
+    >             "containers": {}
+    >        }
+    >   ]
 
 
 # -----------------------------------------------------
@@ -421,15 +383,13 @@ calycopis-demo
 
     demo/bin/deploy.sh
 
---START--
-....
-....
-=== Deploying broker-alpha ===
-02b952e40562c6c98d183509711f2c1c29017702ceef5dc0bde086fd70dd4f60
-dd5149f79c2b89038bde7e13a1fe41ac1468ff59827a79e334d95775a961c2b9
-  Waiting for PostgreSQL to start...
-Error: statfs /calycopis/Calycopis-broker/github-zrq/demo/run/alpha: no such file or directory
---END--
+    >   ....
+    >   ....
+    >   === Deploying broker-alpha ===
+    >   02b952e40562c6c98d183509711f2c1c29017702ceef5dc0bde086fd70dd4f60
+    >   dd5149f79c2b89038bde7e13a1fe41ac1468ff59827a79e334d95775a961c2b9
+    >     Waiting for PostgreSQL to start...
+    >   Error: statfs /calycopis/Calycopis-broker/github-zrq/demo/run/alpha: no such file or directory
 
     #
     # That's because the demo script is running inside the Pod, and Podman is outside.
@@ -454,41 +414,39 @@ Error: statfs /calycopis/Calycopis-broker/github-zrq/demo/run/alpha: no such fil
 
     demo/bin/deploy.sh
 
---START--
-=== Creating Podman network: calycopis-demo ===
-Network calycopis-demo already exists
-
-=== Deploying broker-alpha ===
-c8961bd6116c1789dfd4830e3ea41f0c549030af63ba15ab651fc0ad205da9a7
-12e0c1a8995c821df4c42909ab2a7627451833a696cf844a8bcb0ab355f1800c
-  Waiting for PostgreSQL to start...
-b043a1b0a3c36c8c38c5878424b0d52c1fa02fe0ebddd3cff5a825afb89d2e6f
-  Broker alpha: admin=L1jsZt6vlyV0Rx2W
-
-=== Deploying broker-beta ===
-bd05a14e2111222ddc18ee4df387fdd6684f4c96abc1e471d18264fcd7664bd3
-14f6f4a4aa92e1e7a995b8fd96d0d6002f760eaa1ca527d220cf14c1e5466c3b
-  Waiting for PostgreSQL to start...
-6f68435693640323d7c0782c1aa008f0bc383d5b39c6be5c8f1a9ce1116fc576
-  Broker beta: admin=y0joSh6F1uuWUSMd
-
-=== Deploying broker-gamma ===
-45b6a3df24a7c89edbcb37a577e1113fb5a81515f9c6bb89bd5a10663ef12428
-46aab11115a25a96732c136c64693c691fc1dc691dba40efaa5d2a9904d2f5ab
-  Waiting for PostgreSQL to start...
-7e114bee76aac4a92690ef4c7564b36ec431b5ca0477bbc5572de8c2fd94a558
-  Broker gamma: admin=94ywm2IhpdC4YcZ7
-
-=== Creating client pod ===
-ff1c510100183b18533d73a097036a3275bfca401cb0d4afafb65f4b1f85dd03
-
-=== Writing environment file ===
-
-=== Waiting for brokers to become healthy ===
-  Waiting for broker-alpha...
-  Waiting for broker-alpha... TIMEOUT (check logs: podman logs broker-svc-alpha)
-
---END--
+    >   === Creating Podman network: calycopis-demo ===
+    >   Network calycopis-demo already exists
+    >   
+    >   === Deploying broker-alpha ===
+    >   c8961bd6116c1789dfd4830e3ea41f0c549030af63ba15ab651fc0ad205da9a7
+    >   12e0c1a8995c821df4c42909ab2a7627451833a696cf844a8bcb0ab355f1800c
+    >     Waiting for PostgreSQL to start...
+    >   b043a1b0a3c36c8c38c5878424b0d52c1fa02fe0ebddd3cff5a825afb89d2e6f
+    >     Broker alpha: admin=L1jsZt6vlyV0Rx2W
+    >   
+    >   === Deploying broker-beta ===
+    >   bd05a14e2111222ddc18ee4df387fdd6684f4c96abc1e471d18264fcd7664bd3
+    >   14f6f4a4aa92e1e7a995b8fd96d0d6002f760eaa1ca527d220cf14c1e5466c3b
+    >     Waiting for PostgreSQL to start...
+    >   6f68435693640323d7c0782c1aa008f0bc383d5b39c6be5c8f1a9ce1116fc576
+    >     Broker beta: admin=y0joSh6F1uuWUSMd
+    >   
+    >   === Deploying broker-gamma ===
+    >   45b6a3df24a7c89edbcb37a577e1113fb5a81515f9c6bb89bd5a10663ef12428
+    >   46aab11115a25a96732c136c64693c691fc1dc691dba40efaa5d2a9904d2f5ab
+    >     Waiting for PostgreSQL to start...
+    >   7e114bee76aac4a92690ef4c7564b36ec431b5ca0477bbc5572de8c2fd94a558
+    >     Broker gamma: admin=94ywm2IhpdC4YcZ7
+    >   
+    >   === Creating client pod ===
+    >   ff1c510100183b18533d73a097036a3275bfca401cb0d4afafb65f4b1f85dd03
+    >   
+    >   === Writing environment file ===
+    >   
+    >   === Waiting for brokers to become healthy ===
+    >     Waiting for broker-alpha...
+    >     Waiting for broker-alpha... TIMEOUT (check logs: podman logs broker-svc-alpha)
+    >   
 
     #
     # Bad code from the agent.
@@ -533,17 +491,15 @@ ff1c510100183b18533d73a097036a3275bfca401cb0d4afafb65f4b1f85dd03
     demo/bin/deploy.sh
 
 
---START--
-....
-....
-=== Deployment complete ===
-Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
-
-Brokers:
-  broker-alpha: http://broker-alpha:8082
-  broker-beta: http://broker-beta:8082
-  broker-gamma: http://broker-gamma:8082
---END--
+    >   ....
+    >   ....
+    >   === Deployment complete ===
+    >   Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
+    >   
+    >   Brokers:
+    >     broker-alpha: http://broker-alpha:8082
+    >     broker-beta: http://broker-beta:8082
+    >     broker-gamma: http://broker-gamma:8082
 
 
 # -----------------------------------------------------
@@ -552,10 +508,8 @@ Brokers:
 
     demo/bin/configure.sh
 
---START--
-=== Seeding demo user accounts ===
-  Creating user 'demo-user' on broker-alpha...
---END--
+    >   === Seeding demo user accounts ===
+    >     Creating user 'demo-user' on broker-alpha...
 
     #
     # I think it failed.
@@ -585,17 +539,15 @@ Brokers:
 
     popd
 
---START--
-....
-....
-=== Deployment complete ===
-Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
-
-Brokers:
-  broker-alpha: http://broker-alpha:8082
-  broker-beta: http://broker-beta:8082
-  broker-gamma: http://broker-gamma:8082
---END--
+    >   ....
+    >   ....
+    >   === Deployment complete ===
+    >   Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
+    >   
+    >   Brokers:
+    >     broker-alpha: http://broker-alpha:8082
+    >     broker-beta: http://broker-beta:8082
+    >     broker-gamma: http://broker-gamma:8082
 
 # -----------------------------------------------------
 # Configure user accounts
@@ -607,20 +559,18 @@ Brokers:
 
     popd
 
---START--
-=== Seeding demo user accounts ===
-
-  Creating user 'demo-user' on broker-alpha... OK (201)
-  Creating user 'demo-user' on broker-beta... OK (201)
-  Creating user 'demo-user' on broker-gamma... OK (201)
-
-=== Writing demo user credentials ===
-  Written to: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-user.env
-
-=== Configuration complete ===
-  Username: demo-user
-  Password: vet1HZr4T3bAsckdTwZI6u73
---END--
+    >   === Seeding demo user accounts ===
+    >   
+    >     Creating user 'demo-user' on broker-alpha... OK (201)
+    >     Creating user 'demo-user' on broker-beta... OK (201)
+    >     Creating user 'demo-user' on broker-gamma... OK (201)
+    >   
+    >   === Writing demo user credentials ===
+    >     Written to: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-user.env
+    >   
+    >   === Configuration complete ===
+    >     Username: demo-user
+    >     Password: vet1HZr4T3bAsckdTwZI6u73
 
 
 # -----------------------------------------------------
@@ -633,12 +583,10 @@ Brokers:
 
     popd
 
---START--
-....
-curl: (22) The requested URL returned error: 404
-  FAIL: Could not submit request to broker-beta
-....
---END--
+    >   ....
+    >   curl: (22) The requested URL returned error: 404
+    >     FAIL: Could not submit request to broker-beta
+    >   ....
 
     #
     # Smoke test POSTs to /offersets not /requests.
