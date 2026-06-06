@@ -191,3 +191,15 @@ Show the final session status including phase, messages, and any connectors.
 4. You ask the user which option they prefer (fastest, cheapest, greenest, etc.)
 5. You run `bin/broker accept --broker <choice>`
 6. You display the final results (phase, stdout, connectors)
+
+# Coding conventions
+
+If you have to modify or create new code, apply the rules located in the `agents/rules` directory.
+
+* **No binary files in the source tree.** Do not add compiled artefacts, wheel files (`.whl`), JAR files, container images, or any other binary blobs to the version-controlled source tree. Build outputs should be written to a dedicated `build/` or `target/` directory that is excluded via `.gitignore`. If a binary file is needed as a build input (e.g. a wheel copied into a Docker build context), place it in a `build/` sub-directory with a `.gitignore` that excludes its contents.
+* **Do not suppress errors.** Never redirect output to `/dev/null`, pipe stderr to `/dev/null`, or use `|| true` to hide failures in build scripts, Dockerfiles, or CI pipelines. If a command might legitimately fail (e.g. an optional tool that may not be available), handle the failure explicitly with a clear comment explaining why it is acceptable to continue, and ensure the error output remains visible for debugging.
+* Detailed rules for handling file headers are defined in the `agents/` directory:
+  * [`agents/rules/licence-header.mdc`](agents/rules/licence-header.mdc) — GPL licence header that must be added to all new source files.
+  * [`agents/rules/copyright-year.mdc`](agents/rules/copyright-year.mdc) — Copyright year in the licence header must be updated to the current year when a file is modified.
+  * [`agents/rules/ai-metrics.mdc`](agents/rules/ai-metrics.mdc) — AIMetrics block must be added or updated in file headers for all created or modified files.
+
