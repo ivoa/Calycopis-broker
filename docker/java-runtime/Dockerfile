@@ -48,6 +48,11 @@ LABEL org.opencontainers.image.authors  "https://github.com/Zarquan"
 EXPOSE 8082/tcp
 
 #
+# Create log directory for Spring/Log4j2 file appender.
+RUN mkdir -p /var/log/calycopis
+VOLUME /var/log/calycopis
+
+#
 # Install our webapp jar file.
 # https://spring.io/guides/gs/spring-boot-docker
 RUN mkdir /opt/calycopis

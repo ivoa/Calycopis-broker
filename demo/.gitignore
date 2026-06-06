@@ -1,0 +1,8 @@
+# Runtime output from deploy.sh / configure.sh
+run/
+# Broker CLI state (also under run/, listed for clarity)
+# run/.broker-state.json
+# run/image-digests.json
+
+# Generated at runtime by the demo client
+AGENTS.md

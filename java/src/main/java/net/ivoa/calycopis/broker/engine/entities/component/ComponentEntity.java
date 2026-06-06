@@ -28,6 +28,16 @@
  *       "value": 8,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-06-03T01:33:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 15,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -55,13 +65,21 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.cost.AbstractCostItemEntity;
+import net.ivoa.calycopis.broker.engine.entities.cost.CostItemBean;
+import net.ivoa.calycopis.broker.engine.entities.cost.SimpleMinMaxFloatCostEntity;
 import net.ivoa.calycopis.broker.engine.entities.identity.Identity;
 import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.message.Message;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageEntity;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageItemBean;
+import net.ivoa.calycopis.broker.engine.entities.metric.AbstractMetricItemEntity;
+import net.ivoa.calycopis.broker.engine.entities.metric.MetricItemBean;
+import net.ivoa.calycopis.broker.engine.entities.metric.SimpleMinMaxFloatMetricEntity;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
+import net.ivoa.calycopis.schema.spring.model.IvoaAbstractCostItem;
+import net.ivoa.calycopis.schema.spring.model.IvoaAbstractMetricItem;
 import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
 import net.ivoa.calycopis.schema.spring.model.IvoaMessageItem;
 import net.ivoa.calycopis.schema.spring.model.IvoaMessageItem.LevelEnum;
@@ -227,6 +245,90 @@ implements Component
             );
         }
     
+    @OneToMany(
+        mappedBy = "parent",
+        fetch = FetchType.LAZY,
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+        )
+    protected List<AbstractCostItemEntity> costs = new ArrayList<AbstractCostItemEntity>();
+
+    public Iterable<AbstractCostItemEntity> getCostEntities()
+        {
+        return this.costs;
+        }
+
+    public void addCost(final SimpleMinMaxFloatCostEntity cost)
+        {
+        this.costs.add(cost);
+        }
+
+    /**
+     * Wrap a List of JPA AbstractCostItemEntity(s) as a List of IvoaAbstractCostItems.
+     *
+     */
+    public List<IvoaAbstractCostItem> getCostBeans()
+        {
+        return new ListWrapper<IvoaAbstractCostItem, AbstractCostItemEntity>(
+            this.costs
+            ){
+            public IvoaAbstractCostItem wrap(final AbstractCostItemEntity inner)
+                {
+                if (inner instanceof SimpleMinMaxFloatCostEntity)
+                    {
+                    return new CostItemBean(
+                        (SimpleMinMaxFloatCostEntity) inner
+                        );
+                    }
+                else {
+                    return null;
+                    }
+                }
+            };
+        }
+
+    @OneToMany(
+        mappedBy = "parent",
+        fetch = FetchType.LAZY,
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+        )
+    protected List<AbstractMetricItemEntity> metrics = new ArrayList<AbstractMetricItemEntity>();
+
+    public Iterable<AbstractMetricItemEntity> getMetricEntities()
+        {
+        return this.metrics;
+        }
+
+    public void addMetric(final SimpleMinMaxFloatMetricEntity metric)
+        {
+        this.metrics.add(metric);
+        }
+
+    /**
+     * Wrap a List of JPA AbstractMetricItemEntity(s) as a List of IvoaAbstractMetricItems.
+     *
+     */
+    public List<IvoaAbstractMetricItem> getMetricBeans()
+        {
+        return new ListWrapper<IvoaAbstractMetricItem, AbstractMetricItemEntity>(
+            this.metrics
+            ){
+            public IvoaAbstractMetricItem wrap(final AbstractMetricItemEntity inner)
+                {
+                if (inner instanceof SimpleMinMaxFloatMetricEntity)
+                    {
+                    return new MetricItemBean(
+                        (SimpleMinMaxFloatMetricEntity) inner
+                        );
+                    }
+                else {
+                    return null;
+                    }
+                }
+            };
+        }
+
     @Override
     public boolean equals(Object object)
         {

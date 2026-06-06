@@ -1,0 +1,18 @@
+---
+description: Update copyright year in licence header to match the year of modification
+alwaysApply: true
+---
+
+When you modify a file, check if it has a `<meta:licence>` block in the file header comment.
+
+If the licence block contains a copyright notice matching the pattern `Copyright (c) YYYY` or `Copyright (C) YYYY`, update the year to the current year (the year the modification is being made).
+
+For example, if modifying a file in 2026:
+- `Copyright (C) 2024 University of Manchester.` becomes `Copyright (C) 2026 University of Manchester.`
+- `Copyright (c) 2025, Manchester` becomes `Copyright (c) 2026, Manchester`
+
+Rules:
+- Only update the year if a `<meta:licence>` block exists and contains a `Copyright (c)` or `Copyright (C)` line.
+- Do not change the copyright holder name or any other part of the licence text.
+- Match both `Copyright (C)` and `Copyright (c)` (case-insensitive on the `c`).
+- If the year is already the current year, leave it unchanged.

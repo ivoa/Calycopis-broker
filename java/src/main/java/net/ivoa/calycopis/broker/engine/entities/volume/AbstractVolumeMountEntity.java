@@ -28,6 +28,16 @@
  *       "value": 30,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-06-03T01:33:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -164,6 +174,12 @@ implements AbstractVolumeMount
         {
         bean.setKind(
             this.getKind()
+            );
+        bean.setCosts(
+            this.getCostBeans()
+            );
+        bean.setMetrics(
+            this.getMetricBeans()
             );
         return bean;
         }

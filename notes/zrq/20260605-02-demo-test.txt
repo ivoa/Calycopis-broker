@@ -1,0 +1,838 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Test and develop the demo deployment process.
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run a new instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+--START--
+CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS        PORTS       NAMES
+a53754db0560  localhost/podman-pause:5.4.2-1743552000                        12 seconds ago  Up 5 seconds              fd6c521a3ae8-infra
+60ebe36d5d51  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        4 seconds ago   Up 3 seconds              calycopis-dev
+--END--
+
+
+# -----------------------------------------------------
+# Execute the deployment scripts from the Calycopis-broker directory.
+#[root@calycopis-dev]
+
+        pushd /calycopis/Calycopis-broker/github-zrq
+
+
+# -----------------------------------------------------
+# 1. Build the broker image
+#[root@calycopis-dev]
+
+    pushd java
+        ./mvnw clean package -DskipTests -Dcalycopis-platform=docker
+    popd
+
+    podman build \
+        --build-arg jarfile=calycopis-broker-1.0.6-SNAPSHOT.jar \
+        --tag  calycopis/broker:latest \
+        --file docker/java-runtime/Dockerfile \
+        java/target/
+
+--START--
+....
+....
+[INFO] --- spring-boot:3.5.4:repackage (repackage) @ calycopis-broker ---
+[INFO] Replacing main artifact /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.947 s
+[INFO] Finished at: 2026-06-05T17:32:31Z
+[INFO] ------------------------------------------------------------------------
+--END--
+
+--START--
+....
+....
+STEP 23/24: RUN chmod a+x /opt/calycopis/run.sh
+--> 3500db6b621e
+STEP 24/24: ENTRYPOINT ["/opt/calycopis/run.sh"]
+COMMIT calycopis/broker:latest
+--> 3f128ebffb4b
+Successfully tagged localhost/calycopis/broker:latest
+3f128ebffb4b16cb9152a6510c6e42b060378993c6611158f160d82ad7e17e31
+--END--
+
+
+# -----------------------------------------------------
+# 2. Build the client image
+#[root@calycopis-dev]
+
+    cp \
+        /calycopis/Calycopis-openapi/github-zrq/codegen/python/client/build/dist/calycopis_schema_client-1.0.6-py3-none-any.whl \
+        demo/docker/demo-client/build/
+
+    podman build \
+        --tag  calycopis/demo-client:latest \
+        --file demo/docker/demo-client/Dockerfile \
+        demo/docker/demo-client/
+
+--START--
+....
+....
+COMMIT calycopis/demo-client:latest
+--> 508f97265d83
+Successfully tagged localhost/calycopis/demo-client:latest
+508f97265d83d35c8e72c969b934c73e270e68070452ec446ed6fb8928bfde2e
+--END--
+
+    #
+    # Bit scruffy with the way it updates PATH ..
+    #
+
+# -----------------------------------------------------
+# 3. Deploy
+#[root@calycopis-dev]
+
+    demo/bin/deploy.sh
+
+--START--
+....
+....
+=== Deploying broker-alpha ===
+682a0e07b7e60fbb182b9f11a3e1e0420b144a77897c24044bd9f102dc2f43c2
+fbcbd92a1fe23f068d288341c410f44ed110507fdbeb6fb19c7fe2e0ea647a74
+  Waiting for PostgreSQL to start...
+Error: statfs /run/podman/podman.sock: permission denied
+--END--
+
+    #
+    # On the physical host, XDG_RUNTIME_DIR maps to /run/user/1000
+    # The local Podman service for this user.
+    # We need a way to pass this in to the deployment script.
+    #
+    # Temp fix - hard coded it in deploy.sh.
+    #
+
+    demo/bin/deploy.sh
+
+--START--
+....
+....
+=== Creating Podman network: calycopis-demo ===
+Network calycopis-demo already exists
+
+=== Deploying broker-alpha ===
+7b4794810b93c8d92b858188efe1a92e37e194b71ff70c8cda5cb5183cb1e5ae
+41fe26e7fa5f4b3ec233875e0a6a421e0a39cc70c2017ff556660a8985ee6959
+  Waiting for PostgreSQL to start...
+fd8f2348fa1ca03c8af89c022308c1aeea329aa4b5a839fb6401a97cc3a4b9cf
+  Broker alpha: admin=C06eZE7VSKXWproc
+  Broker alpha: logs=/calycopis/Calycopis-broker/github-zrq/demo/run/alpha/logs
+
+=== Deploying broker-beta ===
+Cannot connect to Podman. Please verify your connection to the Linux system using `podman system connection list`, or try `podman machine init` and `podman machine start` to manage a new Linux VM
+Error: unable to connect to Podman socket: Get "http://d/v5.8.2/libpod/_ping": dial unix /run/podman/podman.sock: connect: permission denied: unix:///run/podman/podman.sock
+--END--
+
+    #
+    # So why does it work for alpha and not for beta ?
+    # Changed script to use USER_PODMAN_SOCKET.
+    # Looks like an SELinux issue.
+
+--START--
+type=AVC msg=audit(1780707616.254:17311):
+avc:
+    denied  { write } for
+        pid=412419
+        comm="podman"
+        name="podman.sock"
+        dev="tmpfs"
+        ino=70
+        scontext=system_u:system_r:container_t:s0:c252,c401
+        tcontext=system_u:object_r:container_file_t:s0:c167,c486
+        tclass=sock_file
+        permissive=0
+--END--
+
+
+    #
+    # Removed the Z from the socket mount
+    #
+
+    demo/bin/deploy.sh
+
+--START--
+....
+....
+=== Deployment complete ===
+Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
+
+Brokers:
+  broker-alpha: http://broker-alpha:8082
+  broker-beta: http://broker-beta:8082
+  broker-gamma: http://broker-gamma:8082
+--END--
+
+
+# -----------------------------------------------------
+# 4. Configure user accounts
+#[root@calycopis-dev]
+
+    demo/bin/configure.sh
+
+--START--
+=== Seeding demo user accounts ===
+
+  Creating user 'demo-user' on broker-alpha... OK (201)
+  Creating user 'demo-user' on broker-beta... OK (201)
+  Creating user 'demo-user' on broker-gamma... OK (201)
+
+=== Writing demo user credentials ===
+  Written to: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-user.env
+
+=== Configuration complete ===
+  Username: demo-user
+  Password: ldojm5prx4E3NUinf2rGo7al
+--END--
+
+
+# -----------------------------------------------------
+# 6. Start the client container
+#[root@calycopis-dev]
+
+    podman run -it \
+        --pod demo-client \
+        --volume "$(pwd)/demo:/workspace:z" \
+        --volume "$(pwd)/demo/USER-AGENT.md:/workspace/AGENTS.md:ro,z" \
+        --env-file "$(pwd)/demo/run/demo-user.env" \
+        calycopis/demo-client:latest \
+        /bin/bash
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# 5. Run the smoke test
+#[root@demo-client]
+
+    source  run/demo-user.env
+    python3 bin/smoke-test.py
+
+--START--
+....
+....
+--END--
+
+    #
+    # Still getting SELinux warnings though.
+
+--START--
+Raw Audit Messages
+type=AVC msg=audit(1780708100.343:18235):
+avc:
+    denied  { write } for  pid=413885
+    comm="http-nio-8082-e"
+    name="podman.sock" dev="tmpfs" ino=70
+    scontext=system_u:system_r:container_t:s0:c186,c950
+    tcontext=system_u:object_r:container_file_t:s0:c15,c967
+    tclass=sock_file
+    permissive=0
+--END--
+
+
+# -----------------------------------------------------
+# 6. Run the Cursor agent.
+#[root@demo-client]
+
+    agent /workspace
+
+--START--
+....
+....
+--END--
+
+    #
+    # Still getting SELinx errors.
+    # Set SELinx to permissive for now (report don't block).
+    sudo setenforce permissive
+
+
+
+==START==
+Run an Alpine container that computes pi to 1000 digits
+==END==
+
+--START--
+....
+....
+I've submitted your pi-to-1000-digits task to all three brokers. Here are the offers:
+
+  Task: Alpine container running echo 'scale=1000; 4*a(1)' | bc -l (1–2 cores)
+
+  ┌─────────────────────┬───────────────────┬───────────────┬────────────────┐
+  │ Attribute           │ Alpha (Green HPC) │ Beta (Cloud)  │ Gamma (Budget) │
+  ├─────────────────────┼───────────────────┼───────────────┼────────────────┤
+  │ Monetary cost       │ $0.30 – $0.80     │ $0.05 – $0.15 │ $0.02 – $0.08  │
+  │ Energy (kWh)        │ 0.01 – 0.03       │ 0.05 – 0.15   │ 0.10 – 0.30    │
+  │ Carbon (gCO₂)       │ 2.0 – 8.0         │ 15.0 – 40.0   │ 30.0 – 80.0    │
+  │ Compute performance │ 250 – 300         │ 120 – 160     │ 60 – 90        │
+  └─────────────────────┴───────────────────┴───────────────┴────────────────┘
+
+  Trade-offs:
+
+  • Alpha — Fastest and greenest (lowest energy/carbon), but most expensive.
+  • Beta — Good balance: moderate cost, performance, and environmental impact.
+  • Gamma — Cheapest, but slowest and highest carbon footprint.
+
+  Which broker would you like to use — Alpha (fastest/greenest), Beta (balanced), or Gamma (cheapest)?
+--END--
+
+==START==
+Alpha
+==END==
+
+--START--
+....
+....
+  Alpha (Green HPC) accepted and the job finished successfully.
+
+  Execution Summary
+
+  ┌─────────────────────┬──────────────────────────────────────┐
+  │ Field               │ Value                                │
+  ├─────────────────────┼──────────────────────────────────────┤
+  │ Broker              │ Alpha (Green HPC)                    │
+  │ Session UUID        │ 86a4e494-9c9d-411f-9f11-1bb98f5439fc │
+  │ Final phase         │ COMPLETED                            │
+  │ Executable phase    │ COMPLETED                            │
+  │ Container exit code │ 0                                    │
+  │ Runtime             │ ~62 seconds                          │
+  └─────────────────────┴──────────────────────────────────────┘
+
+  Output
+
+  The Alpine container computed π to 1000 decimal places (1031 characters of stdout, no stderr):
+
+  3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148
+  086513282230664706752440410238...
+
+  (…continues to 1000 digits after the decimal point)
+
+  Phase progression
+
+  1. ACCEPTED — offer accepted on Alpha
+  2. PREPARING — Alpine image verified, compute resource allocated
+  3. EXECUTING — container ran echo 'scale=1000; 4*a(1)' | bc -l
+  4. COMPLETED — container exited cleanly with the full π value
+
+  The task completed on the fastest, greenest broker as requested. Want to run another job or try a different
+   broker?
+--END--
+
+==START==
+/plan
+Based on the Python code that had to write to perform this task,
+can you design some tools that could be adde as a skill to help you to drive the broker clients ?
+==END==
+
+--START--
+....
+....
+ ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ Suggested Plan                                                                                                                                                                           │
+ │                                                                                                                                                                                          │
+ │ Calycopis Broker Client Skill and Tools                                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ Problem Statement                                                                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ The pi-to-1000-digits task required 5+ ad-hoc Python scripts that duplicated the same patterns now spread across AGENTS.md, bin/smoke-test.py, and inline shell heredocs. Key friction   │
+ │  points:                                                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ ────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐   │
+ │                          ────                                                                                                                                                            │
+ │ │Pain point             │ What happened                                                                                                                                              │   │
+ │                                                                                                                                                                                          │
+ │ ────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤   │
+ │                          ────                                                                                                                                                            │
+ │ │Auth/client            │ make_client( + base64 Basic auth copied into every scrip                                                                                                   │   │
+ │                                                                                                                                                                                          │
+ │ │boilerplate            │                                                                                                                                                            │   │
+ │                                                                                                                                                                                          │
+ │ │Stale image digest     │ Hardcoded sha256:310c62b5… in AGENTS.md and smoke-test caused result=NO / urn:image-digest-mismatch; fix required reading                                  │   │
+ │                                                                                                                                                                                          │
+ │ │                       │ [run/alpha/logs/broker.log](run/alpha/logs/broker.log)                                                                                                     │   │
+ │                                                                                                                                                                                          │
+ │ │Offer UUID location    │ offer.meta.uui, not offer.uuid — causedAttributeError                                                                                                      │   │
+ │                                                                                                                                                                                          │
+ │ │Lost state between     │ JSON serialization of UUID failed; had to resubmit on accept                                                                                               │   │
+ │                                                                                                                                                                                          │
+ │ │steps                  │                                                                                                                                                            │   │
+ │                                                                                                                                                                                          │
+ │ │Comparison table       │ Manual URN-to-label mapping and markdown formatting                                                                                                        │   │
+ │                                                                                                                                                                                          │
+ │ │assembly               │                                                                                                                                                            │   │
+ │                                                                                                                                                                                          │
+ │ │Container output       │ Session API returns no stdout; output only in broker logs                                                                                                  │   │
+ │                                                                                                                                                                                          │
+ │ ────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘   │
+ │                          ────
+
+ │ Proposed Architecture                                                                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ mermaid flowchart                                                                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ flowchart TD                                                                                                                                                                             │
+ │     subgraph skill [Skill: calycopis-broker]                                                                                                                                             │
+ │         SKILL_MD[SKILL.md workflow]                                                                                                                                                      │
+ │     end                                                                                                                                                                                  │
+ │     subgraph cli [bin/broker CLI]                                                                                                                                                        │
+ │         compare[compare]                                                                                                                                                                 │
+ │         accept[accept]                                                                                                                                                                   │
+ │         monitor[monitor]                                                                                                                                                                 │
+ │         digest[digest resolve]                                                                                                                                                           │
+ │         status[status]                                                                                                                                                                   │
+ │     end                                                                                                                                                                                  │
+ │     subgraph lib [bin/broker_tools/ Python package]                                                                                                                                      │
+ │         client[client.py]                                                                                                                                                                │
+ │         request[request.py]                                                                                                                                                              │
+ │         offers[offers.py]                                                                                                                                                                │
+ │         session[session.py]                                                                                                                                                              │
+ │         output[output.py]                                                                                                                                                                │
+ │     end                                                                                                                                                                                  │
+ │     subgraph state [run/.broker-state.json]                                                                                                                                              │
+ │         offers_state[offer UUIDs per broker]                                                                                                                                             │
+ │         request_hash[request fingerprint]                                                                                                                                                │
+ │     end                                                                                                                                                                                  │
+ │     SKILL_MD --> cli                                                                                                                                                                     │
+ │     cli --> lib                                                                                                                                                                          │
+ │     compare --> state                                                                                                                                                                    │
+ │     accept --> state                                                                                                                                                                     │
+ │     lib --> brokers[Alpha Beta Gamma brokers]                                                                                                                                            │
+ │     output --> logs[run/*/logs/broker.log]                                                                                                                                               │
+ │
+ │                                                                                                                                                                                          │
+ │ Deliverables                                                                                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ 1. Shared Python package — bin/broker_tools/                                                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ A small internal library (not published) extracted from the ad-hoc scripts:                                                                                                              │
+ │                                                                                                                                                                                          │
+ │ ───────────┬─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐   │
+ │             ────                                                                                                                                                                         │
+ │ │Module    │ Responsibility                                                                                                                                                          │   │
+ │                                                                                                                                                                                          │
+ │ ───────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤   │
+ │             ────                                                                                                                                                                         │
+ │ │client.py │ get_env(), make_client(url, get_brokers() — readsDEMO_USER, DEMO_PASS, BROKER_*_UR from env (same pattern as smoke-test lines 78–86                                     │   │
+ │                                                                                                                                                                                          │
+ │ │request.p │ build_docker_request(name, image, command, cores=None,            — builds ExecutionReques; auto-resolves digest when omitte                                            │   │
+ │              digest=None)                                                                                                                                                                │
+ │ │y         │                                                                                                                                                                         │   │
+ │                                                                                                                                                                                          │
+ │ │digest.py │ resolve_digest(image, broker="alpha" — parses local id [sha256:… from broker log or cachedrun/image-digests.jso; writes cache on success                                │   │
+ │                                                                                                                                                                                          │
+ │ │offers.py │ submit_to_all(request), extract_summary(response), format_comparison_table(summaries) — URN short labels (monetary, energy, carbon, compute, io) and markdown table     │   │
+ │              matching                                                                                                                                                                    │
+ │ │          │ AGENTS.md format                                                                                                                                                        │   │
+ │                                                                                                                                                                                          │
+ │ │session.p │ accept_offer(broker, session_uuid, wait_terminal(broker, uuid, session_summary(session — wraps set_session_phas + wait_until_terminal                                   │   │
+ │                                                                                                                                                                                          │
+ │ │y         │                                                                                                                                                                         │   │
+ │                                                                                                                                                                                          │
+ │ │output.py │ get_container_stdout(broker, session_uuid — grep broker log forCaptured … stdou / stdout: [ lines (demo-specific; documented as fallback                                │   │
+ │                                                                                                                                                                                          │
+ │ │state.py  │ save_state(path, data, load_state(path) — JSON withdefault=str for UUID serializatio                                                                                    │   │
+ │                                                                                                                                                                                          │
+ │ ───────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘   │
+ │             ────
+
+                                                                                                                                                                                 │
+ │ 2. CLI entry point — bin/broker                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │ Single executable the agent invokes via shell. All commands source env automatically (or fail with a clear message to source run/demo-user.env).                                         │
+ │                                                                                                                                                                                          │
+ │ # Submit to all brokers, print comparison table, persist offer UUIDs                                                                                                                     │
+ │ source run/demo-user.env                                                                                                                                                                 │
+ │ bin/broker compare \                                                                                                                                                                     │
+ │   --name pi-calculator \                                                                                                                                                                 │
+ │   --image alpine:3 \                                                                                                                                                                     │
+ │   --command "sh -c \"echo 'scale=1000; 4*a(1)' | bc -l\"" \                                                                                                                              │
+ │   --cores 1:2                                                                                                                                                                            │
+ │ # Accept a previously compared offer (reads run/.broker-state.json)                                                                                                                      │
+ │ bin/broker accept --broker alpha                                                                                                                                                         │
+ │ # Poll until terminal and print summary + stdout                                                                                                                                         │
+ │ bin/broker monitor --broker alpha --uuid <session-uuid>                                                                                                                                  │
+ │ # One-shot: compare + accept + monitor (skip user choice)                                                                                                                                │
+ │ bin/broker run --broker alpha --name pi-calculator --image alpine:3 --command "..."                                                                                                      │
+ │ # Resolve image digest for a tag (fixes digest-mismatch without log spelunking)                                                                                                          │
+ │ bin/broker digest resolve alpine:3                                                                                                                                                       │
+ │ # Health check (replaces ad-hoc smoke-test invocations)                                                                                                                                  │
+ │ bin/broker status                                                                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ Output conventions:                                                                                                                                                                      │
+ │ • compare prints markdown table to stdout (agent pastes directly to user)                                                                                                                │
+ │ • --json flag on all commands for machine-readable output                                                                                                                                │
+ │ • Non-zero exit code on result != YES with broker messages on stderr                                                                                                                     │
+ │
+                                                                                                                                                   │
+ │ 3. State file — run/.broker-state.json                                                                                                                                                   │
+ │                                                                                                                                                                                          │
+ │ Written by compare, consumed by accept:                                                                                                                                                  │
+ │                                                                                                                                                                                          │
+ │ {                                                                                                                                                                                        │
+ │   "request": { "name": "pi-calculator", "image": "alpine:3", "command": "...", "cores": "1:2" },                                                                                         │
+ │   "digest": "sha256:3cb067ea…",                                                                                                                                                          │
+ │   "offers": {                                                                                                                                                                            │
+ │     "alpha": { "session_uuid": "…", "result": "YES", "costs": {}, "metrics": {} },                                                                                                       │
+ │     "beta":  { "…": "…" },                                                                                                                                                               │
+ │     "gamma": { "…": "…" }                                                                                                                                                                │
+ │   },                                                                                                                                                                                     │
+ │   "created_at": "2026-06-06T01:20:12Z"                                                                                                                                                   │
+ │ }                                                                                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ This eliminates the resubmission bug from the pi session.                                                                                                                                │
+ │
+                                                                                                                               │
+ │ 4. Cursor skill — .cursor/skills/calycopis-broker/SKILL.md                                                                                                                               │
+ │                                                                                                                                                                                          │
+ │ Project-scoped skill (per your choice) with:                                                                                                                                             │
+ │ Frontmatter:                                                                                                                                                                             │
+ │                                                                                                                                                                                          │
+ │ name: calycopis-broker                                                                                                                                                                   │
+ │ description: >-                                                                                                                                                                          │
+ │   Submit, compare, accept, and monitor IVOA Calycopis Execution Broker tasks                                                                                                             │
+ │   across Alpha/Beta/Gamma. Use when the user wants to run computational                                                                                                                  │
+ │   workloads, compare broker offers, or manage execution sessions.                                                                                                                        │
+ │                                                                                                                                                                                          │
+ │ Body sections:                                                                                                                                                                           │
+ │ 1. Prerequisites — source run/demo-user.env                                                                                                                                              │
+ │ 2. Standard workflow — map 1:1 to AGENTS.md interaction pattern using bin/broker commands (not inline Python)                                                                            │
+ │ 3. Tool reference — table of CLI subcommands with example invocations                                                                                                                    │
+ │ 4. Gotchas (concise):                                                                                                                                                                    │
+ │   • Image digest is required; use bin/broker digest resolve before submit if unsure                                                                                                      │
+ │   • Offer session UUID is at offer.meta.uuid                                                                                                                                             │
+ │   • Container stdout is not in session API; use bin/broker monitor which checks logs                                                                                                     │
+ │ 5. Broker profiles — Alpha/Beta/Gamma trade-off summary (from config/broker-alpha/platform.yaml etc.)                                                                                    │
+ │ 6. When to use inline Python — only for novel executable types (Jupyter, Singularity) not yet covered by CLI flags                                                                       │
+ │                                                                                                                                                                                          │
+ │ Optional reference file: .cursor/skills/calycopis-broker/reference.md — full JSON schemas, URN label map, error kinds.
+
+                                                                   │
+ │ 5. Refactor existing code                                                                                                                                                                │
+ │                                                                                                                                                                                          │
+ │ • Update bin/smoke-test.py to import from broker_tools and call resolve_digest("alpine:3") instead of hardcoded digest                                                                   │
+ │ • Update AGENTS.md / USER-AGENT.md to reference bin/broker commands as the preferred path, keeping Python examples as "advanced/low-level" fallback                                      │
+ │ • Add run/.broker-state.json and run/image-digests.json to .gitignore                                                                                                                    │
+ │                                                                                                                                                                                          │
+ │ CLI vs Skill Responsibilities                                                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ ┌────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐                                          │
+ │ │ Layer                  │ Role                                                                                                               │                                          │
+ │ ├────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤                                          │
+ │ │ Skill (SKILL.md)       │ Tells the agent when and in what order to run tools; defines user-facing table format and broker selection prompts │                                          │
+ │ │ CLI (bin/broker)       │ Deterministic, tested execution the agent runs instead of generating Python each time                              │                                          │
+ │ │ Library (broker_tools) │ Shared logic; smoke-test and future scripts reuse it                                                               │                                          │
+ │ └────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘                                          │
+ │                                                                                                                                                                                          │
+ │ Example Agent Flow (pi task, with tools)                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ source run/demo-user.env                                                                                                                                                                 │
+ │ bin/broker compare \                                                                                                                                                                     │
+ │   --name pi-calculator --image alpine:3 \                                                                                                                                                │
+ │   --command "sh -c \"echo 'scale=1000; 4*a(1)' | bc -l\"" \                                                                                                                              │
+ │   --cores 1:2                                                                                                                                                                            │
+ │ # → prints markdown table; agent asks user to pick broker                                                                                                                                │
+ │ bin/broker accept --broker alpha                                                                                                                                                         │
+ │ # → reads state, accepts, monitors, prints stdout + COMPLETED                                                                                                                            │
+ │                                                                                                                                                                                          │
+ │ No ad-hoc Python required for the standard Docker workflow.                                                                                                                              │
+ │
+
+                                                                                                                            │
+ │ Files to Create / Modify                                                                                                                                                                 │
+ │                                                                                                                                                                                          │
+ │ ┌────────┬─────────────────────────────────────────────────────────┐                                                                                                                     │
+ │ │ Action │ Path                                                    │                                                                                                                     │
+ │ ├────────┼─────────────────────────────────────────────────────────┤                                                                                                                     │
+ │ │ Create │ bin/broker (CLI entry, argparse subcommands)            │                                                                                                                     │
+ │ │ Create │ bin/broker_tools/__init__.py                                │                                                                                                                 │
+ │ │ Create │ bin/broker_tools/client.py                              │                                                                                                                     │
+ │ │ Create │ bin/broker_tools/request.py                             │                                                                                                                     │
+ │ │ Create │ bin/broker_tools/digest.py                              │                                                                                                                     │
+ │ │ Create │ bin/broker_tools/offers.py                              │                                                                                                                     │
+ │ │ Create │ bin/broker_tools/session.py                             │                                                                                                                     │
+ │ │ Create │ bin/broker_tools/output.py                              │                                                                                                                     │
+ │ │ Create │ bin/broker_tools/state.py                               │                                                                                                                     │
+ │ │ Create │ .cursor/skills/calycopis-broker/SKILL.md                │                                                                                                                     │
+ │ │ Create │ .cursor/skills/calycopis-broker/reference.md (optional) │                                                                                                                     │
+ │ │ Modify │ bin/smoke-test.py — use shared library + dynamic digest │                                                                                                                     │
+ │ │ Modify │ AGENTS.md, USER-AGENT.md — point to skill + CLI         │                                                                                                                     │
+ │ │ Modify │ .gitignore — ignore state/cache files                   │                                                                                                                     │
+ │ └────────┴─────────────────────────────────────────────────────────┘                                                                                                                     │
+ │
+
+                                                                                                                   │
+ │ Out of Scope (for now)                                                                                                                                                                   │
+ │                                                                                                                                                                                          │
+ │ • MCP server wrapping (could be a future layer on top of the same library)                                                                                                               │
+ │ • Jupyter/Singularity executable builders (add --type flag later)                                                                                                                        │
+ │ • Parallel broker submission (sequential is fine for 3 brokers)                                                                                                                          │
+ │ • Modifying the broker container image or Java broker code                                                                                                                               │
+ │                                                                                                                                                                                          │
+ │ Success Criteria                                                                                                                                                                         │
+ │                                                                                                                                                                                          │
+ │ 1. Pi-to-1000-digits task completable with two shell commands (compare + accept) and no generated Python                                                                                 │
+ │ 2. Digest mismatch auto-resolved without manual log reading                                                                                                                              │
+ │ 3. Offer UUIDs persist across compare → accept without resubmission                                                                                                                      │
+ │ 4. Smoke test passes with dynamically resolved digest                                                                                                                                    │
+ │ 5. Skill is discoverable when user describes computational tasks or broker selection                                                                                                     │
+ │                                                                                                                                                                                          │
+ │  Saved to root/.cursor/plans/Broker Client Skill-2c419dc2.plan.md                                                                                                                        │
+ │ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+ │                                                                                                                                                                                          │
+ │ Ready to build?                                                                                                                                                                          │
+ │                                                                                                                                                                                          │
+ │  → 1. Yes, build locally (b)                                                                                                                                                             │
+ │    2. No, propose changes (p or Esc)                                                                                                                                                     │
+ │                                                                                                                                                                                          │
+ └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+--END--
+
+==START==
+  Can you modify the plan to save the skills in a 'skills' directory, e.g. 'skills/calycopis-broker/SKILL.md '.
+==END==
+
+--START--
+....
+....
+  Updated the plan to use a repo-root skills/ directory instead of .cursor/skills/. Changes:
+
+  Path updates
+  • Skill location: skills/calycopis-broker/SKILL.md
+  • Reference file: skills/calycopis-broker/reference.md
+  • Todo item broker-skill updated accordingly
+  • Files-to-create table updated
+
+  New section
+  • Added a skills/ directory layout showing the expected structure
+
+  Skill discovery
+  • AGENTS.md will point the agent at skills/calycopis-broker/SKILL.md so broker workflow instructions load from the project skills/ tree
+
+  Docs todo
+  • update-docs now includes wiring AGENTS.md to the new skills/calycopis-broker/ path
+
+  Everything else in the plan (CLI tools, bin/broker_tools/ library, state file) is unchanged. Say when you want to execute it.
+--END--
+
+==START==
+
+==END==
+
+
+--START--
+....
+....
+ Plan implemented and tested. Here's what was created:
+
+  New files
+
+  Shared library — bin/broker_tools/
+  • client.py — auth, broker discovery
+  • request.py — build Docker ExecutionRequest with auto digest resolution
+  • digest.py — resolve image digests from logs/cache
+  • offers.py — submit, extract summaries, format comparison table
+  • session.py — accept and monitor sessions
+  • output.py — extract container stdout from broker logs
+  • state.py — persist state between compare/accept steps
+
+  CLI — bin/broker
+  • compare, accept, monitor, run, digest resolve, status
+  • All support --json
+
+  Skill — skills/calycopis-broker/
+  • SKILL.md — workflow and tool reference
+  • reference.md — URN labels, error kinds, state schema
+
+  Updated files
+
+  • bin/smoke-test.py — uses broker_tools with dynamic digest
+  • USER-AGENT.md — points to skill and bin/broker as preferred path
+  • .gitignore — documents broker state files under run/
+
+  Note: AGENTS.md is read-only (generated at runtime from USER-AGENT.md).
+
+  Verified
+
+  ┌────────────────────────────────────┬────────────────┐
+  │ Test                               │ Result         │
+  ├────────────────────────────────────┼────────────────┤
+  │ bin/broker status                  │ 3 passed       │
+  │ bin/broker digest resolve alpine:3 │ Correct digest │
+  │ bin/broker compare (pi task)       │ Markdown table │
+  │ bin/broker accept --broker alpha   │ COMPLETED      │
+  │ bin/smoke-test.py                  │ 3 passed       │
+  └────────────────────────────────────┴────────────────┘
+
+  Usage (pi task, 2 commands)
+
+  source run/demo-user.env
+  bin/broker compare --name pi-calculator --image alpine:3 \
+    --command "sh -c \"echo 'scale=1000; 4*a(1)' | bc -l\"" --cores 1:2
+  bin/broker accept --broker alpha
+--END--
+
+
+==START==
+  Can you move the skills directory into the agents directory and update the references.
+==END=
+
+--START--
+....
+....
+  Moved skills/ into agents/ and updated references.
+
+  New location: agents/skills/calycopis-broker/
+  • SKILL.md
+  • reference.md
+
+  Updated references:
+  • USER-AGENT.md → agents/skills/calycopis-broker/SKILL.md
+  • AGENTS.md → same path (already in sync)
+  • agents/skills/calycopis-broker/SKILL.md → AGENTS.md link now ../../../AGENTS.md
+--END--
+
+
+==START==
+Please read the file formatting rules in agents/rules and apply them to the files that you have modified.
+==END==
+
+--START--
+....
+....
+  agents/rules is a broken symlink, so I'm applying the project's established header convention from existing bin/ and config/ files to the modified files.
+....
+....
+--END--
+
+--START--
+....
+....
+  agents/rules is a broken symlink (rules -> ../../agents, target /agents does not exist), so there were no readable rule files there. I applied the project's established formatting
+  convention from existing files like bin/deploy.sh, bin/smoke-test.py, and config/broker-alpha/platform.yaml.
+
+  Format applied
+
+  Each file now includes:
+  • <meta:header> / <meta:licence> (GPL v3, University of Manchester)
+  • AIMetrics block (Python files)
+  • File description (docstring or title)
+
+  Files updated
+
+  Python
+  • bin/broker
+  • bin/smoke-test.py (restored AIMetrics, added entry for the refactor)
+  • bin/broker_tools/__init__.py
+  • bin/broker_tools/client.py
+  • bin/broker_tools/state.py
+  • bin/broker_tools/digest.py
+  • bin/broker_tools/request.py
+  • bin/broker_tools/offers.py
+  • bin/broker_tools/session.py
+  • bin/broker_tools/output.py
+
+  Markdown
+  • agents/skills/calycopis-broker/SKILL.md (licence in HTML comment after YAML frontmatter)
+  • agents/skills/calycopis-broker/reference.md (licence in HTML comment)
+
+  Unchanged (no header convention in the project): USER-AGENT.md, .gitignore
+
+  bin/broker status still passes after the changes.
+
+  If you have the actual agents/rules content elsewhere, mount or copy it into agents/rules/ and I can align formatting to those rules exactly.
+--END--
+
+
+==START==
+I have replaced the symlink with a copy of the rules.
+Please check the files match the rules in agents/rules.
+==END==
+
+--START--
+....
+....
+--END--
+
+
+==START==
+/quit
+==END==
+
+--START--
+  To resume this session: agent --resume=2c419dc2-8c43-41d1-884c-cb6ec17039b9
+--END--
+

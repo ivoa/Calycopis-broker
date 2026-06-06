@@ -1,0 +1,490 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Test and develop the demo deployment process.
+
+    Result:
+
+        Brokers unable to reach Podmanb service.
+        Need to mount the docker socket from the host.
+
+        To resume this session: agent --resume=8088a8a1-cfe6-43d2-8e33-5d8f71efa20a
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run a new instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+--START--
+CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS        PORTS       NAMES
+1b0182072133  localhost/podman-pause:5.4.2-1743552000                        21 seconds ago  Up 6 seconds              e56c4d1a7c27-infra
+06b27f7e75a6  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        6 seconds ago   Up 5 seconds              calycopis-dev
+--END--
+
+
+# -----------------------------------------------------
+# Install and run Cursor.
+#[root@calycopis-dev]
+
+    curl https://cursor.com/install -fsS | bash
+
+    agent
+
+==START==
+Is it possible for you to access and display details of the spending on my Cursor account ?
+==END==
+
+--START--
+  I don't have access to your Cursor account billing or spending information. My tools are limited to coding tasks —
+  reading/writing files, running shell commands, searching code, and browsing the web. I have no access to Cursor's
+  account management or billing systems.
+
+  To view your spending details, you can:
+
+  1. Cursor Settings UI — Open Cursor, go to Settings > Account (or click your profile icon), which should show
+     your plan and usage.
+  2. Cursor Dashboard — Visit cursor.com/settings (https://cursor.com/settings) in your browser and log in to view
+     billing, usage, and spending details.
+--END--
+
+
+# -----------------------------------------------------
+# Start a new terminal and follow the instructions in demo/README.md
+#[root@calycopis-dev]
+
+    podman exec \
+        --tty \
+        --interactive \
+            calycopis-dev \
+                bash
+
+        pushd /calycopis/Calycopis-broker/github-zrq
+
+
+# -----------------------------------------------------
+# 1. Build the broker image
+#[root@calycopis-dev]
+
+    pushd java
+        ./mvnw clean package -DskipTests -Dcalycopis-platform=docker
+    popd
+
+    podman build \
+        --build-arg jarfile=calycopis-broker-1.0.6-SNAPSHOT.jar \
+        --tag  calycopis/broker:latest \
+        --file docker/java-runtime/Dockerfile \
+        java/target/
+
+--START--
+[INFO] --- spring-boot:3.5.4:repackage (repackage) @ calycopis-broker ---
+[INFO] Replacing main artifact /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  14.607 s
+[INFO] Finished at: 2026-06-05T11:18:50Z
+[INFO] ------------------------------------------------------------------------
+--END--
+
+--START--
+....
+....
+STEP 23/24: RUN chmod a+x /opt/calycopis/run.sh
+--> a0b79f9e57a5
+STEP 24/24: ENTRYPOINT ["/opt/calycopis/run.sh"]
+COMMIT calycopis/broker:latest
+--> 97aba1ce9288
+Successfully tagged localhost/calycopis/broker:latest
+97aba1ce9288fa61bec8388ae696c5dfa8eb2211e0c23ab5fb81aa7253d42d1b
+--END--
+
+
+# -----------------------------------------------------
+# 2. Build the client image
+#[root@calycopis-dev]
+
+    cp \
+        /calycopis/Calycopis-openapi/github-zrq/codegen/python/client/build/dist/calycopis_schema_client-1.0.6-py3-none-any.whl \
+        demo/docker/demo-client/build/
+
+    podman build \
+        --tag  calycopis/demo-client:latest \
+        --file demo/docker/demo-client/Dockerfile \
+        demo/docker/demo-client/
+
+--START--
+....
+....
+COMMIT calycopis/demo-client:latest
+--> 508f97265d83
+Successfully tagged localhost/calycopis/demo-client:latest
+508f97265d83d35c8e72c969b934c73e270e68070452ec446ed6fb8928bfde2e
+--END--
+
+    #
+    # Bit scruffy with the PATH ..
+    #
+
+# -----------------------------------------------------
+# 3. Deploy
+#[root@calycopis-dev]
+
+    demo/bin/deploy.sh
+
+--START--
+....
+....
+=== Deployment complete ===
+Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
+
+Brokers:
+  broker-alpha: http://broker-alpha:8082
+  broker-beta: http://broker-beta:8082
+  broker-gamma: http://broker-gamma:8082
+--END--
+
+# -----------------------------------------------------
+# 4. Configure user accounts
+#[root@calycopis-dev]
+
+    demo/bin/configure.sh
+
+--START--
+....
+....
+=== Writing demo user credentials ===
+  Written to: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-user.env
+
+=== Configuration complete ===
+  Username: demo-user
+  Password: fLcb4Bprrb5M14Rr5HKkQSJw
+--END--
+
+
+# -----------------------------------------------------
+# 5. Run the smoke test
+#[root@calycopis-dev]
+
+    source demo/run/demo-user.env
+    python3 demo/bin/smoke-test.py
+
+--START--
+....
+....
+Traceback (most recent call last):
+  File "/calycopis/Calycopis-broker/github-zrq/demo/bin/smoke-test.py", line 58, in <module>
+    from calycopis_schema_client import ApiClient, Configuration
+ModuleNotFoundError: No module named 'calycopis_schema_client'
+--END--
+
+    #
+    # Temp fix.
+    # Install the library manually.
+
+    pip install demo/docker/demo-client/build/calycopis_schema_client-1.0.6-py3-none-any.whl
+
+--START--
+....
+....
+Installing collected packages: urllib3, typing-extensions, annotated-types, typing-inspection, pydantic-core, pydantic, calycopis-schema-client
+Successfully installed annotated-types-0.7.0 calycopis-schema-client-1.0.6 pydantic-2.13.4 pydantic-core-2.46.4 typing-extensions-4.15.0 typing-inspection-0.4.2 urllib3-2.7.0
+--END--
+
+    source demo/run/demo-user.env
+    python3 demo/bin/smoke-test.py
+
+--START--
+....
+....
+ERROR: DEMO_USER and DEMO_PASS environment variables must be set.
+       Run: source demo/run/demo-user.env
+--END--
+
+    #
+    # Temp fix
+    # Edit the env file to export the environment variables.
+
+    source demo/run/demo-user.env
+    python3 demo/bin/smoke-test.py
+
+--START--
+=== Testing broker-alpha (http://broker-alpha:8082) ===
+  FAIL: Could not submit request: HTTPConnectionPool(host='broker-alpha', port=8082): Max retries exceeded with url: /requests (Caused by NameResolutionError("HTTPConnection(host='broker-alpha', port=8082): Failed to resolve 'broker-alpha' ([Errno -2] Name or service not known)"))
+=== Testing broker-beta (http://broker-beta:8082) ===
+  FAIL: Could not submit request: HTTPConnectionPool(host='broker-beta', port=8082): Max retries exceeded with url: /requests (Caused by NameResolutionError("HTTPConnection(host='broker-beta', port=8082): Failed to resolve 'broker-beta' ([Errno -2] Name or service not known)"))
+=== Testing broker-gamma (http://broker-gamma:8082) ===
+  FAIL: Could not submit request: HTTPConnectionPool(host='broker-gamma', port=8082): Max retries exceeded with url: /requests (Caused by NameResolutionError("HTTPConnection(host='broker-gamma', port=8082): Failed to resolve 'broker-gamma' ([Errno -2] Name or service not known)"))
+=== Results: 0 passed, 3 failed ===
+--END--
+
+    #
+    # smoke-test fails because it should be run **inside** the client container.
+    #
+
+# -----------------------------------------------------
+# 6. Start the interactive client
+#[root@calycopis-dev]
+
+    podman run -it \
+        --pod demo-client \
+        --volume "$(pwd)/demo:/workspace:z" \
+        --volume "$(pwd)/demo/USER-AGENT.md:/workspace/AGENTS.md:ro,z" \
+        --env-file "$(pwd)/demo/run/demo-user.env" \
+        calycopis/demo-client:latest \
+        /bin/bash
+
+
+# -----------------------------------------------------
+# 5. Run the smoke test
+#[root@demo-client]
+
+    source  run/demo-user.env
+    python3 bin/smoke-test.py
+
+--START--
+=== Testing broker-alpha (http://broker-alpha:8082) ===
+  Offers returned: 1
+  Costs:
+    urn:ivoa:calycopis:cost:monetary: 0.3000 - 0.8000
+    urn:ivoa:calycopis:cost:energy: 0.0100 - 0.0300
+    urn:ivoa:calycopis:cost:carbon: 2.0000 - 8.0000
+  Metrics:
+    urn:ivoa:calycopis:metric:compute-performance: 250.0 - 300.0
+
+=== Testing broker-beta (http://broker-beta:8082) ===
+  Offers returned: 1
+  Costs:
+    urn:ivoa:calycopis:cost:monetary: 0.0500 - 0.1500
+    urn:ivoa:calycopis:cost:energy: 0.0500 - 0.1500
+    urn:ivoa:calycopis:cost:carbon: 15.0000 - 40.0000
+  Metrics:
+    urn:ivoa:calycopis:metric:compute-performance: 120.0 - 160.0
+
+=== Testing broker-gamma (http://broker-gamma:8082) ===
+  Offers returned: 1
+  Costs:
+    urn:ivoa:calycopis:cost:monetary: 0.0200 - 0.0800
+    urn:ivoa:calycopis:cost:energy: 0.1000 - 0.3000
+    urn:ivoa:calycopis:cost:carbon: 30.0000 - 80.0000
+  Metrics:
+    urn:ivoa:calycopis:metric:compute-performance: 60.0 - 90.0
+
+=== Results: 3 passed, 0 failed ===
+--END--
+
+
+# -----------------------------------------------------
+# 6. Run the Cursor agent.
+#[root@demo-client]
+
+    cursor /workspace
+
+--START--
+....
+....
+bash: cursor: command not found
+--END--
+
+
+    agent /workspace
+
+--START--
+....
+....
+  This workspace is the Calycopis Multi-Broker Demo — a scientific computing task manager environment with three IVOA Execution Brokers
+  deployed and ready to use.
+
+  What's here
+
+  Three broker instances, each with a different cost/performance profile:
+
+  ┌────────┬───────────────────────┬───────────────────────────────────────────────────────┐
+  │ Broker │ Profile               │ Strengths                                             │
+  ├────────┼───────────────────────┼───────────────────────────────────────────────────────┤
+  │ Alpha  │ Green HPC             │ Highest compute & IO, lowest energy & carbon          │
+  │ Beta   │ General Purpose Cloud │ Balanced, lowest monetary cost among mid-tier options │
+  │ Gamma  │ Budget Tier           │ Cheapest monetary cost, lowest compute & IO           │
+  └────────┴───────────────────────┴───────────────────────────────────────────────────────┘
+
+  The brokers are configured and reachable:
+  • Alpha: http://broker-alpha:8082
+  • Beta: http://broker-beta:8082
+  • Gamma: http://broker-gamma:8082
+
+  What I can do
+
+  Describe a computational task you want to run, and I will:
+
+  1. Build an ExecutionRequest for it
+  2. Submit it to all three brokers
+  3. Show a comparison table of costs, energy, carbon, and performance
+  4. Accept your chosen offer and monitor execution
+  5. Report the final results
+
+  Example tasks
+
+  • "Run an Alpine container that computes pi to 1000 digits"
+  • "Run a Docker container that generates 1000 random numbers and computes statistics"
+  • "Run a Python script that sorts a large dataset"
+
+  What would you like to run?
+--END--
+
+==START==
+Run an Alpine container that computes pi to 1000 digits
+==END==
+
+--START--
+....
+....
+  I've submitted your task to all three brokers. The request runs an Alpine 3 container that computes π to 1000 digits using bc:
+
+  echo 'scale=1000; 4*a(1)' | bc -l
+
+  All three brokers returned offers. Here's how they compare:
+
+  ┌──────────────────────┬───────────────────┬───────────────┬────────────────┐
+  │ Attribute            │ Alpha (Green HPC) │ Beta (Cloud)  │ Gamma (Budget) │
+  ├──────────────────────┼───────────────────┼───────────────┼────────────────┤
+  │ Monetary cost        │ $0.15 – $0.40     │ $0.03 – $0.08 │ $0.01 – $0.04  │
+  │ Energy (kWh)         │ 0.01 – 0.03       │ 0.05 – 0.15   │ 0.10 – 0.30    │
+  │ Carbon (gCO₂)        │ 2.0 – 8.0         │ 15.0 – 40.0   │ 30.0 – 80.0    │
+  │ Compute performance  │ 250 – 300         │ 120 – 160     │ 60 – 90        │
+  │ IO throughput (MB/s) │ 800 – 1200        │ 200 – 400     │ 50 – 100       │
+  └──────────────────────┴───────────────────┴───────────────┴────────────────┘
+
+  Trade-offs
+
+  • Alpha (Green HPC) — Fastest compute and IO, lowest energy and carbon footprint, but highest monetary cost. Best if you want speed or
+     sustainability.
+  • Beta (Cloud) — Balanced middle ground: moderate performance at low cost.
+  • Gamma (Budget) — Cheapest option, but slowest compute/IO and highest energy/carbon impact.
+
+  Which broker would you like me to use?
+
+  • Fastest → Alpha
+  • Cheapest → Gamma
+  • Greenest → Alpha
+  • Balanced → Beta
+
+  Tell me your preference and I'll accept the offer and monitor the run.
+--END--
+
+
+==START==
+Gamma
+==END==
+
+--START--
+....
+....
+  Accepted your Gamma (Budget) offer and monitored the session. The run did not complete successfully.
+
+  Execution Summary
+
+  ┌──────────────┬─────────────────────────────────────────────┐
+  │ Field        │ Value                                       │
+  ├──────────────┼─────────────────────────────────────────────┤
+  │ Broker       │ Gamma (Budget)                              │
+  │ Session UUID │ 6080dbb2-e0aa-4f22-bb65-fc113ee4f04c        │
+  │ Task         │ Alpine container computing π to 1000 digits │
+  │ Final phase  │ FAILED                                      │
+  └──────────────┴─────────────────────────────────────────────┘
+
+  What happened
+
+  1. Offer accepted → session moved to PREPARING
+  2. The broker tried to prepare the alpine:3 Docker container
+  3. Preparation failed immediately — the executable component reached FAILED
+  4. The session was marked FAILED (~1 second after acceptance)
+
+  Root cause
+
+  Broker logs show:
+
+  CONTAINER_HOST / DOCKER_HOST environment variable is not set
+
+  Gamma cannot reach a container runtime (Docker/Podman), so it cannot pull or run the Alpine image. This is an infrastructure
+  configuration issue on the broker, not a problem with your task definition.
+
+  Component status at failure
+
+  ┌────────────────────────────┬─────────┐
+  │ Component                  │ Phase   │
+  ├────────────────────────────┼─────────┤
+  │ Executable (pi-calculator) │ FAILED  │
+  │ Compute (compute-001)      │ WAITING │
+  └────────────────────────────┴─────────┘
+
+  No output connectors or result messages were produced.
+
+  ────────────────────────────────────────
+
+  Would you like to:
+  1. Retry on Alpha or Beta — they may have Docker configured correctly
+  2. Investigate/fix the Gamma broker — check its DOCKER_HOST / CONTAINER_HOST setup in the deployment config
+--END--
+
+    #
+    # We need to make the Podman socket available to the demo brokers.
+    #
+
+
+
+

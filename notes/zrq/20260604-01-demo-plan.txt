@@ -1,0 +1,611 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Success
+
+    Result:
+
+        Work in progress ...
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run a new instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+    >   CONTAINER ID  IMAGE                                              COMMAND     CREATED             STATUS        PORTS       NAMES
+    >   d43ce3fa5766  localhost/podman-pause:5.4.2-1743552000                        About a minute ago  Up 5 seconds              53d000c0ab15-infra
+    >   ebfced21b20d  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 seconds ago       Up 4 seconds              calycopis-dev
+
+
+# -----------------------------------------------------
+# Build the Java jar
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd java
+
+            ./mvnw clean package -DskipTests -Dcalycopis-platform=docker
+
+        popd
+    popd
+
+
+    >   ....
+    >   ....
+    >   [INFO] --- spring-boot:3.5.4:repackage (repackage) @ calycopis-broker ---
+    >   [INFO] Replacing main artifact /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+    >   [INFO] The original artifact has been renamed to /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar.original
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] BUILD SUCCESS
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] Total time:  13.810 s
+    >   [INFO] Finished at: 2026-06-04T08:13:05Z
+    >   [INFO] ------------------------------------------------------------------------
+
+
+# -----------------------------------------------------
+# Build the Docker container
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+
+        podman build \
+            --build-arg jarfile=calycopis-broker-1.0.6-SNAPSHOT.jar \
+            --tag calycopis/broker:latest \
+            -f docker/java-runtime/Dockerfile \
+            java/target/
+
+    popd
+
+    >   ....
+    >   ....
+    >   Successfully tagged localhost/calycopis/broker:latest
+    >   40789d2d37be9abb9fb69649df763a69f86873d241b763aa69b45f907e8a046a
+
+
+# -----------------------------------------------------
+# Build the client container
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+
+        cp --force \
+            /calycopis/Calycopis-openapi/github-zrq/codegen/python/client/build/dist/calycopis_schema_client-1.0.6-py3-none-any.whl \
+            demo/docker/demo-client/
+
+        podman build \
+            --tag calycopis/demo-client:latest \
+            -f demo/docker/demo-client/Dockerfile \
+            demo/docker/demo-client/
+
+    popd
+
+    >   ....
+    >   ....
+    >   Successfully tagged localhost/calycopis/demo-client:latest
+    >   bd89e012fa5517892e5c1cce10c797c5d8aaa0d4ef02b73fabe7aa8c40fe5730
+
+
+# -----------------------------------------------------
+# Check what container images we have.
+#[root@calycopis-dev]
+
+    podman images
+
+    >   REPOSITORY                              TAG               IMAGE ID      CREATED             SIZE
+    >   localhost/calycopis/demo-client         latest            bd89e012fa55  About a minute ago  396 MB
+    >   localhost/calycopis/broker              latest            40789d2d37be  9 minutes ago       412 MB
+    >   <none>                                  <none>            0181b8cb7949  29 hours ago        412 MB
+    >   localhost/podman-pause                  5.4.2-1743552000  51077ee4db12  4 weeks ago         763 kB
+    >   ghcr.io/ivoa/calycopis/developer-tools  2026.05.04        b6c36de62e38  4 weeks ago         1.95 GB
+    >   docker.io/library/fedora                42                8c219b734f78  5 weeks ago         170 MB
+    >   docker.io/library/postgres              latest            e1d95313aae9  6 weeks ago         463 MB
+    >   docker.io/library/alpine                3                 3cb067eab609  7 weeks ago         8.74 MB
+    >   docker.io/library/alpine                3.23              3cb067eab609  7 weeks ago         8.74 MB
+    >   ghcr.io/zarquan/heliophorus-cantliei    sha-831ee57       9725886b87f8  2 months ago        8.73 MB
+    >   ghcr.io/zarquan/heliophorus-cantliei    sha-c9572b0       e6062494261e  3 months ago        8.73 MB
+    >   ghcr.io/zarquan/heliophorus-androcles   sha-9a2513b       72d52bce3228  3 months ago        68.7 MB
+    >   docker.io/library/eclipse-temurin       25.0.1_8-jre      a4746ae0b4f1  4 months ago        314 MB
+
+
+# -----------------------------------------------------
+# Check what containers are running.
+#[root@calycopis-dev]
+
+    podman ps
+
+    >   CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS         PORTS       NAMES
+    >   d43ce3fa5766  localhost/podman-pause:5.4.2-1743552000                        29 minutes ago  Up 28 minutes              53d000c0ab15-infra
+    >   ebfced21b20d  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        28 minutes ago  Up 28 minutes              calycopis-dev
+
+
+# -----------------------------------------------------
+# Run the deployment script.
+#[root@calycopis-dev]
+
+    demo/bin/deploy.sh
+
+    #
+    # First step failes ..
+    #
+
+    >   === Creating Podman network: calycopis-demo ===
+    >   Network calycopis-demo already exists
+    >   
+    >   === Deploying broker-alpha ===
+    >   Error: failed to make pod: unable to find network with name or ID calycopis-demo: network not found
+
+    #
+    # Check what networks we have.
+    #
+
+    podman network ls
+
+    >   NETWORK ID    NAME               DRIVER
+    >   971d73c61fd7  calycopis-network  bridge
+    >   2f259bab93aa  podman             bridge
+
+    #
+    # The code causing the problem is:
+    podman network create "${NETWORK_NAME}" 2>/dev/null || echo "Network ${NETWORK_NAME} already exists"
+
+    #
+    # Which assumes the only reason the create fails is because the network already exists.
+    # Short cut code.
+
+    #
+    # Try creating a test network and see when we get.
+    podman network create frog
+
+    > Error: could not find free subnet from subnet pools
+
+    #
+    # Creating a network from inside a pod is problematic.
+    # Temp fix is to create the network manually outside the pod.
+    # TODO Add a note to our agent telling it not make assumptions and throw error messages away.
+    #
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Create our demo network.
+#[user@desktop]
+
+    podman network create calycopis-demo
+
+    >   Error: could not find free subnet from subnet pools
+
+    #
+    # We get the same error outside.
+    # This seems familiar
+    # https://stackoverflow.com/questions/76548172/unable-to-create-podman-network-due-to-no-free-subnet-pools
+    # https://stackoverflow.com/a/79886673
+    #
+
+    ifconfig
+
+    >   enp4s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+    >           inet 10.1.0.2  netmask 255.0.0.0  broadcast 10.255.255.255
+    >           inet6 2001:8b0:be72:d4eb:a60:6eff:fe71:3a24  prefixlen 64  scopeid 0x0<global>
+    >           inet6 fe80::a60:6eff:fe71:3a24  prefixlen 64  scopeid 0x20<link>
+    >           ether 08:60:6e:71:3a:24  txqueuelen 1000  (Ethernet)
+    >           ....
+    >           ....
+
+    #
+    # Our host IP address is /8, meaning the whole 10. range is reserved.
+
+    #
+    # Adding a fix to the host config.
+sudo -s
+cat > /etc/containers/containers.conf << EOF
+default_subnet_pools = [
+  {"base" = "192.168.129.0/24", "size" = 24},
+  {"base" = "192.168.130.0/24", "size" = 24},
+  {"base" = "192.168.131.0/24", "size" = 24},
+  {"base" = "192.168.132.0/24", "size" = 24},
+]
+EOF
+exit
+
+    cat /etc/containers/containers.conf
+
+    >   default_subnet_pools = [
+    >     {"base" = "192.168.129.0/24", "size" = 24},
+    >     {"base" = "192.168.130.0/24", "size" = 24},
+    >     {"base" = "192.168.131.0/24", "size" = 24},
+    >     {"base" = "192.168.132.0/24", "size" = 24},
+    >   ]
+
+    #
+    # Try creating a test network ...
+    podman network create frog
+
+    >   Error: could not find free subnet from subnet pools
+
+    #
+    # Adding a fix to the host config.
+cat > /etc/containers/containers.conf << EOF
+[network]
+default_subnet = "192.168.129.0/24"
+EOF
+
+    cat /etc/containers/containers.conf
+
+
+
+    #
+    # Try creating a test network ...
+    podman network create frog
+
+    >   Error: could not find free subnet from subnet pools
+
+    #
+    # Interesting ..
+    # Listing the networks shows we have created a calycopis network at some point.
+
+    >   NETWORK ID    NAME               DRIVER
+    >   971d73c61fd7  calycopis-network  bridge
+    >   2f259bab93aa  podman             bridge
+
+    #
+    # Grepping our notes found one reference.
+    # 20260201-01-podman-compose.txt
+
+    >   ....
+    >   ....
+    >   #
+    >   # Need to create our network manually because podman-compose has issues.
+    >   podman network \
+    >       create \
+    >           --subnet 192.5.0.0/16 \
+    >           calycopis-network
+    >   ....
+    >   ....
+
+    #
+    # Delete the unused config.
+    sudo rm /etc/containers/containers.conf
+
+    #
+    # Drop the old network
+    podman network \
+        rm \
+            calycopis-network
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Create a new network from inside the Pod ..
+#[root@calycopis-dev]
+
+    podman network \
+        create \
+            --subnet 192.168.129.0/24 \
+            calycopis-demo
+
+    >   Error: subnet 192.168.129.0/24 is already used on the host or by another config
+
+
+    podman network \
+        create \
+            --subnet 192.168.130.0/24 \
+            calycopis-demo
+
+    >   calycopis-demo
+
+
+    podman network \
+        inspect \
+            calycopis-demo
+
+    >   [
+    >        {
+    >             "name": "calycopis-demo",
+    >             "id": "41d1ae90bdb05ae45836316225a426ddbcc4979071735af2ee032de59c75c8a8",
+    >             "driver": "bridge",
+    >             "network_interface": "podman1",
+    >             "created": "2026-06-04T10:21:24.295995402+01:00",
+    >             "subnets": [
+    >                  {
+    >                       "subnet": "192.168.130.0/24",
+    >                       "gateway": "192.168.130.1"
+    >                  }
+    >             ],
+    >             "ipv6_enabled": false,
+    >             "internal": false,
+    >             "dns_enabled": true,
+    >             "ipam_options": {
+    >                  "driver": "host-local"
+    >             },
+    >             "containers": {}
+    >        }
+    >   ]
+
+
+# -----------------------------------------------------
+# Run the deployment script.
+#[root@calycopis-dev]
+
+    demo/bin/deploy.sh
+
+    >   ....
+    >   ....
+    >   === Deploying broker-alpha ===
+    >   02b952e40562c6c98d183509711f2c1c29017702ceef5dc0bde086fd70dd4f60
+    >   dd5149f79c2b89038bde7e13a1fe41ac1468ff59827a79e334d95775a961c2b9
+    >     Waiting for PostgreSQL to start...
+    >   Error: statfs /calycopis/Calycopis-broker/github-zrq/demo/run/alpha: no such file or directory
+
+    #
+    # That's because the demo script is running inside the Pod, and Podman is outside.
+    # So they have different views of the filesystem.
+    #
+    # Inside :
+    #   /calycopis/Calycopis-broker/github-zrq/demo/run/alpha
+    # Outside :
+    #   /home/Zarquan/Projects/IVOA/ivoa/Calycopis/Calycopis-broker/github-zrq/demo/run/alpha
+    #
+
+# -----------------------------------------------------
+# Can we use a symlink on the host ?
+#[user@desktop]
+
+    sudo ln -s /home/Zarquan/Projects/IVOA/ivoa/Calycopis /calycopis
+
+
+# -----------------------------------------------------
+# Try again
+#[root@calycopis-dev]
+
+    demo/bin/deploy.sh
+
+    >   === Creating Podman network: calycopis-demo ===
+    >   Network calycopis-demo already exists
+    >   
+    >   === Deploying broker-alpha ===
+    >   c8961bd6116c1789dfd4830e3ea41f0c549030af63ba15ab651fc0ad205da9a7
+    >   12e0c1a8995c821df4c42909ab2a7627451833a696cf844a8bcb0ab355f1800c
+    >     Waiting for PostgreSQL to start...
+    >   b043a1b0a3c36c8c38c5878424b0d52c1fa02fe0ebddd3cff5a825afb89d2e6f
+    >     Broker alpha: admin=L1jsZt6vlyV0Rx2W
+    >   
+    >   === Deploying broker-beta ===
+    >   bd05a14e2111222ddc18ee4df387fdd6684f4c96abc1e471d18264fcd7664bd3
+    >   14f6f4a4aa92e1e7a995b8fd96d0d6002f760eaa1ca527d220cf14c1e5466c3b
+    >     Waiting for PostgreSQL to start...
+    >   6f68435693640323d7c0782c1aa008f0bc383d5b39c6be5c8f1a9ce1116fc576
+    >     Broker beta: admin=y0joSh6F1uuWUSMd
+    >   
+    >   === Deploying broker-gamma ===
+    >   45b6a3df24a7c89edbcb37a577e1113fb5a81515f9c6bb89bd5a10663ef12428
+    >   46aab11115a25a96732c136c64693c691fc1dc691dba40efaa5d2a9904d2f5ab
+    >     Waiting for PostgreSQL to start...
+    >   7e114bee76aac4a92690ef4c7564b36ec431b5ca0477bbc5572de8c2fd94a558
+    >     Broker gamma: admin=94ywm2IhpdC4YcZ7
+    >   
+    >   === Creating client pod ===
+    >   ff1c510100183b18533d73a097036a3275bfca401cb0d4afafb65f4b1f85dd03
+    >   
+    >   === Writing environment file ===
+    >   
+    >   === Waiting for brokers to become healthy ===
+    >     Waiting for broker-alpha...
+    >     Waiting for broker-alpha... TIMEOUT (check logs: podman logs broker-svc-alpha)
+    >   
+
+    #
+    # Bad code from the agent.
+    # This assumes /openapi exists.
+    # If the path doesn't exist then the error response means the loop runs until timeout.
+
+    echo -n "  Waiting for broker-${broker}..."
+    for i in $(seq 1 60)
+    do
+        if podman run --rm --network "${NETWORK_NAME}" \
+            docker.io/curlimages/curl:latest \
+            -sf "${BROKER_URL}/openapi" > /dev/null 2>&1
+        then
+            echo " ready"
+            break
+        fi
+        if [ "${i}" -eq 60 ]; then
+            echo " TIMEOUT (check logs: podman logs broker-svc-${broker})"
+        fi
+        sleep 2
+    done
+
+    #
+    # Better to check for a known good path, or just check for a connection.
+
+    #
+    # This returns 0 if it is able to connect and get a 404 response but returns error code 7 if the service isn't running.
+    podman run \
+        --rm \
+        --network "calycopis-demo" \
+        docker.io/curlimages/curl:latest \
+            --head \
+            --silent \
+            "http://broker-alpha:8082/frog" \
+    echo $?
+
+
+# -----------------------------------------------------
+# Try again
+#[root@calycopis-dev]
+
+    demo/bin/deploy.sh
+
+
+    >   ....
+    >   ....
+    >   === Deployment complete ===
+    >   Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
+    >   
+    >   Brokers:
+    >     broker-alpha: http://broker-alpha:8082
+    >     broker-beta: http://broker-beta:8082
+    >     broker-gamma: http://broker-gamma:8082
+
+
+# -----------------------------------------------------
+# Configure the user accounts
+#[root@calycopis-dev]
+
+    demo/bin/configure.sh
+
+    >   === Seeding demo user accounts ===
+    >     Creating user 'demo-user' on broker-alpha...
+
+    #
+    # I think it failed.
+    # No error message, just quit.
+    # Script swallows error messages.
+    # set -euo pipefail
+    #
+
+    Creating user 'demo-user' on broker-alpha... curl: (6) Could not resolve host: broker-alpha
+
+    In deploy.sh curl is run inside a container, connected to the demo network.
+    In configure.sh curl is run from the command line, so it can't resolve the demo hostnames.
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Start again from the top ..
+#[root@calycopis-dev]
+
+    ....
+    ....
+    ....
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+
+        demo/bin/deploy.sh
+
+    popd
+
+    >   ....
+    >   ....
+    >   === Deployment complete ===
+    >   Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
+    >   
+    >   Brokers:
+    >     broker-alpha: http://broker-alpha:8082
+    >     broker-beta: http://broker-beta:8082
+    >     broker-gamma: http://broker-gamma:8082
+
+# -----------------------------------------------------
+# Configure user accounts
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+
+        demo/bin/configure.sh
+
+    popd
+
+    >   === Seeding demo user accounts ===
+    >   
+    >     Creating user 'demo-user' on broker-alpha... OK (201)
+    >     Creating user 'demo-user' on broker-beta... OK (201)
+    >     Creating user 'demo-user' on broker-gamma... OK (201)
+    >   
+    >   === Writing demo user credentials ===
+    >     Written to: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-user.env
+    >   
+    >   === Configuration complete ===
+    >     Username: demo-user
+    >     Password: vet1HZr4T3bAsckdTwZI6u73
+
+
+# -----------------------------------------------------
+# Run the smoke test
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+
+        demo/bin/smoke-test.sh
+
+    popd
+
+    >   ....
+    >   curl: (22) The requested URL returned error: 404
+    >     FAIL: Could not submit request to broker-beta
+    >   ....
+
+    #
+    # Smoke test POSTs to /offersets not /requests.
+    # Smoke test POSTs very old JSON.
+    # Need to update the AGENTS.md file.
+    #
+
+    #
+    # Can't see the log file to debug the requests.
+    # Need to fix the container image.
+    #
+
+    #
+    # To login to one of the services ..
+    podman exec -it broker-svc-alpha bash
+
+    #
+    # Delete all of our Pods
+    podman pod \
+        rm --force \
+        $(podman pod ps --quiet)
+

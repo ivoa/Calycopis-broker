@@ -128,6 +128,16 @@
  *       "value": 1,
  *       "units": "%"
  *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-06-03T01:33:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
  *     }
  *   ]
  *
@@ -177,10 +187,15 @@ import net.ivoa.calycopis.broker.engine.entities.executable.docker.mock.MockDock
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJupyterNotebookEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJupyterNotebookEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.mock.MockJupyterNotebookValidatorImpl;
+import net.ivoa.calycopis.broker.engine.entities.cost.SimpleMinMaxFloatCostEntity;
+import net.ivoa.calycopis.broker.engine.functional.platform.CostsAndMetricsSettings;
+import net.ivoa.calycopis.broker.engine.entities.metric.SimpleMinMaxFloatMetricEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParser;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserImpl;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactoryImpl;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdateHandlerImpl;
@@ -242,6 +257,9 @@ implements MockPlatform
 
     @Autowired
     private MockPlatformSettingsImpl mockEntitySettings;
+
+    @Autowired
+    private CostsAndMetricsSettings costsAndMetricsSettings;
     @Override
     public MockPlatformSettings getMockEntitySettings()
         {
@@ -598,6 +616,70 @@ implements MockPlatform
             }
         else {
             return null;
+            }
+        }
+
+    @Override
+    public void populateCostsAndMetrics(
+        final SimpleExecutionSessionEntity sessionEntity,
+        final AbstractComputeResourceEntity computeResourceEntity,
+        final OfferSetRequestParserContext context
+        ){
+        log.debug("populateCostsAndMetrics(mock)");
+
+        CostsAndMetricsSettings.ComponentConfig sessionConfig = costsAndMetricsSettings.getSession();
+        for (CostsAndMetricsSettings.Item item : sessionConfig.getCosts())
+            {
+            sessionEntity.addCost(
+                new SimpleMinMaxFloatCostEntity(
+                    sessionEntity,
+                    item.getType(),
+                    item.getDescription(),
+                    item.getMin(),
+                    item.getMax()
+                    )
+                );
+            }
+        for (CostsAndMetricsSettings.Item item : sessionConfig.getMetrics())
+            {
+            sessionEntity.addMetric(
+                new SimpleMinMaxFloatMetricEntity(
+                    sessionEntity,
+                    item.getType(),
+                    item.getDescription(),
+                    item.getMin(),
+                    item.getMax()
+                    )
+                );
+            }
+
+        if (computeResourceEntity != null)
+            {
+            CostsAndMetricsSettings.ComponentConfig computeConfig = costsAndMetricsSettings.getCompute();
+            for (CostsAndMetricsSettings.Item item : computeConfig.getCosts())
+                {
+                computeResourceEntity.addCost(
+                    new SimpleMinMaxFloatCostEntity(
+                        computeResourceEntity,
+                        item.getType(),
+                        item.getDescription(),
+                        item.getMin(),
+                        item.getMax()
+                        )
+                    );
+                }
+            for (CostsAndMetricsSettings.Item item : computeConfig.getMetrics())
+                {
+                computeResourceEntity.addMetric(
+                    new SimpleMinMaxFloatMetricEntity(
+                        computeResourceEntity,
+                        item.getType(),
+                        item.getDescription(),
+                        item.getMin(),
+                        item.getMax()
+                        )
+                    );
+                }
             }
         }
 

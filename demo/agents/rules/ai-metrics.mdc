@@ -1,0 +1,74 @@
+---
+description: Update AIMetrics block in file headers for all modified or created files
+alwaysApply: true
+---
+
+Every file you create or modify must have an AIMetrics block in its file header comment.
+
+- If a file already has an AIMetrics block, update it by adding a new entry to the array (do not remove existing entries).
+- If a file has no AIMetrics block, add one.
+- For new files created entirely by the agent, set contribution value to 100.
+- For modified files, estimate the percentage of lines changed and use that as the contribution value.
+
+The format for Java files (inside the `/* */` header comment) is:
+
+```
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "<ISO 8601 timestamp of the modification, e.g. 2026-02-14T15:30:00>",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": <percentage>,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
+```
+
+The format for Python, YAML, and other `#`-commented files is:
+
+```
+# AIMetrics: [
+#     {
+#     "timestamp": "<ISO 8601 timestamp of the modification, e.g. 2026-02-14T15:30:00>",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": <percentage>,
+#       "units": "%"
+#       }
+#     }
+#   ]
+```
+
+The format for XML files (inside `<!-- -->` comments) is:
+
+```
+ - AIMetrics: [
+ -     {
+ -     "timestamp": "<ISO 8601 timestamp of the modification, e.g. 2026-02-14T15:30:00>",
+ -     "name": "Cursor CLI",
+ -     "version": "2026.02.13-41ac335",
+ -     "model": "Claude 4.6 Opus (Thinking)",
+ -     "contribution": {
+ -       "value": <percentage>,
+ -       "units": "%"
+ -       }
+ -     }
+ -   ]
+```
+
+The timestamp must be the current date and time in ISO 8601 format (YYYY-MM-DDThh:mm:ss) at the time the file is modified.
+
+Place the block after the `</meta:header>` tag and before the closing comment delimiter.
+
+For files with no AIMetrics or AI contribution, the block should be:
+
+```
+ * AIMetrics: []
+```
+
+(using the appropriate comment prefix for the file type).
