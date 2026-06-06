@@ -1,0 +1,316 @@
+#!/usr/bin/env python3
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, University of Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+# AIMetrics: [
+#     {
+#     "timestamp": "2026-06-06T01:36:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 100,
+#       "units": "%"
+#       }
+#     },
+#     {
+#     "timestamp": "2026-06-06T02:00:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 5,
+#       "units": "%"
+#       }
+#     }
+#   ]
+#
+"""CLI for Calycopis Execution Broker demo workflows."""
+
+import argparse
+import json
+import shlex
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+BIN_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(BIN_DIR))
+
+from broker_tools.client import BROKERS, get_brokers, get_env, make_client
+from broker_tools.digest import resolve_digest
+from broker_tools.offers import format_comparison_table, submit_to_all
+from broker_tools.request import build_docker_request, parse_cores
+from broker_tools.session import accept_and_monitor, session_summary
+from broker_tools.state import DEFAULT_STATE_PATH, load_state, save_state
+
+
+def _parse_command(command_args: list[str]) -> list[str]:
+    if len(command_args) == 1:
+        return shlex.split(command_args[0])
+    return command_args
+
+
+def _print_json(data) -> None:
+    print(json.dumps(data, indent=2, default=str))
+
+
+def cmd_compare(args: argparse.Namespace) -> int:
+    cores = parse_cores(args.cores)
+    command = _parse_command(args.command)
+    request = build_docker_request(
+        name=args.name,
+        image=args.image,
+        command=command,
+        cores=cores,
+        digest=args.digest,
+    )
+
+    summaries = submit_to_all(request)
+    failures = [name for name, s in summaries.items() if s["result"] != "YES"]
+
+    state = {
+        "request": {
+            "name": args.name,
+            "image": args.image,
+            "command": command,
+            "cores": args.cores,
+            "digest": request.executable.image.digest,
+        },
+        "offers": summaries,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    save_state(Path(args.state), state)
+
+    if args.json:
+        _print_json({"summaries": summaries, "state_path": str(args.state)})
+    else:
+        print(format_comparison_table(summaries))
+        if failures:
+            print(f"\nFailed brokers: {', '.join(failures)}", file=sys.stderr)
+            for name in failures:
+                for msg in summaries[name].get("messages", []):
+                    print(f"  {name}: {msg.get('kind')} - {msg.get('template')}", file=sys.stderr)
+
+    return 1 if failures else 0
+
+
+def cmd_accept(args: argparse.Namespace) -> int:
+    state = load_state(Path(args.state))
+    offer = state["offers"].get(args.broker)
+    if not offer:
+        raise RuntimeError(f"No offer for broker '{args.broker}' in state file.")
+
+    session_uuid = args.uuid or offer.get("session_uuid")
+    if not session_uuid:
+        raise RuntimeError(f"No session UUID for broker '{args.broker}'.")
+
+    if offer.get("result") != "YES":
+        raise RuntimeError(f"Broker '{args.broker}' offer result is {offer.get('result')}.")
+
+    result = accept_and_monitor(
+        broker=args.broker,
+        session_uuid=session_uuid,
+        timeout=args.timeout,
+        interval=args.interval,
+    )
+
+    if args.json:
+        _print_json(result)
+    else:
+        print(f"Broker: {args.broker}")
+        print(f"Session: {result['session_uuid']}")
+        print(f"Phase: {result['phase']}")
+        print(f"Executable phase: {result.get('executable_phase')}")
+        if result.get("stdout"):
+            print(f"\nOutput:\n{result['stdout']}")
+
+    return 0
+
+
+def cmd_monitor(args: argparse.Namespace) -> int:
+    from uuid import UUID
+
+    from calycopis_schema_client.models import SimpleExecutionSessionPhase
+
+    brokers = get_brokers()
+    if args.broker not in brokers:
+        raise RuntimeError(f"Unknown broker: {args.broker}")
+
+    client = make_client(brokers[args.broker])
+    if args.accept:
+        client.set_session_phase(UUID(args.uuid), SimpleExecutionSessionPhase.ACCEPTED)
+
+    session = client.wait_until_terminal(
+        UUID(args.uuid), timeout=args.timeout, interval=args.interval
+    )
+    result = session_summary(session)
+    from broker_tools.output import get_container_stdout
+
+    result["stdout"] = get_container_stdout(args.broker, args.uuid)
+
+    if args.json:
+        _print_json(result)
+    else:
+        print(f"Phase: {result['phase']}")
+        if result.get("stdout"):
+            print(f"\nOutput:\n{result['stdout']}")
+
+    return 0
+
+
+def cmd_run(args: argparse.Namespace) -> int:
+    compare_args = argparse.Namespace(
+        name=args.name,
+        image=args.image,
+        command=args.command,
+        cores=args.cores,
+        digest=args.digest,
+        state=args.state,
+        json=args.json,
+    )
+    rc = cmd_compare(compare_args)
+    if rc != 0:
+        return rc
+
+    accept_args = argparse.Namespace(
+        broker=args.broker,
+        uuid=None,
+        state=args.state,
+        timeout=args.timeout,
+        interval=args.interval,
+        json=args.json,
+    )
+    return cmd_accept(accept_args)
+
+
+def cmd_digest_resolve(args: argparse.Namespace) -> int:
+    digest = resolve_digest(args.image, broker=args.broker)
+    if args.json:
+        _print_json({"image": args.image, "digest": digest})
+    else:
+        print(digest)
+    return 0
+
+
+def cmd_status(_args: argparse.Namespace) -> int:
+    get_env()
+    brokers = get_brokers()
+    passed = 0
+    failed = 0
+    results = {}
+
+    request = build_docker_request(
+        name="status-check",
+        image="alpine:3",
+        command=["echo", "hello"],
+    )
+
+    for name, url in brokers.items():
+        try:
+            client = make_client(url)
+            response = client.submit_execution(request, follow_redirect=True)
+            ok = response.result == "YES" and bool(response.offers)
+            results[name] = {"url": url, "result": response.result, "ok": ok}
+            if ok:
+                passed += 1
+            else:
+                failed += 1
+        except Exception as exc:
+            results[name] = {"url": url, "ok": False, "error": str(exc)}
+            failed += 1
+
+    if _args.json:
+        _print_json({"passed": passed, "failed": failed, "brokers": results})
+    else:
+        for name, info in results.items():
+            status = "OK" if info.get("ok") else "FAIL"
+            print(f"{name}: {status} ({info.get('url')})")
+            if info.get("error"):
+                print(f"  error: {info['error']}")
+            elif not info.get("ok"):
+                print(f"  result: {info.get('result')}")
+        print(f"\n=== Results: {passed} passed, {failed} failed ===")
+
+    return 0 if failed == 0 else 1
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Calycopis broker demo CLI")
+    parser.add_argument("--json", action="store_true", help="Emit JSON output")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    compare = subparsers.add_parser("compare", help="Submit to all brokers and compare offers")
+    compare.add_argument("--name", required=True, help="Executable name")
+    compare.add_argument("--image", required=True, help="Docker image tag")
+    compare.add_argument("--command", nargs="+", required=True, help="Container command")
+    compare.add_argument("--cores", help="Core range min:max")
+    compare.add_argument("--digest", help="Image digest (auto-resolved if omitted)")
+    compare.add_argument("--state", default=str(DEFAULT_STATE_PATH), help="State file path")
+    compare.set_defaults(func=cmd_compare)
+
+    accept = subparsers.add_parser("accept", help="Accept an offer from saved state")
+    accept.add_argument("--broker", required=True, choices=BROKERS.keys())
+    accept.add_argument("--uuid", help="Override session UUID")
+    accept.add_argument("--state", default=str(DEFAULT_STATE_PATH))
+    accept.add_argument("--timeout", type=float, default=300.0)
+    accept.add_argument("--interval", type=float, default=5.0)
+    accept.set_defaults(func=cmd_accept)
+
+    monitor = subparsers.add_parser("monitor", help="Monitor a session until terminal")
+    monitor.add_argument("--broker", required=True, choices=BROKERS.keys())
+    monitor.add_argument("--uuid", required=True)
+    monitor.add_argument("--accept", action="store_true", help="Accept before monitoring")
+    monitor.add_argument("--timeout", type=float, default=300.0)
+    monitor.add_argument("--interval", type=float, default=5.0)
+    monitor.set_defaults(func=cmd_monitor)
+
+    run = subparsers.add_parser("run", help="Compare, accept, and monitor in one step")
+    run.add_argument("--broker", required=True, choices=BROKERS.keys())
+    run.add_argument("--name", required=True)
+    run.add_argument("--image", required=True)
+    run.add_argument("--command", nargs="+", required=True)
+    run.add_argument("--cores", help="Core range min:max")
+    run.add_argument("--digest", help="Image digest")
+    run.add_argument("--state", default=str(DEFAULT_STATE_PATH))
+    run.add_argument("--timeout", type=float, default=300.0)
+    run.add_argument("--interval", type=float, default=5.0)
+    run.set_defaults(func=cmd_run)
+
+    digest = subparsers.add_parser("digest", help="Image digest helpers")
+    digest_sub = digest.add_subparsers(dest="digest_cmd", required=True)
+    resolve = digest_sub.add_parser("resolve", help="Resolve digest for an image tag")
+    resolve.add_argument("image", help="Image tag, e.g. alpine:3")
+    resolve.add_argument("--broker", default="alpha", choices=BROKERS.keys())
+    resolve.set_defaults(func=cmd_digest_resolve)
+
+    status = subparsers.add_parser("status", help="Check broker health")
+    status.set_defaults(func=cmd_status)
+
+    args = parser.parse_args()
+    try:
+        return args.func(args)
+    except Exception as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

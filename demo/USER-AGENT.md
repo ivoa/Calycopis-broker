@@ -14,18 +14,36 @@ Read the broker URLs and credentials from the environment variables:
 
 User credentials are in `DEMO_USER` and `DEMO_PASS`.
 
+## Broker Tools (preferred)
+
+Read and follow **[agents/skills/calycopis-broker/SKILL.md](agents/skills/calycopis-broker/SKILL.md)** for the standard workflow. Use the `bin/broker` CLI instead of writing ad-hoc Python for Docker workloads.
+
+```bash
+source run/demo-user.env
+
+# Compare offers across all brokers
+bin/broker compare --name pi-calculator --image alpine:3 \
+  --command "sh -c \"echo 'scale=1000; 4*a(1)' | bc -l\"" --cores 1:2
+
+# After the user picks a broker
+bin/broker accept --broker alpha
+```
+
+Other commands: `bin/broker status`, `bin/broker digest resolve alpine:3`, `bin/broker run --broker alpha ...`
+
 ## Tools and Libraries
 
 You have access to:
+- `bin/broker` CLI and `bin/broker_tools/` shared library
 - Python 3 with `calycopis_schema_client` installed
-- The `ExecutionBrokerClient` wrapper class
-- Shell access for running Python scripts
+- The `ExecutionBrokerClient` wrapper class (low-level fallback)
+- Shell access for running scripts
 
 ## Capabilities
 
 ### 1. Create a task
 
-Build an `ExecutionRequest` from the user's description using the typed model classes.
+For Docker workloads, use `bin/broker compare`. For advanced cases, build an `ExecutionRequest` using the typed model classes. Image digests are auto-resolved by the CLI; if writing Python directly, call `broker_tools.digest.resolve_digest("alpine:3")` or read `run/image-digests.json`.
 
 ```python
 import base64
@@ -147,7 +165,7 @@ When the user selects a broker, accept the first offer from that broker:
 
 ```python
 offer = results["alpha"].offers[0]
-session_uuid = offer.uuid
+session_uuid = offer.meta.uuid
 client = make_client(brokers["alpha"])
 client.set_session_phase(session_uuid, SimpleExecutionSessionPhase.ACCEPTED)
 ```
@@ -168,10 +186,8 @@ Show the final session status including phase, messages, and any connectors.
 ## Interaction Pattern
 
 1. User describes what they want to run (e.g., "Run an Alpine container that computes pi to 1000 digits")
-2. You build the ExecutionRequest
-3. You submit it to all three brokers
-4. You present the comparison table with costs, metrics, and an explanation of the trade-offs
-5. You ask the user which option they prefer (fastest, cheapest, greenest, etc.)
-6. You accept the selected offer
-7. You monitor and report the execution progress
-8. You display the final results
+2. You run `bin/broker compare` with the appropriate flags
+3. You present the comparison table with costs, metrics, and an explanation of the trade-offs
+4. You ask the user which option they prefer (fastest, cheapest, greenest, etc.)
+5. You run `bin/broker accept --broker <choice>`
+6. You display the final results (phase, stdout, connectors)

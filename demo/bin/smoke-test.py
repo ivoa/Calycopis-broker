@@ -15,7 +15,7 @@
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
 #   </meta:licence>
 # </meta:header>
 #
@@ -31,12 +31,22 @@
 #       }
 #     },
 #     {
-#     "timestamp": "2026-06-04T17:20:00",
+#     "timestamp": "2026-06-06T01:36:00",
 #     "name": "Cursor CLI",
 #     "version": "2026.02.13-41ac335",
 #     "model": "Claude 4.6 Opus (Thinking)",
 #     "contribution": {
-#       "value": 100,
+#       "value": 85,
+#       "units": "%"
+#       }
+#     },
+#     {
+#     "timestamp": "2026-06-06T02:00:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 5,
 #       "units": "%"
 #       }
 #     }
@@ -47,56 +57,32 @@ Smoke test: submit an ExecutionRequest to each broker and verify
 that distinct cost/metric values are returned on the offers.
 
 Usage:
-    source demo/run/demo-user.env
-    python3 demo/bin/smoke-test.py
+    source run/demo-user.env
+    python3 bin/smoke-test.py
 """
 
-import base64
-import os
 import sys
+from pathlib import Path
 
-from calycopis_schema_client import ApiClient, Configuration
-from calycopis_schema_client.models import (
-    ComponentMetadata,
-    DockerImageSpec,
-    ExecutionRequest,
-    OfferSetResponse,
-)
-from calycopis_schema_client.wrappers import (
-    DockerContainer,
-    ExecutionBrokerClient,
-)
+BIN_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(BIN_DIR))
 
+from broker_tools.client import BROKERS, get_env, make_client
+from broker_tools.digest import resolve_digest
+from broker_tools.offers import extract_summary
+from broker_tools.request import build_docker_request
 
-BROKERS = {
-    "alpha": "BROKER_ALPHA_URL",
-    "beta":  "BROKER_BETA_URL",
-    "gamma": "BROKER_GAMMA_URL",
-}
-
-
-def make_client(broker_url, username, password):
-    """Create an authenticated ExecutionBrokerClient."""
-    cfg = Configuration(host=broker_url, username=username, password=password)
-    api_client = ApiClient(cfg)
-    basic_creds = base64.b64encode(
-        f"{username}:{password}".encode("utf-8")
-    ).decode("utf-8")
-    api_client.default_headers["Authorization"] = f"Basic {basic_creds}"
-    return ExecutionBrokerClient(host=broker_url, api_client=api_client)
+from calycopis_schema_client.models import OfferSetResponse
 
 
 def make_request():
     """Create a minimal ExecutionRequest for the smoke test."""
-    return ExecutionRequest(
-        executable=DockerContainer(
-            meta=ComponentMetadata(name="smoke-test-exec"),
-            image=DockerImageSpec(
-                locations=["alpine:3"],
-                digest="sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601",
-            ),
-            command=["echo", "hello"],
-        ),
+    return build_docker_request(
+        name="smoke-test-exec",
+        image="alpine:3",
+        command=["echo", "hello"],
+        digest=resolve_digest("alpine:3"),
+        resolve=False,
     )
 
 
@@ -125,19 +111,13 @@ def extract_metrics(offer):
 
 
 def main():
-    username = os.environ.get("DEMO_USER")
-    password = os.environ.get("DEMO_PASS")
-
-    if not username or not password:
-        print("ERROR: DEMO_USER and DEMO_PASS environment variables must be set.")
-        print("       Run: source demo/run/demo-user.env")
-        sys.exit(1)
-
+    get_env()
     request = make_request()
     passed = 0
     failed = 0
 
     for broker_name, url_var in BROKERS.items():
+        import os
         broker_url = os.environ.get(url_var)
         if not broker_url:
             print(f"ERROR: {url_var} environment variable not set.")
@@ -147,7 +127,7 @@ def main():
         print(f"=== Testing broker-{broker_name} ({broker_url}) ===")
 
         try:
-            client = make_client(broker_url, username, password)
+            client = make_client(broker_url)
             response = client.submit_execution(request, follow_redirect=True)
         except Exception as e:
             print(f"  FAIL: Could not submit request: {e}")
@@ -159,15 +139,16 @@ def main():
             failed += 1
             continue
 
-        if response.result != "YES":
-            messages = ""
-            if response.meta and response.meta.messages:
-                messages = "; ".join(str(m) for m in response.meta.messages)
-            print(f"  FAIL: result={response.result}. Messages: {messages}")
+        summary = extract_summary(response)
+        if summary["result"] != "YES":
+            messages = "; ".join(
+                str(m.get("template") or m.get("kind")) for m in summary.get("messages", [])
+            )
+            print(f"  FAIL: result={summary['result']}. Messages: {messages}")
             failed += 1
             continue
 
-        if not response.offers or len(response.offers) == 0:
+        if not response.offers:
             print("  FAIL: No offers returned")
             failed += 1
             continue
