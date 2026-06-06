@@ -1,0 +1,112 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Success
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+# Add STDIO streams to a Docker container.
+#
+
+
+  /containers/{uuid}/{stream}:
+    get:
+      operationId: StreamSelect
+      parameters:
+        - name: uuid
+          in: path
+          description: >-
+            The UUID identifier of the container.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          style: simple
+        - name: stream
+          in: path
+          description: >-
+            The name of the stream [stdout|stderr].
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "200":
+          description: >-
+            200 OK - With the binary stream content.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+
+    DockerContainer:
+      type: object
+      title: DockerContainer
+      description: >-
+        Details for a Docker or OCI container executable.
+        See https://opencontainers.org/
+      allOf:
+        - $ref: '../../components.yaml#/components/schemas/AbstractExecutable'
+        - type: object
+          properties:
+            ....
+            streams:
+              $ref: '#/components/schemas/DockerStdioStreams'
+
+
+    DockerStdioStreams:
+      description: >-
+        The set of IO streams for a container.
+      type: object
+      title: DockerStreamSet
+      properties:
+        stdout:
+          $ref: '#/components/schemas/DockerOutputStream'
+        stderr:
+          $ref: '#/components/schemas/DockerOutputStream'
+
+
+    DockerOutputStream:
+      description: >-
+        Details of an output stream connected to the container.
+      type: object
+      title: DockerIOStream
+      properties:
+        locations:
+          type: array
+          items:
+            type: string
+            format: URL
+          description: >-
+            A list of URLs to access the stream.
+
+
