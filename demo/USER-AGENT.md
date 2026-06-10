@@ -16,14 +16,18 @@ User credentials are in `DEMO_USER` and `DEMO_PASS`.
 
 ## Broker Tools (preferred)
 
-Read and follow **[agents/skills/calycopis-broker/SKILL.md](agents/skills/calycopis-broker/SKILL.md)** for the standard workflow. Use the `bin/broker` CLI instead of writing ad-hoc Python for Docker workloads.
+Read and follow **[agents/skills/calycopis-broker/SKILL.md](agents/skills/calycopis-broker/SKILL.md)** for the standard workflow. Use the `bin/broker` CLI instead of writing ad-hoc Python.
 
 ```bash
 source run/demo-user.env
 
-# Compare offers across all brokers
+# Simple Docker workload — compare offers across all brokers
 bin/broker compare --name pi-calculator --image alpine:3 \
   --command "sh -c \"echo 'scale=1000; 4*a(1)' | bc -l\"" --cores 1:2
+
+# Template-based workload — build from execution template
+bin/broker build --template /path/to/ivoa-execution.yaml
+bin/broker build --template /path/to/ivoa-execution.yaml --submit
 
 # After the user picks a broker
 bin/broker accept --broker alpha
@@ -31,10 +35,37 @@ bin/broker accept --broker alpha
 
 Other commands: `bin/broker status`, `bin/broker digest resolve alpine:3`, `bin/broker run --broker alpha ...`
 
+## Non-broker commands (explain first)
+
+Prefer `bin/broker` and `bin/broker_tools/` for all task submission, monitoring, and result retrieval. If you need to run **any other command** — for example `podman run`, ad-hoc Python, direct `curl` calls to broker APIs, log greps, or local verification scripts — you **must** tell the user what you are doing and why **before** running it.
+
+In that explanation, include:
+
+1. **What** — name the command or tool and what it will do.
+2. **Why** — what question or problem you are trying to answer, and why the broker tools alone are insufficient.
+3. **Expected outcome** — what result would confirm your assumption or resolve the issue.
+
+Do not run exploratory or diagnostic commands silently. If the broker workflow already answered the user's request, do not reach for external tools unless the user asks or there is a clear, stated gap (for example truncated stdout that `bin/broker monitor` cannot resolve).
+
+Example (good):
+
+> The comparison table shows only the first 100 digits of π, but the session completed successfully. Before digging into broker logs, I'll check whether Alpine's `bc` can produce 1000 digits by running a local test — I'm doing this because I want to confirm whether truncation is in the container output or in our display pipeline.
+
+Example (bad):
+
+> *(runs `podman run --rm alpine:3 ...` with no prior explanation)*
+
+Acceptable non-broker commands that still require a brief explanation when used:
+
+- Reading `run/<broker>/logs/broker.log` to recover container stdout
+- `bin/broker status` is a broker tool and does not need extra justification
+- Deployment or setup scripts (`bin/deploy.sh`, `bin/configure.sh`) when the user asks about infrastructure
+
 ## Tools and Libraries
 
 You have access to:
 - `bin/broker` CLI and `bin/broker_tools/` shared library
+- `broker_tools.builder` module for loading execution templates and building requests programmatically
 - Python 3 with `calycopis_schema_client` installed
 - The `ExecutionBrokerClient` wrapper class (low-level fallback)
 - Shell access for running scripts
@@ -43,7 +74,61 @@ You have access to:
 
 ### 1. Create a task
 
-For Docker workloads, use `bin/broker compare`. For advanced cases, build an `ExecutionRequest` using the typed model classes. Image digests are auto-resolved by the CLI; if writing Python directly, call `broker_tools.digest.resolve_digest("alpine:3")` or read `run/image-digests.json`.
+There are three ways to create a task, in order of preference:
+
+#### Option A: CLI for simple Docker workloads
+
+Use `bin/broker compare` for tasks that only need a Docker image and a command:
+
+```bash
+bin/broker compare --name pi-calculator --image alpine:3 \
+  --command "sh -c \"echo 'scale=1000; 4*a(1)' | bc -l\"" --cores 1:2
+```
+
+#### Option B: Build from an execution template
+
+When the task is described in a YAML or JSON execution template file (which can include executables, compute, volume mounts, and data resources), use `bin/broker build`. Abstract placeholders in the template are resolved interactively:
+
+```bash
+bin/broker build --template /path/to/ivoa-execution.yaml
+bin/broker build --template /path/to/ivoa-execution.yaml --submit
+```
+
+To build programmatically (e.g. from an AI agent skill), use the `broker_tools.builder` API to avoid interactive prompts:
+
+```python
+import sys
+sys.path.insert(0, "bin")
+
+from broker_tools.builder import (
+    load_execution_template,
+    find_abstract_elements,
+    build_execution_request,
+    format_request_yaml,
+)
+
+template = load_execution_template("/path/to/ivoa-execution.yaml")
+
+# Inspect which elements need concrete replacements
+abstracts = find_abstract_elements(template)
+for a in abstracts:
+    print(f"{a.path}: {a.name} — alternatives: {list(a.concrete_alternatives.keys())}")
+
+# Resolve abstract elements with a replacements dict
+replacements = {
+    "data[0]": {
+        "kind": "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/data/simple-data-resource.yaml",
+        "location": "https://example.com/data.fits",
+    }
+}
+
+request = build_execution_request(template, replacements=replacements)
+print(format_request_yaml(request))
+```
+
+#### Option C: Build manually in Python (low-level fallback)
+
+For advanced cases not covered by the CLI or templates, build an `ExecutionRequest` using the typed model classes directly. Image digests are auto-resolved by the CLI; if writing Python directly, call `broker_tools.digest.resolve_digest("alpine:3")` or read `run/image-digests.json`.
 
 ```python
 import base64
@@ -185,12 +270,25 @@ Show the final session status including phase, messages, and any connectors.
 
 ## Interaction Pattern
 
+### For simple Docker tasks
+
 1. User describes what they want to run (e.g., "Run an Alpine container that computes pi to 1000 digits")
 2. You run `bin/broker compare` with the appropriate flags
 3. You present the comparison table with costs, metrics, and an explanation of the trade-offs
 4. You ask the user which option they prefer (fastest, cheapest, greenest, etc.)
 5. You run `bin/broker accept --broker <choice>`
 6. You display the final results (phase, stdout, connectors)
+
+### For template-based tasks
+
+1. User provides or references an execution template file
+2. You load the template with `load_execution_template()` and inspect it with `find_abstract_elements()`
+3. For each abstract element, you ask the user what concrete type and values to use (or resolve programmatically if the information is available)
+4. You build the request with `build_execution_request()` and show the YAML for review
+5. After the user confirms, you submit with `submit_to_all()` or `bin/broker build --submit`
+6. You present the comparison table and ask the user to pick a broker
+7. You run `bin/broker accept --broker <choice>`
+8. You display the final results
 
 # Coding conventions
 

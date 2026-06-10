@@ -39,6 +39,16 @@
 #       "value": 5,
 #       "units": "%"
 #       }
+#     },
+#     {
+#     "timestamp": "2026-06-09T21:42:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 10,
+#       "units": "%"
+#       }
 #     }
 #   ]
 #
@@ -54,6 +64,13 @@ from pathlib import Path
 BIN_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BIN_DIR))
 
+from broker_tools.builder import (
+    build_execution_request,
+    find_abstract_elements,
+    format_request_yaml,
+    load_execution_template,
+    resolve_abstract_interactively,
+)
 from broker_tools.client import BROKERS, get_brokers, get_env, make_client
 from broker_tools.digest import resolve_digest
 from broker_tools.offers import format_comparison_table, submit_to_all
@@ -252,6 +269,49 @@ def cmd_status(_args: argparse.Namespace) -> int:
     return 0 if failed == 0 else 1
 
 
+def cmd_build(args: argparse.Namespace) -> int:
+    template = load_execution_template(args.template)
+    abstracts = find_abstract_elements(template)
+
+    replacements = {}
+    for element in abstracts:
+        replacement = resolve_abstract_interactively(element)
+        replacements[element.path] = replacement
+
+    request = build_execution_request(template, replacements=replacements)
+
+    if args.submit:
+        summaries = submit_to_all(request)
+        failures = [name for name, s in summaries.items() if s["result"] != "YES"]
+
+        state = {
+            "request": {"template": str(args.template)},
+            "offers": summaries,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        save_state(Path(args.state), state)
+
+        if args.json:
+            _print_json({"summaries": summaries, "state_path": str(args.state)})
+        else:
+            print(format_comparison_table(summaries))
+            if failures:
+                print(f"\nFailed brokers: {', '.join(failures)}", file=sys.stderr)
+                for name in failures:
+                    for msg in summaries[name].get("messages", []):
+                        print(f"  {name}: {msg.get('kind')} - {msg.get('template')}", file=sys.stderr)
+
+        return 1 if failures else 0
+
+    if args.json:
+        from broker_tools.builder import format_request_as_dict
+        _print_json(format_request_as_dict(request))
+    else:
+        print(format_request_yaml(request))
+
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Calycopis broker demo CLI")
     parser.add_argument("--json", action="store_true", help="Emit JSON output")
@@ -303,6 +363,21 @@ def main() -> int:
 
     status = subparsers.add_parser("status", help="Check broker health")
     status.set_defaults(func=cmd_status)
+
+    build = subparsers.add_parser(
+        "build",
+        help="Build a request from a YAML/JSON execution template",
+    )
+    build.add_argument(
+        "--template", required=True,
+        help="Path to a YAML or JSON execution template file",
+    )
+    build.add_argument(
+        "--submit", action="store_true",
+        help="Submit the built request to all brokers",
+    )
+    build.add_argument("--state", default=str(DEFAULT_STATE_PATH))
+    build.set_defaults(func=cmd_build)
 
     args = parser.parse_args()
     try:

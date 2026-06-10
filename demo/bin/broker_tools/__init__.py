@@ -38,11 +38,29 @@
 #       "value": 5,
 #       "units": "%"
 #       }
+#     },
+#     {
+#     "timestamp": "2026-06-09T21:42:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 20,
+#       "units": "%"
+#       }
 #     }
 #   ]
 #
 """Shared helpers for Calycopis Execution Broker demo clients."""
 
+from broker_tools.builder import (
+    build_execution_request,
+    find_abstract_elements,
+    format_request_as_dict,
+    format_request_yaml,
+    load_execution_template,
+    resolve_abstract_interactively,
+)
 from broker_tools.client import BROKERS, BROKER_LABELS, get_brokers, get_env, make_client
 from broker_tools.digest import resolve_digest
 from broker_tools.offers import extract_summary, format_comparison_table, submit_to_all
@@ -61,6 +79,12 @@ __all__ = [
     "format_comparison_table",
     "submit_to_all",
     "build_docker_request",
+    "build_execution_request",
+    "find_abstract_elements",
+    "format_request_as_dict",
+    "format_request_yaml",
+    "load_execution_template",
+    "resolve_abstract_interactively",
     "parse_cores",
     "accept_and_monitor",
     "session_summary",

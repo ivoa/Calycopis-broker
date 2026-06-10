@@ -1,0 +1,714 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2025, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Test the request builder.
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run a new instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+--START--
+....
+....
+--END--
+
+
+# -----------------------------------------------------
+# Execute the deployment scripts from the Calycopis-broker directory.
+#[root@calycopis-dev]
+
+        pushd /calycopis/Calycopis-broker/github-zrq
+
+
+# -----------------------------------------------------
+# 1. Build the broker image
+#[root@calycopis-dev]
+
+    pushd java
+        ./mvnw clean package -DskipTests -Dcalycopis-platform=docker
+    popd
+
+    podman build \
+        --network host \
+        --build-arg jarfile=calycopis-broker-1.0.6-SNAPSHOT.jar \
+        --tag  calycopis/broker:latest \
+        --file docker/java-runtime/Dockerfile \
+        java/target/
+
+--START--
+....
+....
+[INFO] --- spring-boot:3.5.4:repackage (repackage) @ calycopis-broker ---
+[INFO] Replacing main artifact /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /calycopis/Calycopis-broker/github-zrq/java/target/calycopis-broker-1.0.6-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.867 s
+[INFO] Finished at: 2026-06-09T22:33:34Z
+[INFO] ------------------------------------------------------------------------
+--END--
+
+--START--
+....
+....
+STEP 21/23: COPY ${jarfile} /opt/calycopis/${jarfile}
+--> 044e7e9e99c
+STEP 22/23: RUN printf '%s\n'   '#!/bin/sh'   "exec java -jar /opt/calycopis/${jarfile}"   > /opt/calycopis/run.sh RUN chmod a+x /opt/calycopis/run.sh
+--> aaf80b3cc71
+STEP 23/23: ENTRYPOINT ["/bin/sh", "/opt/calycopis/run.sh"]
+COMMIT calycopis/broker:latest
+--> 1f4cf79fc97
+Successfully tagged localhost/calycopis/broker:latest
+1f4cf79fc970520ffafe4bc8608e2ef30b0d4543c1d77b55839e98fbcf440220
+--END--
+
+
+# -----------------------------------------------------
+# 2. Build the client image
+#[root@calycopis-dev]
+
+    cp \
+        /calycopis/Calycopis-openapi/github-zrq/codegen/python/client/build/dist/calycopis_schema_client-1.0.6-py3-none-any.whl \
+        demo/docker/demo-client/build/
+
+    podman build \
+        --network host \
+        --tag  calycopis/demo-client:latest \
+        --file demo/docker/demo-client/Dockerfile \
+        demo/docker/demo-client/
+
+--START--
+....
+....
+STEP 6/7: WORKDIR /workspace
+--> 1eeaa59cd2a
+STEP 7/7: CMD ["/bin/bash"]
+COMMIT calycopis/demo-client:latest
+--> 5185a34834f
+Successfully tagged localhost/calycopis/demo-client:latest
+5185a34834fd60fee34be15dcefec2837581f032e96820f58422bc37950f07f4
+--END--
+
+
+# -----------------------------------------------------
+# 3. Deploy
+#[root@calycopis-dev]
+
+    demo/bin/deploy.sh
+
+--START--
+....
+....
+=== Creating Podman network: calycopis-demo ===
+Network calycopis-demo already exists
+
+=== Deploying broker-alpha ===
+66eb881888cd751cc71fd428c2e4d6559c1694cea16f905e5fdf98a6333e8388
+ecab79e6b6c696a51d565212149e7bcaba0553cf2db2fb08488a150beaa38644
+  Waiting for PostgreSQL to start...
+34e825206d4e945cdb1786e5c505ce6dbe5592c63d427f613b634588e8a3adf4
+  Broker alpha: admin=7cdDSBtUF7NcQAhH
+  Broker alpha: logs=/calycopis/Calycopis-broker/github-zrq/demo/run/alpha/logs
+
+=== Deploying broker-beta ===
+9d2521621e2528c18d0c82b49126e2da4c8cf8f3d75bff409b766651ddb9634b
+75295dad78e80788e956f286adce1600acc08129c1348a5a8f1eb98230de440a
+  Waiting for PostgreSQL to start...
+588ea6652d90245aedd42731b89069aca49e091464e180990d6462e283610e22
+  Broker beta: admin=O8NTn4sFbqJfEclN
+  Broker beta: logs=/calycopis/Calycopis-broker/github-zrq/demo/run/beta/logs
+
+=== Deploying broker-gamma ===
+55b8e30779a9754604a3bee8e393e4ddd078cf389458b8cb05846e142ede98cc
+851c493222ff5a92c04af6ae0326aff1a6051b026eb16d29aa009dfc578a5452
+  Waiting for PostgreSQL to start...
+99848fbb293e27b53746248439a5737e60f24dfe54f19b064bff78497daf09a5
+  Broker gamma: admin=MzmfggNdb9CjsEMB
+  Broker gamma: logs=/calycopis/Calycopis-broker/github-zrq/demo/run/gamma/logs
+
+=== Creating client pod ===
+3c4ff18a0e2d9f5737f2c028611cad44f160c929a80f5a795bc854ef0b1a5725
+
+=== Writing environment file ===
+
+=== Waiting for brokers to become healthy ===
+  Waiting for broker-alpha... ready
+  Waiting for broker-beta... ready
+  Waiting for broker-gamma... ready
+
+=== Deployment complete ===
+Environment file: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-env.sh
+
+Brokers:
+  broker-alpha: http://broker-alpha:8082
+  broker-beta: http://broker-beta:8082
+  broker-gamma: http://broker-gamma:8082
+--END--
+
+
+# -----------------------------------------------------
+# 4. Configure user accounts
+#[root@calycopis-dev]
+
+    demo/bin/configure.sh
+
+--START--
+....
+....
+=== Seeding demo user accounts ===
+
+  Creating user 'demo-user' on broker-alpha... OK (201)
+  Creating user 'demo-user' on broker-beta... OK (201)
+  Creating user 'demo-user' on broker-gamma... OK (201)
+
+=== Writing demo user credentials ===
+  Written to: /calycopis/Calycopis-broker/github-zrq/demo/run/demo-user.env
+
+=== Configuration complete ===
+  Username: demo-user
+  Password: 14xGMvRUXqomKJMUCjut5vKY
+--END--
+
+
+# -----------------------------------------------------
+# 6. Start the client container
+#[root@calycopis-dev]
+
+    podman run -it \
+        --pod demo-client \
+        --volume "$(pwd)/demo:/workspace:z" \
+        --volume "$(pwd)/demo/USER-AGENT.md:/workspace/AGENTS.md:ro,z" \
+        --env-file "$(pwd)/demo/run/demo-user.env" \
+        calycopis/demo-client:latest \
+        /bin/bash
+
+
+--START--
+....
+....
+--END--
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# 5. Run the smoke test
+#[root@demo-client]
+
+    source  run/demo-user.env
+    python3 bin/smoke-test.py
+
+--START--
+....
+....
+    python3 bin/smoke-test.py
+Traceback (most recent call last):
+  File "/workspace/bin/smoke-test.py", line 70, in <module>
+    from broker_tools.client import BROKERS, get_env, make_client
+  File "/workspace/bin/broker_tools/__init__.py", line 56, in <module>
+    from broker_tools.builder import (
+    ...<6 lines>...
+    )
+  File "/workspace/bin/broker_tools/builder.py", line 65, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+[root@demo-client workspace]# pip install yaml
+ERROR: Could not find a version that satisfies the requirement yaml (from versions: none)
+ERROR: No matching distribution found for yaml
+--END--
+
+    #
+    # Needs the PyYAML library.
+    # https://pyyaml.org/wiki/PyYAMLDocumentation
+
+    pip install pyyaml
+
+    source  run/demo-user.env
+    python3 bin/smoke-test.py
+
+--START--
+=== Testing broker-alpha (http://broker-alpha:8082) ===
+  Offers returned: 1
+  Costs:
+    urn:ivoa:calycopis:cost:monetary: 0.3000 - 0.8000
+    urn:ivoa:calycopis:cost:energy: 0.0100 - 0.0300
+    urn:ivoa:calycopis:cost:carbon: 2.0000 - 8.0000
+  Metrics:
+    urn:ivoa:calycopis:metric:compute-performance: 250.0 - 300.0
+
+=== Testing broker-beta (http://broker-beta:8082) ===
+  Offers returned: 1
+  Costs:
+    urn:ivoa:calycopis:cost:monetary: 0.0500 - 0.1500
+    urn:ivoa:calycopis:cost:energy: 0.0500 - 0.1500
+    urn:ivoa:calycopis:cost:carbon: 15.0000 - 40.0000
+  Metrics:
+    urn:ivoa:calycopis:metric:compute-performance: 120.0 - 160.0
+
+=== Testing broker-gamma (http://broker-gamma:8082) ===
+  Offers returned: 1
+  Costs:
+    urn:ivoa:calycopis:cost:monetary: 0.0200 - 0.0800
+    urn:ivoa:calycopis:cost:energy: 0.1000 - 0.3000
+    urn:ivoa:calycopis:cost:carbon: 30.0000 - 80.0000
+  Metrics:
+    urn:ivoa:calycopis:metric:compute-performance: 60.0 - 90.0
+
+=== Results: 3 passed, 0 failed ===
+--END--
+
+
+# -----------------------------------------------------
+# 6. Run the Cursor agent.
+#[root@demo-client]
+
+    agent /workspace
+
+--START--
+....
+....
+  Cursor Agent
+  v2026.06.04-5fd875e
+  Use /skills to give Cursor specialized knowledge for tasks.
+
+
+  /workspace
+
+
+  Exploring the workspace to summarize what's here.
+
+    Globbed, read 2 globs, 2 files
+    Globbed "*" in .
+    Read AGENTS.md
+    Globbed "**/*" in .
+    Read README.md
+
+  $ source /workspace/run/demo-user.env && /workspace/bin/broker status 2>&1 7.1s
+    alpha: OK (http://broker-alpha:8082)
+    beta: OK (http://broker-beta:8082)
+    … truncated (4 more lines) · ctrl+o to expand
+
+    Read run/.broker-state.json
+
+  This workspace is the Calycopis Multi-Broker Demo — an environment for submitting scientific computing tasks to three IVOA
+  Execution Brokers and comparing their offers.
+
+  Status
+
+  All three brokers are up and healthy:
+
+  ┌────────┬───────────────────────────────────────┬──────────────────────────┐
+  │ Broker │ Profile                               │ URL                      │
+  ├────────┼───────────────────────────────────────┼──────────────────────────┤
+  │ Alpha  │ Green HPC (fastest, greenest)         │ http://broker-alpha:8082 │
+  │ Beta   │ General-purpose cloud (balanced cost) │ http://broker-beta:8082  │
+  │ Gamma  │ Budget tier (cheapest)                │ http://broker-gamma:8082 │
+  └────────┴───────────────────────────────────────┴──────────────────────────┘
+
+  What you can do here
+
+  I can help you:
+
+  1. Run Docker workloads — compare offers across brokers, pick one, and monitor execution
+  2. Build from execution templates — YAML/JSON IVOA execution definitions with data resources, volumes, etc.
+  3. Compare costs and metrics — monetary cost, energy, carbon, compute performance, IO throughput
+
+  Key tools
+
+  • bin/broker — CLI for compare, accept, status, monitor
+  • bin/broker_tools/ — Python library for programmatic task building
+  • run/demo-user.env — credentials (source this first)
+
+  Pending session
+
+  There is an existing π calculator comparison in state (Alpine container, 1000 digits of π) with offers from all three brokers —
+  none accepted yet:
+
+  ┌───────────────┬─────────────┬─────────────┬─────────────┐
+  │ Attribute     │ Alpha       │ Beta        │ Gamma       │
+  ├───────────────┼─────────────┼─────────────┼─────────────┤
+  │ Monetary cost │ $0.30–$0.80 │ $0.05–$0.15 │ $0.02–$0.08 │
+  │ Energy (kWh)  │ 0.01–0.03   │ 0.05–0.15   │ 0.10–0.30   │
+  │ Carbon (gCO₂) │ 2–8         │ 15–40       │ 30–80       │
+  │ Compute score │ 250–300     │ 120–160     │ 60–90       │
+  └───────────────┴─────────────┴─────────────┴─────────────┘
+
+  What would you like to do?
+
+  • Accept one of those π-calculator offers (alpha / beta / gamma)
+  • Run a new workload (describe the task)
+  • Something else in this workspace
+--END--
+
+==START==
+Can you help me to build a task description based on the template at
+https://raw.githubusercontent.com/Zarquan/Heliophorus-androcles/refs/heads/main/ivoa-execution.yaml
+==END==
+
+--START--
+....
+....
+  Here is a task description built from the Heliophorus-androcles ivoa-execution.yaml
+  (https://raw.githubusercontent.com/Zarquan/Heliophorus-androcles/refs/heads/main/ivoa-execution.yaml) template. I've saved a copy
+  at /workspace/ivoa-execution.yaml.
+
+  Task summary
+
+  Goal: Compute a cryptographic checksum of input data using the Heliophorus-androcles
+  (https://github.com/Zarquan/Heliophorus-androcles) container — an Alpine image with GNU coreutils hashing tools and jc for JSON
+  output.
+
+  Flow:
+  1. Broker stages the input data at /input (read-only volume mount)
+  2. Container runs hashwrap on that path
+  3. Output is either native hashsum text or JSON (via jc)
+
+  What the template already defines
+
+  ┌────────────┬──────────┬─────────────────────────────────────────────────────┐
+  │ Component  │ Status   │ Details                                             │
+  ├────────────┼──────────┼─────────────────────────────────────────────────────┤
+  │ Executable │ Concrete │ ghcr.io/zarquan/heliophorus-androcles:sha-9a2513b   │
+  │ Compute    │ Concrete │ Simple compute with /input read-only volume         │
+  │ Data       │ Abstract │ input-data — you must choose a concrete data source │
+  └────────────┴──────────┴─────────────────────────────────────────────────────┘
+
+  What you need to decide
+
+  1. Input data (required)
+
+  The template has one abstract placeholder: data[0] / input-data. You can replace it with:
+
+  ┌──────────────────────┬──────────────────────────────┬─────────────────────────────────────┐
+  │ Type                 │ When to use                  │ Required field                      │
+  ├──────────────────────┼──────────────────────────────┼─────────────────────────────────────┤
+  │ simple-data-resource │ HTTP/HTTPS downloadable file │ location (URL)                      │
+  │ S3-data-resource     │ Object in an S3 bucket       │ endpoint, bucket, etc.              │
+  │ rucio-data-resource  │ Rucio-managed data           │ rucio.endpoint, scope, object, type │
+  │ ivoa-data-resource   │ IVOA data service            │ service-specific fields             │
+  │ skao-data-resource   │ SKAO data                    │ service-specific fields             │
+  └──────────────────────┴──────────────────────────────┴─────────────────────────────────────┘
+
+  For most demos, simple-data-resource with a public URL is simplest.
+
+  2. Hash algorithm (optional)
+
+  Positional arg 1 — defaults to md5sum:
+
+  • md5sum (default)
+  • sha256sum
+  • sha512sum
+  • shasum (normalized to SHA-256)
+
+  3. Output format (optional)
+
+  Positional arg 2 — defaults to json:
+
+  • json — structured output via jc
+  • native — standard md5sum/sha256sum text
+
+  4. Compute constraints (optional)
+
+  You can add to the compute section:
+
+  • cores: {min: 1, max: 2}
+  • memory: {min: 1, max: 2} (GiB)
+
+  Example task description
+
+  │ Checksum the Heliophorus README
+  >
+  │ Use the Heliophorus-androcles container to compute an MD5 checksum of a single file, with JSON output.
+  >
+  │ - Input: https://raw.githubusercontent.com/Zarquan/Heliophorus-androcles/main/README.md
+  │ - Mounted at: /input (read-only)
+  │ - Algorithm: md5sum (default)
+  │ - Format: json (default)
+  │ - Compute: default (no core/memory constraints)
+
+  The concrete data[0] replacement for that example:
+
+  data:
+    - kind: "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/data/simple-data-resource.yaml"
+      meta:
+        name: "input-data"
+        description: "Heliophorus-androcles README — small demo input file"
+      location: "https://raw.githubusercontent.com/Zarquan/Heliophorus-androcles/main/README.md"
+
+  To use SHA-256 with native output, add a command to the executable:
+
+  executable:
+    # ... image etc. unchanged ...
+    command: ["sha256sum", "native"]
+
+  Next steps
+
+  Tell me:
+
+  1. What file or dataset should be checksummed? (URL, S3 path, Rucio reference, etc.)
+  2. Hash algorithm — md5sum, sha256sum, sha512sum, or default?
+  3. Output format — json or native?
+  4. Any compute limits? (cores/memory, or leave as default)
+
+  Once you confirm, I can build the full request and submit it to all three brokers for offer comparison.
+--END--
+
+==START==
+* The input file URL is at http://www.beespace.me/sites/www.beespace.me/files/styles/large/public/field/image/20250824_111206.jpg
+* The hash algorithm is  sha256sum
+* The output format is json
+* Use the default compute limits
+==END==
+
+--START--
+....
+....
+  Your task is built and submitted to all three brokers. Here is what was configured:
+
+  Task configuration
+
+  ┌───────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Setting   │ Value                                                                                                  │
+  ├───────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Container │ ghcr.io/zarquan/heliophorus-androcles:sha-9a2513b                                                      │
+  │ Command   │ sha256sum json                                                                                         │
+  │ Input     │ http://www.beespace.me/sites/www.beespace.me/files/styles/large/public/field/image/20250824_111206.jpg │
+  │ Mount     │ /input (read-only)                                                                                     │
+  │ Compute   │ Default (no core/memory constraints)                                                                   │
+  └───────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  The broker will download the JPEG, mount it at /input, and the container will compute a SHA-256 checksum with JSON output.
+
+  Broker comparison
+
+  ┌─────────────────────┬───────────────────┬───────────────┬────────────────┐
+  │ Attribute           │ Alpha (Green HPC) │ Beta (Cloud)  │ Gamma (Budget) │
+  ├─────────────────────┼───────────────────┼───────────────┼────────────────┤
+  │ Monetary cost       │ $0.30 – $0.80     │ $0.05 – $0.15 │ $0.02 – $0.08  │
+  │ Energy (kWh)        │ 0.01 – 0.03       │ 0.05 – 0.15   │ 0.10 – 0.30    │
+  │ Carbon (gCO₂)       │ 2 – 8             │ 15 – 40       │ 30 – 80        │
+  │ Compute performance │ 250 – 300         │ 120 – 160     │ 60 – 90        │
+  └─────────────────────┴───────────────────┴───────────────┴────────────────┘
+
+  All three brokers returned YES offers.
+
+  Trade-offs:
+  • Alpha — fastest and greenest, but most expensive
+  • Beta — balanced cost and performance
+  • Gamma — cheapest, but slowest and highest carbon footprint
+
+  Which broker would you like to use — alpha, beta, or gamma?
+--END--
+
+==START==
+Please accept the offer from broker Beta.
+==END==
+
+--START--
+....
+....
+  The Beta offer was accepted, but the execution failed.
+
+  Session result
+
+  ┌──────────────────┬──────────────────────────────────────┐
+  │ Field            │ Value                                │
+  ├──────────────────┼──────────────────────────────────────┤
+  │ Broker           │ Beta                                 │
+  │ Session          │ b5f44ef7-fea1-452e-9275-127689977ce8 │
+  │ Session phase    │ FAILED                               │
+  │ Data download    │ Completed successfully               │
+  │ Compute          │ Failed (exit code 2)                 │
+  │ Container output │ (empty — error went to stderr)       │
+  └──────────────────┴──────────────────────────────────────┘
+
+  What went wrong
+
+  The broker logs show a volume mount race condition:
+
+  1. The input image was downloaded successfully from beespace.me into a Docker volume.
+  2. When the compute container started, the broker resolved 0 bind mounts because the storage volume was not ready yet (Linker bean
+     incomplete … skipping).
+  3. The container ran without /input mounted, and hashwrap failed with:
+
+  │ ERROR: INPUT '/input' does not exist
+
+  This is a broker infrastructure timing issue on Beta, not a problem with your task configuration or the input URL.
+
+  Options
+
+  1. Retry on Alpha or Gamma — offers from the original comparison may still be valid.
+  2. Resubmit and retry Beta — a fresh submission might get the correct component ordering.
+
+  Would you like me to try Alpha, Gamma, or resubmit and retry Beta?
+--END--
+
+
+==START==
+Please try again on Alpha.
+==END==
+
+--START--
+....
+....
+  Alpha was accepted, but the execution failed with the same root cause as Beta.
+
+  Session result
+
+  ┌──────────────────┬──────────────────────────────────────┐
+  │ Field            │ Value                                │
+  ├──────────────────┼──────────────────────────────────────┤
+  │ Broker           │ Alpha                                │
+  │ Session          │ a99e0e66-3e0d-46a4-a752-521749fe5b81 │
+  │ Session phase    │ FAILED                               │
+  │ Data download    │ Completed successfully               │
+  │ Compute          │ Failed (exit code 2)                 │
+  │ Container output │ (empty)                              │
+  └──────────────────┴──────────────────────────────────────┘
+
+  Cause
+
+  Alpha hit the same broker bug as Beta:
+
+  1. The beespace.me image was downloaded into a Docker volume successfully.
+  2. When the compute container started, the broker resolved 0 bind mounts because storage was not ready yet (Linker bean incomplete
+     … skipping).
+  3. The container ran without /input mounted, and failed with:
+
+  │ ERROR: INPUT '/input' does not exist
+
+  This is a broker infrastructure issue with volume mount timing — it affects template-based workloads with data volumes, not your task
+   configuration.
+
+  What this means
+
+  • Your request (URL, sha256sum, JSON output) is valid.
+  • The data staging step works on both Alpha and Beta.
+  • The failure happens when wiring the staged volume into the compute container.
+
+  Gamma would likely hit the same problem. Options from here:
+
+  1. Try Gamma anyway — in case ordering differs.
+  2. Report the bug — volume mount race in the broker prepare pipeline.
+  3. Work around it — e.g. a simpler task without volume mounts (download inside the container), though that changes the
+     template-based workflow.
+
+  What would you like to do next?
+--END--
+
+==START==
+Can you create a bug report that we can use to diagnose and fix the issue later.
+==END==
+
+--START--
+  Gathering log evidence from both failed sessions to draft a precise bug report.
+
+    Grepped, read, globbed 2 greps, 3 files, 1 glob
+    … 3 earlier items hidden
+    Read run/beta/logs/broker.log lines 12848-12872
+    Read run/alpha/logs/broker.log lines 14748-14772
+    Globbed "**/bugs/**" in .
+
+  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ bugs/volume-mount-race-condition.md +259                                                                                         │
+  │                                                                                                                                  │
+  │ + # Bug report: compute container starts without data volume bind mount                                                          │
+  │                                                                                                                                  │
+  │ + **Date:** 2026-06-09                                                                                                           │
+  │ + **Reporter:** Calycopis multi-broker demo (Cursor agent session)                                                               │
+  │ + **Severity:** High — template-based workloads with staged input data fail consistently                                         │
+  │ + **Component:** Calycopis Execution Broker — Docker platform prepare pipeline                                                   │
+  │ + **Affected brokers observed:** Alpha, Beta (likely all Docker-based brokers)                                                   │
+  │ +                                                                                                                                │
+  │ + ---                                                                                                                            │
+  │ +                                                                                                                                │
+  │ + ## Summary                                                                                                                     │
+  │ +                                                                                                                                │
+  │  … truncated (248 more lines) · ctrl+r to review                                                                                 │
+  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  I've created a bug report at /workspace/bugs/volume-mount-race-condition.md (/workspace/bugs/volume-mount-race-condition.md).
+
+  It documents:
+
+  • Summary — compute container starts before the storage volume is ready; bind mounts are silently skipped
+  • Reproduction steps — Heliophorus checksum task with the beespace.me JPEG URL
+  • Evidence — Alpha and Beta session UUIDs, log excerpts, and timeline
+  • Root cause — concurrent PREPARE scheduling; DockerVolumeMountStorageEntity.link() sees volume ident [null] and the mount is
+    skipped instead of deferred
+  • Secondary note — cgroup cpu controller warning (retried successfully; not the checksum failure)
+  • Suggested fixes — enforce prepare dependencies, defer mount resolution, two-phase compute prepare, or fail fast with a clear
+    error
+  • Acceptance criteria — what to verify after a fix
+  • Workarounds — until the broker is patched
+
+  The key log line to search for when diagnosing:
+
+  Linker bean incomplete for volume mount [...] - skipping
+  Resolved [0] bind mounts for compute resource [...]
+
+  You can attach this file to an issue tracker or share it with the Calycopis broker team. Want me to also open a GitHub issue if
+  you have a repo URL?
+--END--
+
+
+

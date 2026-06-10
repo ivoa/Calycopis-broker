@@ -89,6 +89,7 @@ a53754db0560  localhost/podman-pause:5.4.2-1743552000                        12 
     popd
 
     podman build \
+        --network host \
         --build-arg jarfile=calycopis-broker-1.0.6-SNAPSHOT.jar \
         --tag  calycopis/broker:latest \
         --file docker/java-runtime/Dockerfile \
@@ -130,6 +131,7 @@ Successfully tagged localhost/calycopis/broker:latest
         demo/docker/demo-client/build/
 
     podman build \
+        --network host \
         --tag  calycopis/demo-client:latest \
         --file demo/docker/demo-client/Dockerfile \
         demo/docker/demo-client/

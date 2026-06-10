@@ -1,0 +1,509 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2025, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Success
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+# Run an instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        localhost/calycopis/developer-tools:2026.04.22 \
+            bash
+
+            podman ps
+
+--START--
+CONTAINER ID  IMAGE                                           COMMAND     CREATED         STATUS         PORTS       NAMES
+3daed8e083ec  localhost/podman-pause:4.3.1-0                              8 minutes ago   Up 36 seconds              78daffddb9f1-infra
+13bb7ae69b8d  localhost/calycopis/developer-tools:2026.04.22  bash        37 seconds ago  Up 36 seconds              calycopis-dev
+--END--
+
+
+# -----------------------------------------------------
+# Install Cursor.
+#[user@desktop]
+
+        curl https://cursor.com/install -fsS | bash
+
+        agent
+
+==START==
+Please take a look at the Java project at /calycopis/Calycopis-broker/github-zrq/
+and read the AGENTS.md file.
+==END==
+
+--START--
+  I've read the AGENTS.md file and explored the project root. Here's a summary of what the project is about:
+
+  Calycopis - Execution Broker Prototype
+
+  This is a Java/Spring Boot project implementing the IVOA Execution Broker service. The broker provides a common API abstraction
+  over different execution platforms (OpenStack, Docker, Kubernetes, Slurm, etc.).
+
+  Key concepts:
+  • Offer sets — clients submit execution requests and get back offers for execution sessions
+  • Execution sessions — concrete instances of running executions
+  • Resources — executables (Docker, Singularity, Jupyter), compute, storage, volumes, and data resources
+  • Lifecycle — rich state machines (OFFERED → ACCEPTED → PREPARING → RUNNING → COMPLETED, etc.)
+
+  Architecture highlights:
+  • Three-tier Entity/Factory/Validator/Repository pattern (Abstract → Simple → Mock/Docker)
+  • Polymorphism via discriminators for all domain types
+  • Chain-of-responsibility validation pipeline
+  • OpenAPI schema lives in a sibling project at /calycopis/Calycopis-schema/github-zrq/
+  • PostgreSQL required (no H2 support)
+  • Runs inside a developer-tools Fedora container with Podman socket bind-mounted for container-in-container execution
+
+  Coding conventions to follow:
+  • No ternary ?: operators (except in logging) — use expanded if/else
+  • Prefer JPA annotations over Spring-specific ones
+  • Avoid fragile patterns (@Transient + initEntity(), static singletons, ApplicationContextAware, etc.)
+  • GPL license headers on all source files
+  • AIMetrics blocks in file headers
+  • Copyright year must be current year
+
+  Project structure:
+  • java/ — main source code
+  • docker/ — container definitions
+  • tests/ — curl, Java, and Python tests
+  • agents/ — coding rule files (license headers, copyright, AI metrics)
+  • Two platform profiles: mock and docker
+
+  The project is ready for me to work with. What would you like me to do?
+--END--
+
+
+==START==
+Please review the following file with reference to the project
+/calycopis/Calycopis-broker/ivoa-wiki/Project-overview.md
+==END==
+
+--START--
+  Here's my review of Project-overview.md, cross-referenced against the AGENTS.md, the OpenAPI schema, and the codebase.
+
+  ────────────────────────────────────────
+
+  Overall assessment: This is a well-structured, compelling high-level document that makes a strong case for the request-offer pattern.
+   The writing is clear and the progression from simple concepts (data transfer costs) to more advanced ones (benchmarking, carbon
+  costs) is logical. However, there are several textual issues and a few points worth flagging for accuracy and completeness.
+
+  ────────────────────────────────────────
+
+  Typos and grammatical issues
+
+  Line 2 — "distributed of environment" should be "distributed environment":
+    that is aware of the costs involved in executing tasks within a distributed of environment
+
+  Line 29 — extra space and missing word: "into account the  when" should be "into account when":
+    and enables the user to take this into account the  when choosing which platform to use.
+
+  Line 67 — duplicated word: "earliest earliest":
+    by selecting the offer with the earliest earliest start time.
+
+  Line 91 — extra space: "In which case the  platform":
+    In which case the  platform will offer the nearest size
+
+  Line 132 — "the adoption use of" should be "the adoption and use of" or simply "the use of":
+    This level of customization may be particularly relevant given the adoption use of
+
+  Lines 231, 259 — "C02" uses the digit zero instead of the letter O. Should be "CO2" (or "CO₂").
+
+  ────────────────────────────────────────
+
+  Content and structural issues
+
+  Line 187 — Broken link placeholder:
+    In the Newton Raphson example [link], we can create a benchmark
+
+  The [link] placeholder was never resolved. It needs an actual reference or should be removed.
+
+  Lines 59-63 — Diagram inconsistency with accompanying text:
+  The diagram shows execution blocks with visually different widths:
+
+   /calycopis/Calycopis-broker/ivoa-wiki/Project-overview.md lines 34-38
+
+   /-- minimal preparation time
+   |
+  |-|<---- execution ---->|
+    |
+    \-- immediate start
+
+  Platform A uses <---- execution ----> (labelled) while B and C use <-------------------> (unlabelled, different width). But line 77
+  states:
+
+    "Note that in all three cases, the execution duration is the same"
+
+  The original working notes at 20260416-01-document.txt used consistent <---- execution ----> text for all three platforms, which was
+  clearer. Consider restoring that consistency.
+
+  Lines 190-217 — "Local policies" section is missing its Markdown ## heading:
+  Line 190 has Local policies as plain text rather than a proper ## Local policies heading, which breaks the document's heading
+  hierarchy. Compare with the other sections which all use ##.
+
+  Similarly, lines 220 ("Benchmarking") and 254 ("Carbon costs") are also plain text rather than ## headings. These three sections
+  appear to have been carried over from the raw notes without being converted to proper Markdown headings.
+
+  ────────────────────────────────────────
+
+  Accuracy against the project
+
+  Core request-offer pattern: Accurately described. Matches the API surface in AGENTS.md (POST /offersets → OfferSetResponse with
+  offers) and the codebase implementation.
+
+  Data transfer / preparation time model: Consistent with the lifecycle and scheduling model in the schema
+  (LifecycleSchedule.preparing, available, releasing fields).
+
+  Compute resource min/max negotiation: Accurately reflects the SimpleComputeResource schema (SimpleComputeCores and
+  SimpleComputeMemory with min/max fields) and the ComputeResourceOfferFactory in the codebase.
+
+  Benchmarking metrics (lines 175-223): The metrics concept with kind URI keys is not currently in the OpenAPI schema or codebase. The
+  schema has no metrics field on compute resources or offers. This is aspirational/future design. The document presents it as if it's
+  an existing capability ("The user can request a platform that is capable of..."). Consider adding a note clarifying this is
+  planned/proposed.
+
+  Carbon costs (lines 225-264): Also not in the current schema or codebase. Same consideration as above.
+
+  ────────────────────────────────────────
+
+  Suggestions
+
+  1. Fix the five typos/grammatical issues listed above.
+  2. Resolve or remove the [link] placeholder on line 187.
+  3. Make the ASCII diagrams consistent — use the same <---- execution ----> label for all three platforms.
+  4. Convert the three heading-less sections (Local policies, Benchmarking, Carbon costs) to proper ## Markdown headings.
+  5. Consider signposting future work — the benchmarking and carbon cost sections describe capabilities not yet in the schema. A
+     brief note like "The following sections describe planned extensions to the protocol" would set expectations clearly.
+  6. Mention the kind URI extensibility mechanism earlier — the document's strongest architectural argument (that new metric types
+     can be added via kind URIs without schema changes, line 266-267) deserves more prominence and could be introduced in the opening
+      section.
+
+  Would you like me to apply these fixes to the document?
+--END--
+
+==START==
+Please fix items 1,3,4,5.
+Leave items 2 and 6 for later.
+==END==
+
+--START--
+....
+....
+  All four items are done. Here's a summary of the changes:
+
+  1. Typos/grammar (6 fixes):
+    • Line 2: "distributed of environment" → "distributed environment"
+    • Line 29: "into account the  when" → "into account when"
+    • Line 67: "earliest earliest" → "earliest"
+    • Line 91: "the  platform" → "the platform"
+    • Line 132: "the adoption use of" → "the adoption of"
+    • Line 235: "C02" → "CO2"
+
+  2. ASCII diagrams (lines 58-75): Platforms B and C now use the consistent <---- execution ----> label matching platform A,
+     reinforcing the note on line 77 that execution duration is the same across all three.
+
+  3. Headings: Already correct in this file (## Local policies, ## Benchmarking, ## Carbon costs) — no changes needed.
+
+  4. Future work signposting (lines 175-177): Added a short paragraph before the Benchmarking section clarifying that benchmarking
+     and carbon costs are planned extensions, and that they illustrate the kind URI extensibility mechanism.
+
+  Items 2 (the [link] placeholder) and 6 (promoting the kind URI pattern) are left for later as requested.
+--END--
+
+
+==START==
+Please review the following file with reference to the project
+/calycopis/Calycopis-broker/ivoa-wiki/Load-balancing.md
+==END==
+
+--START--
+....
+....
+  Here's my review of Load-balancing.md.
+
+  ────────────────────────────────────────
+
+  Overall assessment: This is a well-constructed document that builds a compelling argument step by step, using a concrete scenario to
+  show how emergent load balancing arises naturally from the request-offer pattern without any central orchestration. The narrative is
+  easy to follow and the YAML-like pseudocode examples reinforce each point clearly.
+
+  ────────────────────────────────────────
+
+  Typos and grammatical issues
+
+  Line 5 — comma splice/run-on sentence. "If we start with..." is a conditional clause that never reaches its main clause; it reads as
+  a fragment. Consider restructuring:
+
+    If we start with three platforms, A, B and C, with three 1 GiB data sets a, b, and c, all initially located at platform A.
+
+  Suggested fix: "Consider three platforms, A, B and C, with three 1 GiB data sets a, b, and c, all initially located at platform A."
+
+  Line 68 — "only have enough" should be "only able to" or just remove "have". The current text reads "if the platforms are only have
+  enough resources":
+
+    If the platforms are only have enough resources to be able to handle 2 of these tasks at a time
+
+  Line 141 — run-on sentence. This 47-word sentence packs three separate ideas together without a full stop:
+
+    On the other hand, if the existing tasks running on platform A are expected to take longer than 1hr, 1hr 30 min for example.
+    Platforms B and C will still reply with 1hr and 2hr delays, but platform A can now only offer to start the next execution after 1hr
+     30min. Making the offer from platform B the better option.
+
+  The first sentence ends with "for example" but the period makes "Platforms B and C..." a new sentence, and "Making the offer..." is a
+   dangling fragment. Consider: "On the other hand, if the existing tasks running on platform A are expected to take longer than 1hr —
+  1hr 30min for example — then platforms B and C will still reply with 1hr and 2hr delays, but platform A can now only offer to start
+  the next execution after 1hr 30min, making the offer from platform B the better option."
+
+  Line 185 — "a copies" should be "copies" (or "a copy"):
+
+    How long platforms A and B continue to keep a copies of data-c
+
+  Line 196 — "This this" should be "In this":
+
+    This this example, adding another +30 min
+
+  ────────────────────────────────────────
+
+  Content and structural issues
+
+  Missing top-level heading: The document jumps straight into a ## sub-heading on line 1. Consider adding a # title (e.g. # Load
+  balancing) or at minimum a short introductory paragraph before the first ##, to match the structure of Project-overview.md which
+  opens with a prose paragraph.
+
+  Line 88 — ambiguous "the platforms": The sentence says "If the platforms are only [able to] handle 2 of these tasks at a time" — but
+  it's unclear whether this means each platform individually or all three collectively. Given the scenario (A is running 2 tasks, B and
+   C are idle), the intent seems to be "each platform can only run 2 concurrent tasks". Worth making explicit.
+
+  Lines 193-199 — administrator weighting: This is an interesting and important point, but it appears only at the end and reads
+  somewhat casually. It could benefit from its own ## sub-heading (e.g. ## Administrative weighting) to give it more prominence, since
+  it describes a mechanism for deliberate policy-based tuning — a distinct concept from the emergent behaviour described above.
+
+  ────────────────────────────────────────
+
+  Accuracy against the project
+
+  Lifecycle phases (RUNNING, WAITING, PREPARING): All three are valid LifecyclePhase values in the schema (components.yaml lines
+  122-128) and are used correctly in context. WAITING (line 130) for a queued task and PREPARING (line 176) for a task undergoing data
+  transfer are semantically accurate.
+
+  Offer/scheduling model: The document's representation of offers with start times aligns with the LifecycleSchedule and
+  ScheduledExecutionSchedule structures in the schema, which have preparing and available fields with start/duration pairs. The idea
+  that preparation time reflects data transfer cost is consistent with the design described in AGENTS.md.
+
+  Data replication policies (line 185): The schema does not currently define any data replication or caching policy mechanism. This is
+  a reasonable concept to mention in a design document, but it's worth noting that this is aspirational — similar to the benchmarking
+  and carbon cost sections in Project-overview.md.
+
+  Transfer time estimation: The schema has TODO comments in simple-data-resource-1.0.yaml and S3-data-resource-1.0.yaml noting "add
+  download time estimate" and "add status flag", indicating this is planned but not yet modelled. The document's scenario assumes this
+  capability exists, which is fine for a design narrative but worth being aware of.
+
+  ────────────────────────────────────────
+
+  Suggestions
+
+  1. Fix the 5 textual issues listed above.
+  2. Add a top-level heading or introductory paragraph before the first ##.
+  3. Clarify "the platforms" on line 88 — per-platform or system-wide capacity?
+  4. Consider promoting the administrator weighting section (lines 193-199) to its own ## heading.
+  5. Optionally add a brief note that data transfer time estimation and replication policies are planned extensions, consistent with
+     the signposting added to Project-overview.md.
+
+  Would you like me to apply some or all of these fixes?
+
+--END--
+
+==START==
+Please fix items 1,2,3,4.
+==END==
+
+--START--
+....
+....
+  All four items are done. Here's a summary of the changes:
+
+  1. Textual fixes (5 corrections):
+    • Line 5: "If we start with" → "Consider" (fixed sentence fragment)
+    • Line 68/93: "are only have enough" → "only has enough" (fixed grammar)
+    • Line 141/146: Restructured as a single flowing sentence with em-dashes, eliminating two dangling fragments
+    • Line 185/190: "a copies" → "copies"
+    • Line 196/203: "This this" → "In this"
+
+  2. Introductory paragraph (lines 1-4): Added a brief opening that sets the context and links back to the Project overview page.
+
+  3. Per-platform capacity (line 93): Clarified as "If each platform only has enough resources..." — making it unambiguous that the
+     2-task limit applies per platform.
+
+  4. Administrative weighting (line 198): Promoted to its own ## Administrative weighting heading, giving this distinct concept
+     proper visibility in the document structure.
+
+--END--
+
+
+==START==
+Redgarding item 5:
+* Data transfer time estimation is part of the design plan for the current project.
+* Data replication is out of scope for the current project.
+==END==
+
+--START--
+....
+....
+  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ...is/Calycopis-broker/ivoa-wiki/Load-balancing.md +2 -2                                                                         │
+  │                                                                                                                                  │
+  │                                                                                                                                  │
+  │   The end result after all of the tasks have completed is platform A still has copies of all three data sets, but an additional  │
+  │   copy of data-c has been transferred to platform B because the time cost of transferring it was less than the time cost of      │
+  │   waiting for the existing tasks on platform A to complete.                                                                      │
+  │                                                                                                                                  │
+  │ - How long platforms A and B continue to keep copies of data-c will depend on the data replication policies at each of the       │
+  │   platforms.                                                                                                                     │
+  │ - However, while both platforms still hold copies then a new request to process data-c will receive offers from both platforms   │
+  │   offering to start execution immediately.                                                                                       │
+  │ + How long platforms A and B continue to keep copies of data-c will depend on the data replication policies at each of the       │
+  │   platforms. Data replication policies are out of scope for the current project, but the scenario illustrates how they would     │
+  │   interact with the request-offer pattern.                                                                                       │
+  │ + While both platforms still hold copies, a new request to process data-c would receive offers from both platforms offering to   │
+  │   start execution immediately.                                                                                                   │
+  │                                                                                                                                  │
+  │   The emergent behaviour of the distributed system is to spread the load away from contested platforms by transferring copies of │
+  │    the data that                                                                                                                 │
+  │   are in demand to platforms that have more compute resources available.                                                         │
+  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  Done. I added a short note clarifying that data replication policies are out of scope for the current project, while keeping the
+  existing sentence that illustrates how they would work. I didn't add a note about data transfer time estimation since, as part of
+  the current design plan, it doesn't need a caveat.
+--END--
+
+
+==START==
+There is a question about whether the design could be susceptible to a pattern of user requests causing resource starvation.
+Could you evaluate this possibility and create a descriptive file similar to Load-balancing.md
+that describes how this could happen and what options are for mitigating the risk.
+==END==
+
+--START--
+....
+....
+  Let me review the relevant parts of the schema and codebase to ground my analysis in the actual design before writing.
+
+    Grepped, read 6 greps, 1 file
+    … 4 earlier items hidden
+    Grepped "...pacity|concurrent|max_offer|max.offer" in calycopis/Calycopis-broker/github-zrq/java
+    Grepped "limit|capacity|concurrent" in ...ng/compute/ComputeResourceOfferFactoryImpl.java
+    Read ...ng/compute/ComputeResourceOfferFactoryImpl.java
+
+  Now let me check how offer expiry is handled in the processing loop.
+
+    Grepped 2 greps
+    Grepped "EXPIRED|expire|OFFERED" in ...n/java/net/ivoa/calycopis/functional/processing
+    Grepped "...*PREPARING.*WAITING.*RUNNING|phase IN" in ...main/java/net/ivoa/calycopis/functional/booking
+
+  Good — I can see the critical detail that OFFERED sessions are counted as consuming resources in the booking query. Now I have
+  everything I need. Let me check the existing wiki files to match the style.
+
+    Globbed "*.md" in calycopis/Calycopis-broker/ivoa-wiki
+    Found 3 files
+
+  ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ...lycopis-broker/ivoa-wiki/Resource-starvation.md +201                                                                          │
+  │                                                                                                                                  │
+  │ + The request-offer pattern relies on users choosing between competing offers.                                                   │
+  │ + Under certain conditions, this can lead to resource starvation — where a subset                                                │
+  │ + of platforms or users are unable to obtain resources despite overall system capacity                                           │
+  │ + being available. This page describes how starvation can arise and what options                                                 │
+  │ + exist for mitigating the risk.                                                                                                 │
+  │                                                                                                                                  │
+  │ + ## Phantom reservation                                                                                                         │
+  │ +                                                                                                                                │
+  │ + The broker's resource booking system counts sessions in the OFFERED phase as                                                   │
+  │ + consuming resources, alongside sessions in PREPARING, WAITING, RUNNING, and                                                    │
+  │ + RELEASING. This is necessary to avoid double-booking: if the broker ignored                                                    │
+  │ + OFFERED sessions when calculating available capacity, two users could receive                                                  │
+  │  … truncated (190 more lines) · ctrl+r to review                                                                                 │
+  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  The file has been created at /calycopis/Calycopis-broker/ivoa-wiki/Resource-starvation.md. Here's a summary of what it covers:
+
+  Four starvation scenarios:
+
+  1. Phantom reservation — OFFERED sessions consume booking capacity (confirmed in the ComputeResourceOfferFactoryImpl query which
+     counts OFFERED phases). If users request offers but don't accept them, resources are blocked until expiry.
+
+  2. Popular data stampede — A burst of concurrent requests for the same dataset can all receive offers based on the same stale
+     capacity snapshot, overcommitting a single platform before the load-balancing feedback loop kicks in.
+
+  3. Long-running task blocking — A small number of long-duration tasks (e.g. ML training) can lock out shorter interactive sessions
+     for extended periods.
+
+  4. Cascading congestion — When system-wide demand exceeds supply, overflow from one platform saturates the next in a chain
+     reaction.
+
+  Mitigations grouped into three categories:
+
+  • Offer lifecycle controls — short expiry times (using the existing expires schema field), limits on outstanding offers per user,
+    admission control
+  • Capacity management — pessimistic estimation, resource partitioning, duration limits (the codebase already has MAXIMUM_DURATION),
+    queue depth caps
+  • Policy-based steering — administrative weighting (linking back to Load-balancing.md), per-user quotas, and the NO result on
+    OfferSetResponse
+
+  The closing point emphasises that all mitigations are implementable as platform-local policies without changes to the core protocol —
+   consistent with the project's design philosophy.
+--END--
+
+

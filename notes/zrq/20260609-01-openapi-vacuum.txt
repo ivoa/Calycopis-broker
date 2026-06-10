@@ -1,0 +1,100 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2025, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Apply the OpenAPI vacuum tool on our schema.
+        https://github.com/daveshanley/vacuum
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+# Run the vacuum lint tool
+#[user@desktop]
+
+    source "${HOME:?}/calycopis.env"
+
+    podman run \
+        --rm \
+        --volume "${TREBULA_CODE}:/work:ro,Z" \
+        ghcr.io/daveshanley/vacuum \
+        lint \
+            schema/v1.0/execution-broker.yaml
+
+--START--
+....
+....
+
+ version: v0.29.2 | compiled: Sat, 06 Jun 2026 09:44:53 UTC
+ https://quobix.com/vacuum/ | https://github.com/daveshanley/vacuum
+
+ vacuuming file 'schema/v1.0/execution-broker.yaml' against 55 rules: https://quobix.com/vacuum/rulesets/recommended
+
+ category              ✗ errors      ▲ warnings    ● info
+ ────────────────────  ────────────  ────────────  ────────────────────────────────────────────────────────
+ Tags                  0             6             0
+ Schemas               0             0             3
+ Descriptions          0             7             1
+ Examples              0             30            0
+ ────────────────────  ────────────  ────────────  ────────────────────────────────────────────────────────
+ total                 0             43            4
+
+ rule                                      violations    quality impact
+ ────────────────────────────────────────  ────────────  ──────────────────────────────────────────────────
+ oas3-missing-example                      30            ██████████████████████████████████████████████████
+ operation-description                     7             ███████████
+ operation-tags                            6             ██████████
+ oas-missing-type                          3             █████
+ description-duplication                   1             █
+ ────────────────────────────────────────  ────────────  ──────────────────────────────────────────────────
+ total                                     47
+
+ --> use the <dashboard> command to be able to navigate results interactively <--
+
+ | Quality Score: 86/100 [B]
+
+ | ▲ Passed, but with 43 warnings and 4 informs.
+
+ use --debug if you want to enable developer logging
+--END--
+
+
+
+# -----------------------------------------------------
+# Run the vacuum docs tool
+#[user@desktop]
+
+    source "${HOME:?}/calycopis.env"
+
+    podman run \
+        --rm \
+        --volume "${TREBULA_CODE}:/work:ro,Z" \
+        --volume "${HOME}/temp/api-docs:/work/api-docs:rw,Z" \
+        ghcr.io/daveshanley/vacuum \
+        docs \
+            schema/v1.0/execution-broker.yaml
+

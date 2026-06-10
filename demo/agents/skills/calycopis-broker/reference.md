@@ -71,3 +71,62 @@
 | `BROKER_ALPHA_URL` | Green HPC |
 | `BROKER_BETA_URL` | Cloud |
 | `BROKER_GAMMA_URL` | Budget |
+
+## Kind URI Registry
+
+All `kind` fields in execution templates use URIs from the OpenAPI schema. The base URI is `https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds`.
+
+### Executables
+
+| Short name | Kind URI suffix | Abstract |
+|------------|-----------------|----------|
+| `abstract-executable` | `/executable/abstract-executable.yaml` | Yes |
+| `docker-container` | `/executable/docker-container.yaml` | No |
+| `singularity-container` | `/executable/singularity-container.yaml` | No |
+| `jupyter-notebook` | `/executable/jupyter-notebook.yaml` | No |
+
+### Compute
+
+| Short name | Kind URI suffix | Abstract |
+|------------|-----------------|----------|
+| `abstract-compute-resource` | `/compute/abstract-compute-resource.yaml` | Yes |
+| `simple-compute-resource` | `/compute/simple-compute-resource.yaml` | No |
+
+### Storage
+
+| Short name | Kind URI suffix | Abstract |
+|------------|-----------------|----------|
+| `abstract-storage-resource` | `/storage/abstract-storage-resource.yaml` | Yes |
+| `simple-storage-resource` | `/storage/simple-storage-resource.yaml` | No |
+
+### Volumes
+
+| Short name | Kind URI suffix | Abstract |
+|------------|-----------------|----------|
+| `abstract-volume-mount` | `/volume/abstract-volume-mount.yaml` | Yes |
+| `simple-volume-mount` | `/volume/simple-volume-mount.yaml` | No |
+
+### Data
+
+| Short name | Kind URI suffix | Abstract |
+|------------|-----------------|----------|
+| `abstract-data-resource` | `/data/abstract-data-resource.yaml` | Yes |
+| `simple-data-resource` | `/data/simple-data-resource.yaml` | No |
+| `S3-data-resource` | `/data/S3-data-resource.yaml` | No |
+| `rucio-data-resource` | `/data/rucio-data-resource.yaml` | No |
+| `ivoa-data-resource` | `/data/ivoa-data-resource.yaml` | No |
+| `skao-data-resource` | `/data/skao-data-resource.yaml` | No |
+
+## Replacement Dict Keys for `build_execution_request`
+
+When resolving abstract elements programmatically, the `replacements` dict is keyed by element path:
+
+| Path pattern | Example | Meaning |
+|--------------|---------|---------|
+| `executable` | `"executable"` | The top-level executable |
+| `compute` | `"compute"` | The top-level compute resource |
+| `data[N]` | `"data[0]"` | The Nth entry in the data list |
+| `storage[N]` | `"storage[1]"` | The Nth entry in the storage list |
+| `compute.volumes[N]` | `"compute.volumes[0]"` | The Nth volume inside compute |
+
+Each replacement value is a dict that is deep-merged into the original element.  At minimum, it must include a `kind` field with the concrete type's URI, plus any required fields for that type (e.g. `location` for `simple-data-resource`).
