@@ -45,42 +45,40 @@
         lint \
             schema/v1.0/execution-broker.yaml
 
---START--
-....
-....
-
- version: v0.29.2 | compiled: Sat, 06 Jun 2026 09:44:53 UTC
- https://quobix.com/vacuum/ | https://github.com/daveshanley/vacuum
-
- vacuuming file 'schema/v1.0/execution-broker.yaml' against 55 rules: https://quobix.com/vacuum/rulesets/recommended
-
- category              ✗ errors      ▲ warnings    ● info
- ────────────────────  ────────────  ────────────  ────────────────────────────────────────────────────────
- Tags                  0             6             0
- Schemas               0             0             3
- Descriptions          0             7             1
- Examples              0             30            0
- ────────────────────  ────────────  ────────────  ────────────────────────────────────────────────────────
- total                 0             43            4
-
- rule                                      violations    quality impact
- ────────────────────────────────────────  ────────────  ──────────────────────────────────────────────────
- oas3-missing-example                      30            ██████████████████████████████████████████████████
- operation-description                     7             ███████████
- operation-tags                            6             ██████████
- oas-missing-type                          3             █████
- description-duplication                   1             █
- ────────────────────────────────────────  ────────────  ──────────────────────────────────────────────────
- total                                     47
-
- --> use the <dashboard> command to be able to navigate results interactively <--
-
- | Quality Score: 86/100 [B]
-
- | ▲ Passed, but with 43 warnings and 4 informs.
-
- use --debug if you want to enable developer logging
---END--
+    >   ....
+    >   ....
+    >   
+    >    version: v0.29.2 | compiled: Sat, 06 Jun 2026 09:44:53 UTC
+    >    https://quobix.com/vacuum/ | https://github.com/daveshanley/vacuum
+    >   
+    >    vacuuming file 'schema/v1.0/execution-broker.yaml' against 55 rules: https://quobix.com/vacuum/rulesets/recommended
+    >   
+    >    category              ✗ errors      ▲ warnings    ● info
+    >    ────────────────────  ────────────  ────────────  ────────────────────────────────────────────────────────
+    >    Tags                  0             6             0
+    >    Schemas               0             0             3
+    >    Descriptions          0             7             1
+    >    Examples              0             30            0
+    >    ────────────────────  ────────────  ────────────  ────────────────────────────────────────────────────────
+    >    total                 0             43            4
+    >   
+    >    rule                                      violations    quality impact
+    >    ────────────────────────────────────────  ────────────  ──────────────────────────────────────────────────
+    >    oas3-missing-example                      30            ██████████████████████████████████████████████████
+    >    operation-description                     7             ███████████
+    >    operation-tags                            6             ██████████
+    >    oas-missing-type                          3             █████
+    >    description-duplication                   1             █
+    >    ────────────────────────────────────────  ────────────  ──────────────────────────────────────────────────
+    >    total                                     47
+    >   
+    >    --> use the <dashboard> command to be able to navigate results interactively <--
+    >   
+    >    | Quality Score: 86/100 [B]
+    >   
+    >    | ▲ Passed, but with 43 warnings and 4 informs.
+    >   
+    >    use --debug if you want to enable developer logging
 
 
 

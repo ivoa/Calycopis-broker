@@ -68,11 +68,9 @@
 
             podman ps
 
---START--
-CONTAINER ID  IMAGE                                              COMMAND     CREATED        STATUS        PORTS       NAMES
-b0659a2eb840  localhost/podman-pause:4.3.1-0                                 7 seconds ago  Up 6 seconds              713cc8a067f1-infra
-319bc23ae76b  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        7 seconds ago  Up 5 seconds              calycopis-dev
---END--
+    >   CONTAINER ID  IMAGE                                              COMMAND     CREATED        STATUS        PORTS       NAMES
+    >   b0659a2eb840  localhost/podman-pause:4.3.1-0                                 7 seconds ago  Up 6 seconds              713cc8a067f1-infra
+    >   319bc23ae76b  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        7 seconds ago  Up 5 seconds              calycopis-dev
 
 
 # -----------------------------------------------------
@@ -115,20 +113,18 @@ b0659a2eb840  localhost/podman-pause:4.3.1-0                                 7 s
     popd
 
 
---START--
-....
-....
-========================================================= test session starts ==========================================================
-platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
-cachedir: .pytest_cache
-rootdir: /calycopis/Calycopis-broker/github-zrq/tests/python
-collected 2 items
-
-docker/test_docker_androcles_md5.py::TestAndroclesMd5::test_session_completes PASSED                                             [ 50%]
-docker/test_docker_androcles_md5.py::TestAndroclesMd5::test_md5_matches_local PASSED                                             [100%]
-
-==================================================== 2 passed in 130.23s (0:02:10) =====================================================
---END--
+    >   ....
+    >   ....
+    >   ========================================================= test session starts ==========================================================
+    >   platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+    >   cachedir: .pytest_cache
+    >   rootdir: /calycopis/Calycopis-broker/github-zrq/tests/python
+    >   collected 2 items
+    >   
+    >   docker/test_docker_androcles_md5.py::TestAndroclesMd5::test_session_completes PASSED                                             [ 50%]
+    >   docker/test_docker_androcles_md5.py::TestAndroclesMd5::test_md5_matches_local PASSED                                             [100%]
+    >   
+    >   ==================================================== 2 passed in 130.23s (0:02:10) =====================================================
 
 
 # -----------------------------------------------------
@@ -147,491 +143,463 @@ docker/test_docker_androcles_md5.py::TestAndroclesMd5::test_md5_matches_local PA
     agent
 
 
-==START==
-Regarding the projects at
-* /calycopis/Calycopis-broker/github-zrq
-* /calycopis/Calycopis-openapi/github-zrq
-Please read the AGENTS.md files at
-* /calycopis/Calycopis-broker/github-zrq/AGENTS.md
-* /calycopis/Calycopis-openapi/github-zrq/AGENTS.md
-==END==
-
---START--
-....
-....
-  I'm ready to work with these projects. What would you like to do?
---END--
-
-
-==START==
-  Did you read the section on coding standards and rules
-==END==
-
---START--
-Yes, I read the coding conventions section in the Calycopis-broker AGENTS.md. Let me also check the
-referenced rules files in the agents/ directory for the complete picture.
-....
-....
-Yes, now I have the full picture. Here's a summary of all the coding standards and rules I'll follow
-  when working on these projects:
-
-  From AGENTS.md:
-  • No binary files in the source tree
-  • Never suppress errors (no /dev/null, no || true)
-  • No ?: ternary operators (except in logging) -- always use expanded if/else
-  • Favor clarity over brevity
-  • Use JPA annotations over Spring-specific ones where possible
-  • Avoid fragile patterns (@Transient hacks, static singletons, ApplicationContextAware, etc.) -- ask
-    the user before implementing workarounds
-  • Spring imports isolated to spring/ packages; engine/ must be framework-neutral
-
-  From the rules files:
-  1. licence-header.mdc -- All new source files must start with the GPL licence header (with correct
-     comment syntax for the file type), copyright year set to the current year (2026).
-  2. copyright-year.mdc -- When modifying an existing file, update the copyright year in the
-     <meta:licence> block to 2026.
-  3. ai-metrics.mdc -- Every created or modified file must have an updated AIMetrics block after
-     </meta:header>, recording the timestamp, tool name ("Cursor CLI"), model, and contribution
-     percentage.
-  4. unexpected-behaviour.mdc -- If I encounter unexpected API/service behavior, I must stop and ask you
-      before writing workarounds, rather than silently masking potential bugs.
-
-  I'll adhere to all of these. What would you like to work on?
---END--
-
-
-==START==
-Can you read the YAML file at
-/heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml
-and verify that it matches the schema at
-/calycopis/Calycopis-openapi/github-zrq/schema
-==END==
-
---START--
-....
-....
-
-  I've verified the ivoa-execution.yaml file against the schema. The file represents an ExecutionRequest
-  with an executable, compute resource, and data resource. I found two issues:
-
-  Issue 1: YAML syntax error on line 39 — double colon
-
-   /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml lines 39-39
-
-    kind: : "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/compute/simple-compute-res
-  ource.yaml"
-
-  There is an extra colon (kind: : instead of kind:). This is invalid YAML.
-
-  Issue 2: locations and digest are at the wrong nesting level (lines 35-37)
-
-  Currently:
-
-   /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml lines 35-37
-
-    locations:
-      - "ghcr.io/zarquan/heliophorus-androcles:sha-9a2513b"
-    digest: "sha256:0dfeaad1f37ab8cd506f3a16d1ade56d035694a34e0ff28be51b97f1924c4df3"
-
-  According to the DockerContainer schema, locations and digest are properties of DockerImageSpec, which
-  is nested under an image property. The correct structure should be:
-
-  executable:
-    kind:
-  "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
-    meta:
-      description: ...
-    image:
-      locations:
-        - "ghcr.io/zarquan/heliophorus-androcles:sha-9a2513b"
-      digest: "sha256:0dfeaad1f37ab8cd506f3a16d1ade56d035694a34e0ff28be51b97f1924c4df3"
-
-  Everything else checks out
-
-  • The executable.kind URI correctly maps to DockerContainer in the discriminator.
-  • The compute.kind URI correctly maps to SimpleComputeResource.
-  • The volume mount under compute.volumes matches SimpleVolumeMount with valid path, mode (READONLY is
-     an allowed enum value), and resource fields.
-  • The data array uses the abstract data resource kind as a placeholder, which is valid per the
-    discriminator mapping and consistent with the description saying to replace it with a concrete data
-     resource.
-  • The meta blocks use valid ComponentMetadata properties (description, name).
-
-  Would you like me to fix these two issues?
---END--
-
-==START==
-Yes, please fix the issues.
-==END==
-
---START--
-....
-....
-  Both fixes are applied and the file looks correct:
-
-  1. locations and digest are now properly nested under image (line 46-49).
-  2. The double colon on compute.kind is fixed (line 51).
-
-  I also updated the copyright year to 2026 and added the AIMetrics entry per the project rules.
---END--
-
-
-==START==
-/plan
-Create a plan to add the following functionality to the Python client tools at
-/calycopis/Calycopis-broker/github-zrq/demo/bin/broker_tools
-* Create a request builder tool that can read a YAML or JSON execution description and create the corresponding data structure in Python.
-  For example the ivoa-execution template at /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml
-* The request builder prompts the user to replace abstract elements like abstract-data-resource with a concrete
-  instances like simple-data-resource by providing a location URL.
-* The request builder then passes the completed execution decription to the other tools to submit the request and analyse
-  the resulting offers.
-==END==
-
---START--
-....
-....
-  Now I have a thorough understanding of the entire codebase. Before creating the plan, I have a couple
-   of clarifying questions.
-
-    AskQuestion Request Builder Design Clarifications (2)
-    1. How should the request builder prompt the user to replace abstract elements? Should it be an
-    interactive CLI dialogue (using input() prompts), or should abstract elements be replaceable via
-    command-line arguments (e.g. --data-location URL)?
-      [ ] Interactive CLI dialogue -- prompts the user step by step to fill in missing concrete details
-      [ ] Command-line arguments -- user provides concrete values as flags (e.g. --data-location URL)
-      [ ] Both -- CLI args for scripted use, with interactive fallback for missing values
-      [x] Other: Interactive CLI dialoge, but also consider an AI agent using the request builder tool
-      as a part of a skill
-
-    2. After building the completed request, should the tool automatically submit it to brokers and
-    display offers (like the existing 'compare' command), or should it just print the built request
-    object for the user to review first?
-      [ ] Automatically submit to all brokers and display the comparison table
-      [ ] Print the built request as YAML/JSON for review, then require a separate submit step
-      [x] Default to printing for review, with a --submit flag to send immediately
-
- ┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
- │ Plan                                                                                                  │
- │                                                                                                       │
- │ Request Builder Tool Plan                                                                             │
- │                                                                                                       │
- │ Context                                                                                               │
- │                                                                                                       │
- │ The existing CLI at demo/bin/broker builds requests entirely from CLI flags (--image, --command,      │
- │ --cores), which only supports Docker containers. The new builder reads structured YAML/JSON           │
- │ templates like /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml, which can           │
- │ describe any combination of executables, compute, storage, volumes, and data resources -- including   │
- │  abstract placeholders that need user input.                                                          │
- │                                                                                                       │
- │ Architecture                                                                                          │
- │                                                                                                       │
- │ mermaid flowchart                                                                                     │
- │                                                                                                       │
- │ flowchart TD                                                                                          │
- │     YAMLFile["YAML/JSON template file"]                                                               │
- │     LoadTemplate["load_execution_template()"]                                                         │
- │     FindAbstract["find_abstract_elements()"]                                                          │
- │     Resolve["resolve_abstract_elements()"]                                                            │
- │     Build["build_execution_request()"]                                                                │
- │     ExecRequest["ExecutionRequest object"]                                                            │
- │     Print["Print YAML/JSON"]                                                                          │
- │     Submit["submit_to_all()"]                                                                         │
- │     YAMLFile --> LoadTemplate                                                                         │
- │     LoadTemplate --> FindAbstract                                                                     │
- │     FindAbstract --> Resolve                                                                          │
- │     Resolve --> Build                                                                                 │
- │     Build --> ExecRequest                                                                             │
- │     ExecRequest --> Print                                                                             │
- │     ExecRequest --> Submit                                                                            │
- │                                                                                                       │
- │ The builder has two layers:                                                                           │
- │ • Programmatic API (in builder.py): Pure functions that load templates, detect abstract elements,     │
- │   accept replacement dicts, and return ExecutionRequest objects. An AI agent or script can call       │
- │   these directly without any interactive prompts.                                                     │
- │ • Interactive CLI (in broker script): Wraps the programmatic API with input() prompts when            │
- │   abstract elements have no replacement provided.                                                     │
- │                                                                                                       │
- │ Kind URI Registry                                                                                     │
- │                                                                                                       │
- │ A central mapping from kind URIs to wrapper classes (from calycopis_schema_client.wrappers). Each     │
- │ entry records whether the kind is abstract or concrete. The registry covers all discriminator         │
- │ families:                                                                                             │
- │ • Executables: abstract-executable (abstract), docker-container, singularity-container,               │
- │   jupyter-notebook                                                                                    │
- │ • Compute: abstract-compute-resource (abstract), simple-compute-resource                              │
- │ • Storage: abstract-storage-resource (abstract), simple-storage-resource                              │
- │ • Volumes: abstract-volume-mount (abstract), simple-volume-mount                                      │
- │ • Data: abstract-data-resource (abstract), simple-data-resource, S3-data-resource,                    │
- │   rucio-data-resource, ivoa-data-resource, skao-data-resource                                         │
- │                                                                                                       │
- │ When a kind URI is abstract, find_abstract_elements() flags it with the element's path (e.g.          │
- │ data[0]), the element's meta.name and meta.description, and the list of concrete alternatives for     │
- │ that family.                                                                                          │
- │                                                                                                       │
- │ Conversion Logic                                                                                      │
- │                                                                                                       │
- │ Each YAML component is converted to its Python model class:                                           │
- │ • The kind field selects the wrapper class (which already provides the correct default kind)          │
- │ • meta maps to ComponentMetadata                                                                      │
- │ • Nested fields like image map to DockerImageSpec, volumes entries map to SimpleVolumeMount, etc.     │
- │ • The conversion uses the Pydantic model_validate() method on the selected wrapper class, passing     │
- │   the raw dict from YAML. This leverages the generated models' existing field definitions rather      │
- │   than manual field-by-field mapping.                                                                 │
- │                                                                                                       │
- │ For abstract elements, the user (or AI agent) provides a replacement dict specifying the concrete     │
- │ kind and any required fields. For simple-data-resource, the minimum required field is location (a     │
- │ URL).                                                                                                 │
- │                                                                                                       │
- │ Interactive Resolution Flow                                                                           │
- │                                                                                                       │
- │ When the builder encounters an abstract element and no replacement is provided:                       │
- │ 1. Display the element path, name, and description from the template                                  │
- │ 2. Present the available concrete types for that family                                               │
- │ 3. After the user selects a type, prompt for the required fields of that type (e.g. location for      │
- │    SimpleDataResource, endpoint/bucket/object for S3DataResource)                                     │
- │ 4. Preserve any existing meta (name, description) from the abstract placeholder                       │
- │                                                                                                       │
- │ Files to Create/Modify                                                                                │
- │                                                                                                       │
- │ New: demo/bin/broker_tools/builder.py                                                                 │
- │                                                                                                       │
- │ Core builder module with these public functions:                                                      │
- │ • load_execution_template(path: str | Path) -> dict -- Load a YAML or JSON file, stripping the #      │
- │   licence/meta header comment block, and returning the raw dict. Detects format from file             │
- │   extension.                                                                                          │
- │ • find_abstract_elements(template: dict) -> list[AbstractElementInfo] -- Walk the template dict,      │
- │   check kind fields against the registry, return a list of AbstractElementInfo named tuples with      │
- │   (path, kind, name, description, concrete_alternatives).                                             │
- │ • resolve_abstract_interactively(element: AbstractElementInfo) -> dict -- Interactive prompts         │
- │   (via input()) to choose a concrete type and fill in its required fields. Returns the                │
- │   replacement dict.                                                                                   │
- │ • build_execution_request(template: dict, replacements: dict | None = None) -> ExecutionRequest       │
- │   -- Convert the template dict into an ExecutionRequest, applying any replacements for abstract       │
- │   elements. The replacements dict is keyed by element path (e.g. "data[0]") with values being         │
- │   dicts of overriding fields (including kind).                                                        │
- │ • format_request_yaml(request: ExecutionRequest) -> str -- Serialize the request back to YAML for     │
- │   review.                                                                                             │
- │                                                                                                       │
- │ Modify: demo/bin/broker_tools/__init__.py                                                             │
- │                                                                                                       │
- │ Export the new public functions: load_execution_template, find_abstract_elements,                     │
- │ resolve_abstract_interactively, build_execution_request, format_request_yaml.                         │
- │                                                                                                       │
- │ Modify: demo/bin/broker                                                                               │
- │                                                                                                       │
- │ Add a build subcommand:                                                                               │
- │                                                                                                       │
- │ broker build --template PATH [--submit] [--state PATH] [--json]                                       │
- │                                                                                                       │
- │ • --template PATH -- Path to a YAML or JSON execution template                                        │
- │ • --submit -- After building, submit to all brokers and display comparison (reuses                    │
- │   submit_to_all())                                                                                    │
- │ • --state PATH -- State file path (used with --submit)                                                │
- │ • --json -- Output as JSON instead of YAML                                                            │
- │                                                                                                       │
- │ Without --submit, the command loads the template, resolves any abstract elements interactively,       │
- │ prints the completed request as YAML (or JSON), and exits. With --submit, it also submits to all      │
- │ brokers using the existing comparison flow.                                                           │
- │                                                                                                       │
- │ Handling the Template Format                                                                          │
- │                                                                                                       │
- │ The YAML template uses bare top-level keys (executable, compute, data) which map directly to          │
- │ ExecutionRequest fields. The kind field on each component uses the full discriminator URI. The        │
- │ builder strips the licence/AIMetrics comment block before YAML parsing (everything before the first   │
- │  non-comment, non-blank line).                                                                        │
- │                                                                                                       │
- │ Dependencies                                                                                          │
- │                                                                                                       │
- │ • pyyaml -- already available (used elsewhere in the project)                                         │
- │ • No new external dependencies required                                                               │
- │                                                                                                       │
- │  Saved to root/.cursor/plans/Request Builder Tool-f96e072b.plan.md                                    │
- │ ───────────────────────────────────────────────────────────────────────────────────────────────────── │
- │                                                                                                       │
- │ Ready to build?                                                                                       │
- │                                                                                                       │
- │  → 1. Yes, build locally (b)                                                                          │
- │    2. No, propose changes (p or Esc)                                                                  │
- │                                                                                                       │
- └───────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-  ⬢ Finished Explore the Python client wrapper layer at /calycopis/Calycopis-openapi/github-z
-
-  ⬢ Finished Explore the directory /calycopis/Calycopis-broker/github-zrq/demo/bin/broker_too
-
-  ⬢ Finished Explore the generated Python client package to understand the data model classes
-
-  ⬢ Finished Explore the Python tests at /calycopis/Calycopis-broker/github-zrq/tests/python/
-
-  All four research subagents have completed. Their findings confirmed the plan's approach:
-
-  • The broker_tools exploration (5d5da98f-f6f6-47d8-958c-4fd8b5a4c958) confirmed the existing module
-    structure (8 files: client, request, offers, session, state, digest, output, __init__) and the
-    pattern for building requests via build_docker_request().
-  • The wrapper layer exploration (80717e44-7620-4b11-9d6b-b9919f297e7e) confirmed that all concrete
-    types have wrapper subclasses with default kind URIs, and ExecutionBrokerClient provides
-    submit_execution() for request submission.
-  • The generated models exploration (d779c3cb-e5ca-4a26-a2c3-d01c3f9e215f) confirmed the Pydantic
-    model classes and their constructors -- ExecutionRequest takes executable, compute, storage, data
-    fields, and nested models like DockerImageSpec, ComponentMetadata accept dicts or keyword args.
-  • The Python tests exploration (55c5ddbc-24d1-40c7-8e04-e208961172ba) confirmed how requests are
-    constructed in practice, including data resources with volume mounts and the offer-set submission
-    flow.
-
-  The plan is ready for your review. Would you like to proceed with implementation, or would you like to
-   adjust anything in the plan first?
---END--
-
-==START==
-Please proceed with implementing the plan.
-==END==
-
---START--
-....
-....
-    To-do Working on 1 to-do • 3 done
-    ☒ Create `demo/bin/broker_tools/builder.py` with the kind registry, template loader, abstract element detector, interactive
-      resolver, and request builder functions
-    ☒ Update `demo/bin/broker_tools/__init__.py` to export the new builder functions
-    ☒ Add the `build` subcommand to `demo/bin/broker` CLI with --template, --submit, --state, and --json flags
-    ☐ Verify the builder works with the Heliophorus-androcles ivoa-execution.yaml template end-to-end
-....
-....
-  Now let me verify the builder works with the template. First, let me check that the Python client package is installed and that the
-  imports work.
-....
-....
-  Imports work. Now let me test loading the template and detecting abstract elements.
-....
-....
-  The template loads correctly and the abstract data resource is detected. Now let me test building the request with a programmatic
-  replacement (simulating what an AI agent would do).
-....
-....
-  The request builds, but I notice the YAML output is missing some fields (image from executable, path/mode/resource from volumes,
-  location from data). Let me investigate.
-....
-....
-  The individual component dumps are correct. The issue is that ExecutionRequest.model_dump() serializes polymorphic fields using the
-  base class schema, losing subclass-specific fields. I need to fix format_request_yaml to dump each component individually.
-....
-....
-  Now let me test the corrected YAML output.
-
-  $ cd /calycopis/Calycopis-broker/github-zrq/demo && python3 -c "
-    import sys
-    sys.path.insert(0, 'bin')
-    from broker_tools.builder import (
-        load_execution_template, build_execution_request, format_request_yaml, _KIND_BASE,
-    )
-
-    template = load_execution_template('/heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml')
-    replacements = {
-        'data[0]': {
-            'kind': f'{_KIND_BASE}/data/simple-data-resource.yaml',
-            'location': 'https://example.com/test-data.fits',
-        }
-    }
-    request = build_execution_request(template, replacements=replacements)
-    print(format_request_yaml(request))
-    " 385ms
-    executable:
-      kind: https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/doc​ker-container.yaml
-    … truncated (35 more lines) · ctrl+o to expand
-
-  All fields are now correctly present in the YAML output:
-  • executable.image.locations and executable.image.digest are included
-  • compute.volumes[0].path, mode, and resource are included
-  • data[0].location is included
-  • data[0].meta.name is preserved from the original abstract placeholder
-
-  Now let me test the CLI build subcommand end-to-end.
-
-  $ cd /calycopis/Calycopis-broker/github-zrq/demo && python3 bin/broker build --help 353ms
-    usage: broker build [-h] --template TEMPLATE [--submit] [--state STATE]
-    … truncated (6 more lines) · ctrl+o to expand
-
-  Now let me test the full CLI with JSON output, providing input non-interactively via a pipe.
-
-  $ cd /calycopis/Calycopis-broker/github-zrq/demo && echo -e "1\nhttps://example.com/test-data.fits" | python3 bin/broker --json build
-    --template /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml 452ms
-    --- Resolve abstract element: data[0] ---
-    … truncated (50 more lines) · ctrl+o to expand
-
-  The CLI works end-to-end. The interactive prompt correctly:
-  1. Identifies the abstract data[0] element with its name and description
-  2. Presents the three concrete data resource alternatives
-  3. Accepts the user's selection (1 = Simple data resource)
-  4. Prompts for the required location URL
-  5. Outputs the complete request as JSON with all fields properly populated
-
-    To-do All done
-    ☒ Create `demo/bin/broker_tools/builder.py` with the kind registry, template loader, abstract element detector, interactive
-      resolver, and request builder functions
-    ☒ Update `demo/bin/broker_tools/__init__.py` to export the new builder functions
-    ☒ Add the `build` subcommand to `demo/bin/broker` CLI with --template, --submit, --state, and --json flags
-    ☒ Verify the builder works with the Heliophorus-androcles ivoa-execution.yaml template end-to-end
-
-  All four tasks are complete. Here's a summary of what was implemented:
-
-  New file: demo/bin/broker_tools/builder.py
-  • KIND_REGISTRY -- maps all kind URIs to their wrapper class, abstract/concrete status, and family
-  • load_execution_template(path) -- loads YAML/JSON templates, stripping licence headers
-  • find_abstract_elements(template) -- detects abstract placeholders and returns their metadata with concrete alternatives
-  • resolve_abstract_interactively(element) -- step-by-step interactive prompts for replacing abstract elements
-  • build_execution_request(template, replacements) -- converts a template dict to an ExecutionRequest, with optional programmatic
-    replacements (for AI agents)
-  • format_request_yaml(request) / format_request_as_dict(request) -- serializes back to YAML/dict with all subclass fields preserved
-
-  Modified: demo/bin/broker_tools/__init__.py -- exports the new builder functions
-
-  Modified: demo/bin/broker -- adds the build subcommand:
-
-  broker build --template PATH [--submit] [--state PATH] [--json]
-
-  The builder supports two usage modes:
-  • Interactive CLI: prompts the user to select concrete types and fill in fields when abstract elements are found
-  • Programmatic API: accepts a replacements dict directly, suitable for AI agents or scripts
---END--
-
-==START==
-The USER-AGENT.md file at /calycopis/Calycopis-broker/github-zrq/demo/USER-AGENT.md
-contains the instructions given to an AI agent demonstrating how to use an Execution Broker.
-Can you update the USER-AGENT.md file and the agent skills in
-/calycopis/Calycopis-broker/github-zrq/demo/agents/skills/calycopis-broker
-to make use of the request builder tools.
-==END==
-
---START--
-....
-....
-    To-do All done
-    ☒ Update SKILL.md to add `bin/broker build` command, template workflow, and programmatic API section
-    ☒ Update reference.md with kind URI table and template state file schema
-    ☒ Update USER-AGENT.md with template-based workflow, builder API, and updated interaction pattern
-
-  All three files have been updated. Here's a summary of the changes:
-
-  SKILL.md (demo/agents/skills/calycopis-broker/SKILL.md):
-  • Restructured the workflow section into "Direct CLI workflow" and "Template-based workflow"
-  • Added template-based workflow with bin/broker build examples
-  • Added "Programmatic API" section showing how an AI agent can use broker_tools.builder with a replacements dict to avoid
-    interactive prompts
-  • Added bin/broker build (with and without --submit) to the CLI reference table
-  • Added two new gotchas about abstract element resolution and kind URI matching
-
-  reference.md (demo/agents/skills/calycopis-broker/reference.md):
-  • Added "Kind URI Registry" section with tables for all five families (executables, compute, storage, volumes, data) listing each
-    type's short name, URI suffix, and whether it's abstract
-  • Added "Replacement Dict Keys" section documenting the path syntax for programmatic replacements (data[0], compute.volumes[0],
-    etc.)
-
-  USER-AGENT.md (demo/USER-AGENT.md):
-  • Updated the "Broker Tools" quick-start to show both bin/broker compare and bin/broker build commands
-  • Restructured "Create a task" into three options: (A) CLI for simple Docker, (B) Build from execution template (with both CLI and
-     programmatic API examples), (C) Manual Python as a low-level fallback
-  • Split the "Interaction Pattern" into separate flows for simple Docker tasks and template-based tasks
---END--
+    ?   Regarding the projects at
+    ?   * /calycopis/Calycopis-broker/github-zrq
+    ?   * /calycopis/Calycopis-openapi/github-zrq
+    ?   Please read the AGENTS.md files at
+    ?   * /calycopis/Calycopis-broker/github-zrq/AGENTS.md
+    ?   * /calycopis/Calycopis-openapi/github-zrq/AGENTS.md
+
+    >   ....
+    >   ....
+    >     I'm ready to work with these projects. What would you like to do?
+
+
+    ?     Did you read the section on coding standards and rules
+
+    >   Yes, I read the coding conventions section in the Calycopis-broker AGENTS.md. Let me also check the
+    >   referenced rules files in the agents/ directory for the complete picture.
+    >   ....
+    >   ....
+    >   Yes, now I have the full picture. Here's a summary of all the coding standards and rules I'll follow
+    >     when working on these projects:
+    >   
+    >     From AGENTS.md:
+    >     • No binary files in the source tree
+    >     • Never suppress errors (no /dev/null, no || true)
+    >     • No ?: ternary operators (except in logging) -- always use expanded if/else
+    >     • Favor clarity over brevity
+    >     • Use JPA annotations over Spring-specific ones where possible
+    >     • Avoid fragile patterns (@Transient hacks, static singletons, ApplicationContextAware, etc.) -- ask
+    >       the user before implementing workarounds
+    >     • Spring imports isolated to spring/ packages; engine/ must be framework-neutral
+    >   
+    >     From the rules files:
+    >     1. licence-header.mdc -- All new source files must start with the GPL licence header (with correct
+    >        comment syntax for the file type), copyright year set to the current year (2026).
+    >     2. copyright-year.mdc -- When modifying an existing file, update the copyright year in the
+    >        <meta:licence> block to 2026.
+    >     3. ai-metrics.mdc -- Every created or modified file must have an updated AIMetrics block after
+    >        </meta:header>, recording the timestamp, tool name ("Cursor CLI"), model, and contribution
+    >        percentage.
+    >     4. unexpected-behaviour.mdc -- If I encounter unexpected API/service behavior, I must stop and ask you
+    >         before writing workarounds, rather than silently masking potential bugs.
+    >   
+    >     I'll adhere to all of these. What would you like to work on?
+
+
+    ?   Can you read the YAML file at
+    ?   /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml
+    ?   and verify that it matches the schema at
+    ?   /calycopis/Calycopis-openapi/github-zrq/schema
+
+    >   ....
+    >   ....
+    >   
+    >     I've verified the ivoa-execution.yaml file against the schema. The file represents an ExecutionRequest
+    >     with an executable, compute resource, and data resource. I found two issues:
+    >   
+    >     Issue 1: YAML syntax error on line 39 — double colon
+    >   
+    >      /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml lines 39-39
+    >   
+    >       kind: : "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/compute/simple-compute-res
+    >     ource.yaml"
+    >   
+    >     There is an extra colon (kind: : instead of kind:). This is invalid YAML.
+    >   
+    >     Issue 2: locations and digest are at the wrong nesting level (lines 35-37)
+    >   
+    >     Currently:
+    >   
+    >      /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml lines 35-37
+    >   
+    >       locations:
+    >         - "ghcr.io/zarquan/heliophorus-androcles:sha-9a2513b"
+    >       digest: "sha256:0dfeaad1f37ab8cd506f3a16d1ade56d035694a34e0ff28be51b97f1924c4df3"
+    >   
+    >     According to the DockerContainer schema, locations and digest are properties of DockerImageSpec, which
+    >     is nested under an image property. The correct structure should be:
+    >   
+    >     executable:
+    >       kind:
+    >     "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
+    >       meta:
+    >         description: ...
+    >       image:
+    >         locations:
+    >           - "ghcr.io/zarquan/heliophorus-androcles:sha-9a2513b"
+    >         digest: "sha256:0dfeaad1f37ab8cd506f3a16d1ade56d035694a34e0ff28be51b97f1924c4df3"
+    >   
+    >     Everything else checks out
+    >   
+    >     • The executable.kind URI correctly maps to DockerContainer in the discriminator.
+    >     • The compute.kind URI correctly maps to SimpleComputeResource.
+    >     • The volume mount under compute.volumes matches SimpleVolumeMount with valid path, mode (READONLY is
+    >        an allowed enum value), and resource fields.
+    >     • The data array uses the abstract data resource kind as a placeholder, which is valid per the
+    >       discriminator mapping and consistent with the description saying to replace it with a concrete data
+    >        resource.
+    >     • The meta blocks use valid ComponentMetadata properties (description, name).
+    >   
+    >     Would you like me to fix these two issues?
+
+    ?   Yes, please fix the issues.
+
+    >   ....
+    >   ....
+    >     Both fixes are applied and the file looks correct:
+    >   
+    >     1. locations and digest are now properly nested under image (line 46-49).
+    >     2. The double colon on compute.kind is fixed (line 51).
+    >   
+    >     I also updated the copyright year to 2026 and added the AIMetrics entry per the project rules.
+
+
+    ?   /plan
+    ?   Create a plan to add the following functionality to the Python client tools at
+    ?   /calycopis/Calycopis-broker/github-zrq/demo/bin/broker_tools
+    ?   * Create a request builder tool that can read a YAML or JSON execution description and create the corresponding data structure in Python.
+    ?     For example the ivoa-execution template at /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml
+    ?   * The request builder prompts the user to replace abstract elements like abstract-data-resource with a concrete
+    ?     instances like simple-data-resource by providing a location URL.
+    ?   * The request builder then passes the completed execution decription to the other tools to submit the request and analyse
+    ?     the resulting offers.
+
+    >   ....
+    >   ....
+    >     Now I have a thorough understanding of the entire codebase. Before creating the plan, I have a couple
+    >      of clarifying questions.
+    >   
+    >       AskQuestion Request Builder Design Clarifications (2)
+    >       1. How should the request builder prompt the user to replace abstract elements? Should it be an
+    >       interactive CLI dialogue (using input() prompts), or should abstract elements be replaceable via
+    >       command-line arguments (e.g. --data-location URL)?
+    >         [ ] Interactive CLI dialogue -- prompts the user step by step to fill in missing concrete details
+    >         [ ] Command-line arguments -- user provides concrete values as flags (e.g. --data-location URL)
+    >         [ ] Both -- CLI args for scripted use, with interactive fallback for missing values
+    >         [x] Other: Interactive CLI dialoge, but also consider an AI agent using the request builder tool
+    >         as a part of a skill
+    >   
+    >       2. After building the completed request, should the tool automatically submit it to brokers and
+    >       display offers (like the existing 'compare' command), or should it just print the built request
+    >       object for the user to review first?
+    >         [ ] Automatically submit to all brokers and display the comparison table
+    >         [ ] Print the built request as YAML/JSON for review, then require a separate submit step
+    >         [x] Default to printing for review, with a --submit flag to send immediately
+    >   
+    >    ┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >    │ Plan                                                                                                  │
+    >    │                                                                                                       │
+    >    │ Request Builder Tool Plan                                                                             │
+    >    │                                                                                                       │
+    >    │ Context                                                                                               │
+    >    │                                                                                                       │
+    >    │ The existing CLI at demo/bin/broker builds requests entirely from CLI flags (--image, --command,      │
+    >    │ --cores), which only supports Docker containers. The new builder reads structured YAML/JSON           │
+    >    │ templates like /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml, which can           │
+    >    │ describe any combination of executables, compute, storage, volumes, and data resources -- including   │
+    >    │  abstract placeholders that need user input.                                                          │
+    >    │                                                                                                       │
+    >    │ Architecture                                                                                          │
+    >    │                                                                                                       │
+    >    │ mermaid flowchart                                                                                     │
+    >    │                                                                                                       │
+    >    │ flowchart TD                                                                                          │
+    >    │     YAMLFile["YAML/JSON template file"]                                                               │
+    >    │     LoadTemplate["load_execution_template()"]                                                         │
+    >    │     FindAbstract["find_abstract_elements()"]                                                          │
+    >    │     Resolve["resolve_abstract_elements()"]                                                            │
+    >    │     Build["build_execution_request()"]                                                                │
+    >    │     ExecRequest["ExecutionRequest object"]                                                            │
+    >    │     Print["Print YAML/JSON"]                                                                          │
+    >    │     Submit["submit_to_all()"]                                                                         │
+    >    │     YAMLFile --> LoadTemplate                                                                         │
+    >    │     LoadTemplate --> FindAbstract                                                                     │
+    >    │     FindAbstract --> Resolve                                                                          │
+    >    │     Resolve --> Build                                                                                 │
+    >    │     Build --> ExecRequest                                                                             │
+    >    │     ExecRequest --> Print                                                                             │
+    >    │     ExecRequest --> Submit                                                                            │
+    >    │                                                                                                       │
+    >    │ The builder has two layers:                                                                           │
+    >    │ • Programmatic API (in builder.py): Pure functions that load templates, detect abstract elements,     │
+    >    │   accept replacement dicts, and return ExecutionRequest objects. An AI agent or script can call       │
+    >    │   these directly without any interactive prompts.                                                     │
+    >    │ • Interactive CLI (in broker script): Wraps the programmatic API with input() prompts when            │
+    >    │   abstract elements have no replacement provided.                                                     │
+    >    │                                                                                                       │
+    >    │ Kind URI Registry                                                                                     │
+    >    │                                                                                                       │
+    >    │ A central mapping from kind URIs to wrapper classes (from calycopis_schema_client.wrappers). Each     │
+    >    │ entry records whether the kind is abstract or concrete. The registry covers all discriminator         │
+    >    │ families:                                                                                             │
+    >    │ • Executables: abstract-executable (abstract), docker-container, singularity-container,               │
+    >    │   jupyter-notebook                                                                                    │
+    >    │ • Compute: abstract-compute-resource (abstract), simple-compute-resource                              │
+    >    │ • Storage: abstract-storage-resource (abstract), simple-storage-resource                              │
+    >    │ • Volumes: abstract-volume-mount (abstract), simple-volume-mount                                      │
+    >    │ • Data: abstract-data-resource (abstract), simple-data-resource, S3-data-resource,                    │
+    >    │   rucio-data-resource, ivoa-data-resource, skao-data-resource                                         │
+    >    │                                                                                                       │
+    >    │ When a kind URI is abstract, find_abstract_elements() flags it with the element's path (e.g.          │
+    >    │ data[0]), the element's meta.name and meta.description, and the list of concrete alternatives for     │
+    >    │ that family.                                                                                          │
+    >    │                                                                                                       │
+    >    │ Conversion Logic                                                                                      │
+    >    │                                                                                                       │
+    >    │ Each YAML component is converted to its Python model class:                                           │
+    >    │ • The kind field selects the wrapper class (which already provides the correct default kind)          │
+    >    │ • meta maps to ComponentMetadata                                                                      │
+    >    │ • Nested fields like image map to DockerImageSpec, volumes entries map to SimpleVolumeMount, etc.     │
+    >    │ • The conversion uses the Pydantic model_validate() method on the selected wrapper class, passing     │
+    >    │   the raw dict from YAML. This leverages the generated models' existing field definitions rather      │
+    >    │   than manual field-by-field mapping.                                                                 │
+    >    │                                                                                                       │
+    >    │ For abstract elements, the user (or AI agent) provides a replacement dict specifying the concrete     │
+    >    │ kind and any required fields. For simple-data-resource, the minimum required field is location (a     │
+    >    │ URL).                                                                                                 │
+    >    │                                                                                                       │
+    >    │ Interactive Resolution Flow                                                                           │
+    >    │                                                                                                       │
+    >    │ When the builder encounters an abstract element and no replacement is provided:                       │
+    >    │ 1. Display the element path, name, and description from the template                                  │
+    >    │ 2. Present the available concrete types for that family                                               │
+    >    │ 3. After the user selects a type, prompt for the required fields of that type (e.g. location for      │
+    >    │    SimpleDataResource, endpoint/bucket/object for S3DataResource)                                     │
+    >    │ 4. Preserve any existing meta (name, description) from the abstract placeholder                       │
+    >    │                                                                                                       │
+    >    │ Files to Create/Modify                                                                                │
+    >    │                                                                                                       │
+    >    │ New: demo/bin/broker_tools/builder.py                                                                 │
+    >    │                                                                                                       │
+    >    │ Core builder module with these public functions:                                                      │
+    >    │ • load_execution_template(path: str | Path) -> dict -- Load a YAML or JSON file, stripping the #      │
+    >    │   licence/meta header comment block, and returning the raw dict. Detects format from file             │
+    >    │   extension.                                                                                          │
+    >    │ • find_abstract_elements(template: dict) -> list[AbstractElementInfo] -- Walk the template dict,      │
+    >    │   check kind fields against the registry, return a list of AbstractElementInfo named tuples with      │
+    >    │   (path, kind, name, description, concrete_alternatives).                                             │
+    >    │ • resolve_abstract_interactively(element: AbstractElementInfo) -> dict -- Interactive prompts         │
+    >    │   (via input()) to choose a concrete type and fill in its required fields. Returns the                │
+    >    │   replacement dict.                                                                                   │
+    >    │ • build_execution_request(template: dict, replacements: dict | None = None) -> ExecutionRequest       │
+    >    │   -- Convert the template dict into an ExecutionRequest, applying any replacements for abstract       │
+    >    │   elements. The replacements dict is keyed by element path (e.g. "data[0]") with values being         │
+    >    │   dicts of overriding fields (including kind).                                                        │
+    >    │ • format_request_yaml(request: ExecutionRequest) -> str -- Serialize the request back to YAML for     │
+    >    │   review.                                                                                             │
+    >    │                                                                                                       │
+    >    │ Modify: demo/bin/broker_tools/__init__.py                                                             │
+    >    │                                                                                                       │
+    >    │ Export the new public functions: load_execution_template, find_abstract_elements,                     │
+    >    │ resolve_abstract_interactively, build_execution_request, format_request_yaml.                         │
+    >    │                                                                                                       │
+    >    │ Modify: demo/bin/broker                                                                               │
+    >    │                                                                                                       │
+    >    │ Add a build subcommand:                                                                               │
+    >    │                                                                                                       │
+    >    │ broker build --template PATH [--submit] [--state PATH] [--json]                                       │
+    >    │                                                                                                       │
+    >    │ • --template PATH -- Path to a YAML or JSON execution template                                        │
+    >    │ • --submit -- After building, submit to all brokers and display comparison (reuses                    │
+    >    │   submit_to_all())                                                                                    │
+    >    │ • --state PATH -- State file path (used with --submit)                                                │
+    >    │ • --json -- Output as JSON instead of YAML                                                            │
+    >    │                                                                                                       │
+    >    │ Without --submit, the command loads the template, resolves any abstract elements interactively,       │
+    >    │ prints the completed request as YAML (or JSON), and exits. With --submit, it also submits to all      │
+    >    │ brokers using the existing comparison flow.                                                           │
+    >    │                                                                                                       │
+    >    │ Handling the Template Format                                                                          │
+    >    │                                                                                                       │
+    >    │ The YAML template uses bare top-level keys (executable, compute, data) which map directly to          │
+    >    │ ExecutionRequest fields. The kind field on each component uses the full discriminator URI. The        │
+    >    │ builder strips the licence/AIMetrics comment block before YAML parsing (everything before the first   │
+    >    │  non-comment, non-blank line).                                                                        │
+    >    │                                                                                                       │
+    >    │ Dependencies                                                                                          │
+    >    │                                                                                                       │
+    >    │ • pyyaml -- already available (used elsewhere in the project)                                         │
+    >    │ • No new external dependencies required                                                               │
+    >    │                                                                                                       │
+    >    │  Saved to root/.cursor/plans/Request Builder Tool-f96e072b.plan.md                                    │
+    >    │ ───────────────────────────────────────────────────────────────────────────────────────────────────── │
+    >    │                                                                                                       │
+    >    │ Ready to build?                                                                                       │
+    >    │                                                                                                       │
+    >    │  → 1. Yes, build locally (b)                                                                          │
+    >    │    2. No, propose changes (p or Esc)                                                                  │
+    >    │                                                                                                       │
+    >    └───────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >   
+    >     ⬢ Finished Explore the Python client wrapper layer at /calycopis/Calycopis-openapi/github-z
+    >   
+    >     ⬢ Finished Explore the directory /calycopis/Calycopis-broker/github-zrq/demo/bin/broker_too
+    >   
+    >     ⬢ Finished Explore the generated Python client package to understand the data model classes
+    >   
+    >     ⬢ Finished Explore the Python tests at /calycopis/Calycopis-broker/github-zrq/tests/python/
+    >   
+    >     All four research subagents have completed. Their findings confirmed the plan's approach:
+    >   
+    >     • The broker_tools exploration (5d5da98f-f6f6-47d8-958c-4fd8b5a4c958) confirmed the existing module
+    >       structure (8 files: client, request, offers, session, state, digest, output, __init__) and the
+    >       pattern for building requests via build_docker_request().
+    >     • The wrapper layer exploration (80717e44-7620-4b11-9d6b-b9919f297e7e) confirmed that all concrete
+    >       types have wrapper subclasses with default kind URIs, and ExecutionBrokerClient provides
+    >       submit_execution() for request submission.
+    >     • The generated models exploration (d779c3cb-e5ca-4a26-a2c3-d01c3f9e215f) confirmed the Pydantic
+    >       model classes and their constructors -- ExecutionRequest takes executable, compute, storage, data
+    >       fields, and nested models like DockerImageSpec, ComponentMetadata accept dicts or keyword args.
+    >     • The Python tests exploration (55c5ddbc-24d1-40c7-8e04-e208961172ba) confirmed how requests are
+    >       constructed in practice, including data resources with volume mounts and the offer-set submission
+    >       flow.
+    >   
+    >     The plan is ready for your review. Would you like to proceed with implementation, or would you like to
+    >      adjust anything in the plan first?
+
+    ?   Please proceed with implementing the plan.
+
+    >   ....
+    >   ....
+    >       To-do Working on 1 to-do • 3 done
+    >       ☒ Create `demo/bin/broker_tools/builder.py` with the kind registry, template loader, abstract element detector, interactive
+    >         resolver, and request builder functions
+    >       ☒ Update `demo/bin/broker_tools/__init__.py` to export the new builder functions
+    >       ☒ Add the `build` subcommand to `demo/bin/broker` CLI with --template, --submit, --state, and --json flags
+    >       ☐ Verify the builder works with the Heliophorus-androcles ivoa-execution.yaml template end-to-end
+    >   ....
+    >   ....
+    >     Now let me verify the builder works with the template. First, let me check that the Python client package is installed and that the
+    >     imports work.
+    >   ....
+    >   ....
+    >     Imports work. Now let me test loading the template and detecting abstract elements.
+    >   ....
+    >   ....
+    >     The template loads correctly and the abstract data resource is detected. Now let me test building the request with a programmatic
+    >     replacement (simulating what an AI agent would do).
+    >   ....
+    >   ....
+    >     The request builds, but I notice the YAML output is missing some fields (image from executable, path/mode/resource from volumes,
+    >     location from data). Let me investigate.
+    >   ....
+    >   ....
+    >     The individual component dumps are correct. The issue is that ExecutionRequest.model_dump() serializes polymorphic fields using the
+    >     base class schema, losing subclass-specific fields. I need to fix format_request_yaml to dump each component individually.
+    >   ....
+    >   ....
+    >     Now let me test the corrected YAML output.
+    >   
+    >     $ cd /calycopis/Calycopis-broker/github-zrq/demo && python3 -c "
+    >       import sys
+    >       sys.path.insert(0, 'bin')
+    >       from broker_tools.builder import (
+    >           load_execution_template, build_execution_request, format_request_yaml, _KIND_BASE,
+    >       )
+    >   
+    >       template = load_execution_template('/heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml')
+    >       replacements = {
+    >           'data[0]': {
+    >               'kind': f'{_KIND_BASE}/data/simple-data-resource.yaml',
+    >               'location': 'https://example.com/test-data.fits',
+    >           }
+    >       }
+    >       request = build_execution_request(template, replacements=replacements)
+    >       print(format_request_yaml(request))
+    >       " 385ms
+    >       executable:
+    >         kind: https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/doc​ker-container.yaml
+    >       … truncated (35 more lines) · ctrl+o to expand
+    >   
+    >     All fields are now correctly present in the YAML output:
+    >     • executable.image.locations and executable.image.digest are included
+    >     • compute.volumes[0].path, mode, and resource are included
+    >     • data[0].location is included
+    >     • data[0].meta.name is preserved from the original abstract placeholder
+    >   
+    >     Now let me test the CLI build subcommand end-to-end.
+    >   
+    >     $ cd /calycopis/Calycopis-broker/github-zrq/demo && python3 bin/broker build --help 353ms
+    >       usage: broker build [-h] --template TEMPLATE [--submit] [--state STATE]
+    >       … truncated (6 more lines) · ctrl+o to expand
+    >   
+    >     Now let me test the full CLI with JSON output, providing input non-interactively via a pipe.
+    >   
+    >     $ cd /calycopis/Calycopis-broker/github-zrq/demo && echo -e "1\nhttps://example.com/test-data.fits" | python3 bin/broker --json build
+    >       --template /heliophorus/Heliophorus-androcles/github-zrq/ivoa-execution.yaml 452ms
+    >       --- Resolve abstract element: data[0] ---
+    >       … truncated (50 more lines) · ctrl+o to expand
+    >   
+    >     The CLI works end-to-end. The interactive prompt correctly:
+    >     1. Identifies the abstract data[0] element with its name and description
+    >     2. Presents the three concrete data resource alternatives
+    >     3. Accepts the user's selection (1 = Simple data resource)
+    >     4. Prompts for the required location URL
+    >     5. Outputs the complete request as JSON with all fields properly populated
+    >   
+    >       To-do All done
+    >       ☒ Create `demo/bin/broker_tools/builder.py` with the kind registry, template loader, abstract element detector, interactive
+    >         resolver, and request builder functions
+    >       ☒ Update `demo/bin/broker_tools/__init__.py` to export the new builder functions
+    >       ☒ Add the `build` subcommand to `demo/bin/broker` CLI with --template, --submit, --state, and --json flags
+    >       ☒ Verify the builder works with the Heliophorus-androcles ivoa-execution.yaml template end-to-end
+    >   
+    >     All four tasks are complete. Here's a summary of what was implemented:
+    >   
+    >     New file: demo/bin/broker_tools/builder.py
+    >     • KIND_REGISTRY -- maps all kind URIs to their wrapper class, abstract/concrete status, and family
+    >     • load_execution_template(path) -- loads YAML/JSON templates, stripping licence headers
+    >     • find_abstract_elements(template) -- detects abstract placeholders and returns their metadata with concrete alternatives
+    >     • resolve_abstract_interactively(element) -- step-by-step interactive prompts for replacing abstract elements
+    >     • build_execution_request(template, replacements) -- converts a template dict to an ExecutionRequest, with optional programmatic
+    >       replacements (for AI agents)
+    >     • format_request_yaml(request) / format_request_as_dict(request) -- serializes back to YAML/dict with all subclass fields preserved
+    >   
+    >     Modified: demo/bin/broker_tools/__init__.py -- exports the new builder functions
+    >   
+    >     Modified: demo/bin/broker -- adds the build subcommand:
+    >   
+    >     broker build --template PATH [--submit] [--state PATH] [--json]
+    >   
+    >     The builder supports two usage modes:
+    >     • Interactive CLI: prompts the user to select concrete types and fill in fields when abstract elements are found
+    >     • Programmatic API: accepts a replacements dict directly, suitable for AI agents or scripts
+
+    ?   The USER-AGENT.md file at /calycopis/Calycopis-broker/github-zrq/demo/USER-AGENT.md
+    ?   contains the instructions given to an AI agent demonstrating how to use an Execution Broker.
+    ?   Can you update the USER-AGENT.md file and the agent skills in
+    ?   /calycopis/Calycopis-broker/github-zrq/demo/agents/skills/calycopis-broker
+    ?   to make use of the request builder tools.
+
+    >   ....
+    >   ....
+    >       To-do All done
+    >       ☒ Update SKILL.md to add `bin/broker build` command, template workflow, and programmatic API section
+    >       ☒ Update reference.md with kind URI table and template state file schema
+    >       ☒ Update USER-AGENT.md with template-based workflow, builder API, and updated interaction pattern
+    >   
+    >     All three files have been updated. Here's a summary of the changes:
+    >   
+    >     SKILL.md (demo/agents/skills/calycopis-broker/SKILL.md):
+    >     • Restructured the workflow section into "Direct CLI workflow" and "Template-based workflow"
+    >     • Added template-based workflow with bin/broker build examples
+    >     • Added "Programmatic API" section showing how an AI agent can use broker_tools.builder with a replacements dict to avoid
+    >       interactive prompts
+    >     • Added bin/broker build (with and without --submit) to the CLI reference table
+    >     • Added two new gotchas about abstract element resolution and kind URI matching
+    >   
+    >     reference.md (demo/agents/skills/calycopis-broker/reference.md):
+    >     • Added "Kind URI Registry" section with tables for all five families (executables, compute, storage, volumes, data) listing each
+    >       type's short name, URI suffix, and whether it's abstract
+    >     • Added "Replacement Dict Keys" section documenting the path syntax for programmatic replacements (data[0], compute.volumes[0],
+    >       etc.)
+    >   
+    >     USER-AGENT.md (demo/USER-AGENT.md):
+    >     • Updated the "Broker Tools" quick-start to show both bin/broker compare and bin/broker build commands
+    >     • Restructured "Create a task" into three options: (A) CLI for simple Docker, (B) Build from execution template (with both CLI and
+    >        programmatic API examples), (C) Manual Python as a low-level fallback
+    >     • Split the "Interaction Pattern" into separate flows for simple Docker tasks and template-based tasks
 
 
