@@ -1,0 +1,287 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Success
+
+    Result:
+
+        Work in progress ...
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run an instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+    >   CONTAINER ID  IMAGE                                              COMMAND     CREATED         STATUS        PORTS       NAMES
+    >   98f6bb92c679  localhost/podman-pause:5.4.2-1743552000                        14 seconds ago  Up 8 seconds              0d4aea3ea6bd-infra
+    >   a9555b9d5203  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        8 seconds ago   Up 7 seconds              calycopis-dev
+
+
+# -----------------------------------------------------
+# Build our schema generated components.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-schema/github-zrq
+
+        source bin/buildscripts.sh
+
+        buildschema
+
+    >   ....
+    >   ....
+    >   Inlining from discriminator mapping: StringValueUpdate
+    >   Inlining from discriminator mapping: EnumValueUpdate
+    >   Inlining from discriminator mapping: IntegerValueUpdate
+    >   Inlining from discriminator mapping: IntegerDeltaUpdate
+    >   ✅ All references processed and saved.
+
+        installgenerator
+
+        buildpythonclient
+
+    >   ....
+    >   ....
+    >   adding 'calycopis_schema_client-1.0.5.dist-info/METADATA'
+    >   adding 'calycopis_schema_client-1.0.5.dist-info/WHEEL'
+    >   adding 'calycopis_schema_client-1.0.5.dist-info/top_level.txt'
+    >   adding 'calycopis_schema_client-1.0.5.dist-info/RECORD'
+    >   removing build/bdist.linux-x86_64/wheel
+    >   Successfully built calycopis_schema_client-1.0.5.tar.gz and calycopis_schema_client-1.0.5-py3-none-any.whl
+
+
+        buildjavaclient
+
+    >   ....
+    >   ....
+    >   [INFO] --- install:3.1.2:install (default-install) @ calycopis-schema-client ---
+    >   [INFO] Installing /calycopis/Calycopis-schema/github-zrq/codegen/java/client/pom.xml to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-client/1.0.5-SNAPSHOT/calycopis-schema-client-1.0.5-SNAPSHOT.pom
+    >   [INFO] Installing /calycopis/Calycopis-schema/github-zrq/codegen/java/client/target/calycopis-schema-client-1.0.5-SNAPSHOT.jar to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-client/1.0.5-SNAPSHOT/calycopis-schema-client-1.0.5-SNAPSHOT.jar
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] BUILD SUCCESS
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] Total time:  13.443 s
+    >   [INFO] Finished at: 2026-05-05T05:36:20Z
+    >   [INFO] ------------------------------------------------------------------------
+
+
+        buildjavaspring
+
+    >   ....
+    >   ....
+    >   [INFO] --- install:3.1.4:install (default-install) @ calycopis-schema-spring ---
+    >   [INFO] Installing /calycopis/Calycopis-schema/github-zrq/codegen/java/spring/pom.xml to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-spring/1.0.5-SNAPSHOT/calycopis-schema-spring-1.0.5-SNAPSHOT.pom
+    >   [INFO] Installing /calycopis/Calycopis-schema/github-zrq/codegen/java/spring/target/calycopis-schema-spring-1.0.5-SNAPSHOT.jar to /root/.m2/repository/net/ivoa/calycopis/calycopis-schema-spring/1.0.5-SNAPSHOT/calycopis-schema-spring-1.0.5-SNAPSHOT.jar
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] BUILD SUCCESS
+    >   [INFO] ------------------------------------------------------------------------
+    >   [INFO] Total time:  12.806 s
+    >   [INFO] Finished at: 2026-05-05T05:36:47Z
+    >   [INFO] ------------------------------------------------------------------------
+
+    popd
+
+
+# -----------------------------------------------------
+# Create out database config.
+#[root@calycopis-dev]
+
+    mkdir /etc/calycopis
+
+    cat > /etc/calycopis/database.yaml << EOF
+spring:
+    datasource:
+        url: jdbc:postgresql://postgresql:5432/calycopis
+        username: $(pwgen 32 1)
+        password: $(pwgen 32 1)
+        driverClassName: org.postgresql.Driver
+        initialize: true
+EOF
+
+
+# -----------------------------------------------------
+# Start our PostgreSQL database.
+#[root@calycopis-dev]
+
+    podman run \
+        --rm \
+        --detach \
+        --replace \
+        --name postgresql \
+        --pod calycopis-pod \
+        --expose 5432 \
+        --env "POSTGRES_DB=calycopis" \
+        --env "POSTGRES_USER=$(yq '.spring.datasource.username' /etc/calycopis/database.yaml)" \
+        --env "POSTGRES_PASSWORD=$(yq '.spring.datasource.password' /etc/calycopis/database.yaml)" \
+        docker.io/library/postgres:latest
+
+    >   ed1660c1b838bb42264b6bc1af04652dff1c4b6a02759fdee1fc4ab105fa9c6d
+
+
+# -----------------------------------------------------
+# Build and launch our service with the mock platform.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd java
+
+            ./mvnw clean spring-boot:run -D calycopis-platform=mock
+
+        popd
+    popd
+
+    >   ....
+    >   ....
+
+
+# -----------------------------------------------------
+# Start another terminal and run our Python tests.
+#[user@desktop]
+
+    testdata=/home/Zarquan/temp
+
+    podman exec \
+        --tty \
+        --env "TESTDATA=${testdata}" \
+        --interactive \
+            calycopis-dev \
+                bash
+
+    pip install pytest
+    pip install docker
+
+    pip install --edit /calycopis/Calycopis-schema/github-zrq/codegen/python/client/build
+
+    >   ....
+    >   ....
+    >   Successfully installed
+    >       annotated-types-0.7.0
+    >       calycopis_schema_client-1.0.5
+    >       pydantic-2.13.3
+    >       pydantic-core-2.46.3
+    >       typing-extensions-4.15.0
+    >       typing-inspection-0.4.2
+
+
+# -----------------------------------------------------
+# Run the mock tests.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+            pushd mock
+
+                pytest *
+
+            popd
+        popd
+    popd
+
+    >   ....
+    >   ....
+    >   ======== 49 passed, 20 warnings in 301.29s (0:05:01) ========
+
+
+# -----------------------------------------------------
+
+    pytest test_mock_stress.py
+
+        Loop congestion.
+        Huge pause at the beginning (3min).
+
+    >   ....
+    >   2026-05-05 11:16:29 INFO scheduling-1 ProcessingServiceImpl loop() ++++++++
+    >
+    >   2026-05-05 11:19:27 INFO scheduling-1 ProcessingServiceImpl loop() --------
+    >   ....
+
+
+
+# -----------------------------------------------------
+# Re-start our service with the docker platform.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd java
+
+            ./mvnw clean spring-boot:run -D calycopis-platform=docker
+
+        popd
+    popd
+
+    >   ....
+    >   ....
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run the docker tests.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+            pushd docker
+
+                pytest *
+
+        popd
+    popd
+
+    >   ....
+    >   ....
+    >   ======== 43 passed, 246 warnings in 1288.32s (0:21:28) ========
+

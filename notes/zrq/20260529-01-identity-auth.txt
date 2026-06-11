@@ -1,0 +1,1105 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        Add support for user identities.
+        cursor/plans/Auth identity implementation-e0232013.plan.md
+
+    Result:
+
+        Work in progress ...
+
+        To resume this session: agent --resume=2c7048d4-036b-4206-b205-f707e2386022
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+#  Create a new branch to work in.
+#[user@desktop]
+
+    branchname=identity-auth
+    newbranch=$(date '+%Y%m%d')-zrq-${branchname:?}
+
+    source "${HOME:?}/calycopis.env"
+    pushd "${CALYCOPIS_CODE}"
+
+        git checkout main
+
+        git checkout -b "${newbranch:?}"
+
+    popd
+
+    >   ....
+    >   ....
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Run an instance of our development environment.
+#[user@desktop]
+
+    podman pod create \
+        --replace \
+        --name calycopis-pod
+
+    # WARNING - this exposes the user's Podman socket to the container.
+    # WARNING - exposing the user's Podman socket requires a patch to the SELinux rules.
+    # WARNING - this exposes the user's SSH agent to the container.
+    # WARNING - exposing the user's SSH agent requires a patch to the SELinux rules.
+
+    source "${HOME:?}/calycopis.env"
+    source "${HOME:?}/heliophorus.env"
+    podman run \
+        --rm \
+        --tty \
+        --interactive \
+        --pod  calycopis-pod \
+        --name calycopis-dev \
+        --env "SSH_AUTH_SOCK=/tmp/ssh-sock" \
+        --env "CONTAINER_HOST=unix:///run/podman/podman.sock" \
+        --volume "${HOME}/.m2:/root/.m2:rw,Z" \
+        --volume "${HOME}/.cursor:/root/.cursor:rw,Z" \
+        --volume "${CALYCOPIS_ROOT}:/calycopis:rw,Z" \
+        --volume "${HELIOPHORUS_ROOT}:/heliophorus:rw,Z" \
+        --volume "${SSH_AUTH_SOCK}:/tmp/ssh-sock:rw,Z" \
+        --volume "${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock:rw,Z" \
+        ghcr.io/ivoa/calycopis/developer-tools:2026.05.04 \
+            bash
+
+            podman ps
+
+    >   CONTAINER ID  IMAGE                                              COMMAND     CREATED        STATUS        PORTS       NAMES
+    >   720ff14ddb6f  localhost/podman-pause:5.4.2-1743552000                        2 minutes ago  Up 5 seconds              ccc1c63f6538-infra
+    >   ae5770123000  ghcr.io/ivoa/calycopis/developer-tools:2026.05.04  bash        5 seconds ago  Up 4 seconds              calycopis-dev
+
+
+# -----------------------------------------------------
+# Create out database config.
+#[root@calycopis-dev]
+
+    mkdir /etc/calycopis
+
+    cat > /etc/calycopis/database.yaml << EOF
+spring:
+    datasource:
+        url: jdbc:postgresql://postgresql:5432/calycopis
+        username: $(pwgen 32 1)
+        password: $(pwgen 32 1)
+        driverClassName: org.postgresql.Driver
+        initialize: true
+EOF
+
+
+# -----------------------------------------------------
+# Start our PostgreSQL database.
+#[root@calycopis-dev]
+
+    podman run \
+        --rm \
+        --detach \
+        --replace \
+        --name postgresql \
+        --pod calycopis-pod \
+        --expose 5432 \
+        --env "POSTGRES_DB=calycopis" \
+        --env "POSTGRES_USER=$(yq '.spring.datasource.username' /etc/calycopis/database.yaml)" \
+        --env "POSTGRES_PASSWORD=$(yq '.spring.datasource.password' /etc/calycopis/database.yaml)" \
+        docker.io/library/postgres:latest
+
+    >   ....
+    >   ....
+
+
+# -----------------------------------------------------
+# Build and launch our service with the docker platform.
+#[root@calycopis-dev]
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd java
+
+            ./mvnw clean spring-boot:run -D calycopis-platform=docker
+
+        popd
+    popd
+
+    >   ....
+    >   ....
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Start another terminal and run our Python tests.
+#[user@desktop]
+
+    testdata=${HOME}/temp
+
+    podman exec \
+        --tty \
+        --env "TESTDATA=${testdata}" \
+        --interactive \
+            calycopis-dev \
+                bash
+
+    pip install pytest
+    pip install docker
+
+    pip install --edit /calycopis/Calycopis-schema/github-zrq/codegen/python/client/build
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+            pushd docker
+
+                pytest *
+
+            popd
+        popd
+    popd
+
+    >   ....
+    >   ....
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Start another terminal to run Cursor.
+#[user@desktop]
+
+    podman exec \
+        --tty \
+        --interactive \
+            calycopis-dev \
+                bash
+
+        curl https://cursor.com/install -fsS | bash
+
+        agent
+
+    ?   /plan
+    ?   Please load plan `Auth identity implementation-e0232013.plan.md` from a previous session.
+
+    >   ....
+    >   ....
+    >     Here's the plan from your previous session:
+    >
+    >     ────────────────────────────────────────
+    >
+    >     Authentication and Identity Implementation Plan
+    >
+    >     This plan adds authentication and identity tracking to the Calycopis broker, implementing Spring Security with both OIDC (JWT) and
+    >     local (HTTP Basic) authentication, plus an IdentityEntity ownership model for all components.
+    >
+    >     Phases:
+    >
+    >     1. Phase A — Create Identity model, add nullable owner field to ComponentEntity, create repository and factory
+    >     2. Phase B — Add Spring Security dependencies, create SecurityConfig (permissive), LocalAuthenticationProvider, IdentityResolver
+    >     3. Phase C — Modify factory interfaces to accept IdentityEntity, update delegates to resolve and pass identity, propagate owner
+    >        through all entity creation
+    >     4. Phase D — Enable authentication enforcement on POST endpoints, add owner-based authorization checks
+    >
+    >     All four phases are currently in pending status. Would you like to proceed with implementation starting from Phase A, or would you
+    >      like to review/modify the plan first?
+
+    ?   Start by implementing Phase A.
+
+    >     Tip: Try Composer via /models, frontier intelligence at a fraction of the cost.
+
+
+    ?   Please read the AGENTS.md file for the project, and apply the rules described
+    ?   in the the Coding conventions section.
+
+    >   ....
+    >   ....
+    >     All good — compiles cleanly. All coding conventions from AGENTS.md have been applied:
+    >
+    >     1. Licence headers — All new files have the correct GPL licence header with proper Copyright (c) 2026 year
+    >     2. Copyright year — Updated from 2024 to 2026 in the two modified files (Component.java, ComponentEntity.java)
+    >     3. AIMetrics — Added to all new files (100% contribution) and both modified files (8-10% contribution reflecting the proportion
+    >        of lines changed)
+    >     4. No ternary operators — None used in any of the new code
+    >     5. Clarity over brevity — Code style matches the existing project conventions (expanded braces, descriptive method names)
+
+
+    ?   Please implement Phase B.
+
+    >   ....
+    >   ....
+    >       To-do All done
+    >       ☒ Phase B: Add Spring Security dependencies, SecurityConfig, LocalAuthenticationProvider, IdentityResolver
+    >       ☒ Add Spring Security and OAuth2 resource server dependencies to pom.xml
+    >       ☒ Create SecurityConfig.java (permissive - all endpoints allowed)
+    >       ☒ Create LocalAuthenticationProvider.java
+    >       ☒ Create IdentityResolver.java
+    >       ☒ Add security config to application.yaml
+    >       ☒ Verify compilation
+    >
+    >     Phase B is complete. Here's what was done:
+    >
+    >     Files created:
+    >     • spring/security/SecurityConfig.java — @Configuration with permissive SecurityFilterChain (all requests permitted, CSRF
+    >       disabled, stateless sessions), plus a BCryptPasswordEncoder bean
+    >     • spring/security/LocalAuthenticationProvider.java — @Component AuthenticationProvider that validates HTTP Basic credentials
+    >       against IdentityEntity password hashes
+    >     • spring/security/IdentityResolver.java — @Service that resolves a Spring Authentication into an IdentityEntity (handles UUID
+    >       principals from Basic auth, JWT tokens with auto-provisioning, and username strings)
+    >     • spring/identity/SpringIdentityEntityFactoryImpl.java — @Component that makes IdentityEntityFactory available as a Spring bean
+    >        (extends IdentityEntityFactoryImpl with injected repository)
+    >
+    >     Files modified:
+    >     • pom.xml — Added spring-boot-starter-security and spring-boot-starter-oauth2-resource-server dependencies; updated copyright
+    >       year and AIMetrics
+    >     • application.yaml — Added calycopis.security.public-read: true config property; updated AIMetrics
+    >
+    >     The security configuration is fully permissive — all endpoints remain accessible without authentication. The infrastructure is in
+    >     place for Phase C (identity threading) and Phase D (enforcement).
+
+
+    ?   Please implement Phase C.
+
+    >   ....
+    >   ....
+    >       To-do All done
+    >       ☒ Phase C: Thread identity through factories, delegates, and entity creation
+    >       ☒ Explore delegate impls, factory chain, and parser context
+    >       ☒ Modify BaseDelegateImpl and delegate impls to resolve and pass identity
+    >       ☒ Update OfferSetEntityFactory interface and impl to accept IdentityEntity
+    >       ☒ Add owner to OfferSetRequestParserContext and propagate through parsing
+    >       ☒ Update downstream entity factories/constructors to accept and store owner
+    >       ☒ Verify compilation
+    >
+    >     Phase C is complete. Here's a summary of what was done:
+    >
+    >     Files modified:
+    >
+    >     • BaseDelegateImpl.java — Added IdentityResolver dependency and getIdentity() method that resolves the current SecurityContext
+    >       authentication to an IdentityEntity
+    >     • OffersetsApiDelegateImpl.java — Passes IdentityResolver to super; calls getIdentity() and passes it to create(request,
+    >       identity)
+    >     • SessionsApiDelegateImpl.java — Passes IdentityResolver to super; calls getIdentity() and passes it to direct(request,
+    >       identity)
+    >     • OfferSetEntityFactory.java — Added IdentityEntity owner parameter to create() and direct() methods
+    >     • OfferSetEntityFactoryImpl.java — Threads owner through: sets it on the parser context, then sets it on the created
+    >       OfferSetEntity
+    >     • OfferSetRequestParserContext.java — Added getOwner() / setOwner() methods
+    >     • OfferSetRequestParserContextImpl.java — Implements the owner getter/setter with a private field
+    >     • SimpleExecutionSessionEntity.java — Sets owner from context in the constructor used during offer creation
+    >     • ComponentEntity.java — Changed setOwner from protected to public so factories in other packages can set it
+    >
+    >     Identity flow:
+    >
+    >     HTTP Request → SecurityFilterChain → SecurityContext
+    >                                              ↓
+    >     Delegate.getIdentity() → IdentityResolver.resolve(auth) → IdentityEntity
+    >                                              ↓
+    >     OfferSetEntityFactory.create(request, identity)
+    >                                              ↓
+    >     OfferSetRequestParserContext.setOwner(identity)
+    >                                              ↓
+    >     OfferSetEntity.setOwner(context.getOwner())
+    >     SimpleExecutionSessionEntity.setOwner(context.getOwner())
+    >
+    >     For unauthenticated requests (Phase B's permissive config), getIdentity() returns null, and all entities get null owner —
+    >     preserving backward compatibility.
+
+    ?   Rather than setting the identity using OfferSetRequestParserContext.setOwner()
+    ?   it would be better to pass it as a parameter to stageOne() and then pass it as
+    ?   a parameter to the OfferSetRequestParserContextImpl constructor.
+
+    >   ....
+    >   ....
+    >     Done. The owner is now passed as a parameter to stageOne() and through to the OfferSetRequestParserContextImpl constructor,
+    >     where it's stored as a final field. The setOwner() method has been removed from both the interface and implementation.
+
+
+    ?   Please implement Phase D.
+
+    >   ....
+    >   ....
+    >     Phase D is complete. Here's what was done:
+    >
+    >     SecurityConfig updated:
+    >     • GET requests remain publicly accessible (unauthenticated)
+    >     • Actuator endpoints remain publicly accessible
+    >     • All other requests (POST) require authentication
+    >     • HTTP Basic authentication enabled
+    >     • OAuth2 JWT resource server enabled conditionally (only when spring.security.oauth2.resourceserver.jwt.issuer-uri is
+    >       configured)
+    >     • CSRF disabled, stateless session management
+    >
+    >     Owner-based authorization in SessionsApiDelegateImpl.executionUpdatePost():
+    >     • Before applying an update, the handler now looks up the session and checks ownership
+    >     • If the session has an owner and the caller's identity doesn't match, returns 403 FORBIDDEN
+    >     • If the session has no owner (legacy/anonymous), or the caller is anonymous, the update proceeds (graceful degradation for the
+    >        transition period)
+    >
+    >     Configuration:
+    >     • The OIDC issuer URI is externalized via spring.security.oauth2.resourceserver.jwt.issuer-uri (or OIDC_ISSUER_URI env var)
+    >     • When no issuer is configured, the service operates with HTTP Basic auth only
+    >
+    >     All four phases are now complete. The project compiles cleanly.
+
+
+    ?   Can we replace the use of ComponentEntity.setOwner(identity)
+    ?   with setting the owner in ComponentEntity constructor,
+    ?   passing it down the chain of constructors
+
+    >   ....
+    >   ....
+    >    ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >    │ Suggested Plan                                                                                                                  │
+    >    │                                                                                                                                 │
+    >    │ Replace setOwner() with Constructor-Based Owner Propagation                                                                     │
+    >    │                                                                                                                                 │
+    >    │ Strategy                                                                                                                        │
+    >    │                                                                                                                                 │
+    >    │ Add IdentityEntity owner to the ComponentEntity constructors. Top-level entities (OfferSetEntity,                               │
+    >    │ SimpleExecutionSessionEntity) pass it explicitly. Child entities (storage, compute, data, executable, volume) derive it from    │
+    >    │ their parent session.getOwner() in their own constructors.                                                                      │
+    >    │                                                                                                                                 │
+    >    │ Changes                                                                                                                         │
+    >    │                                                                                                                                 │
+    >    │ 1. ComponentEntity constructors gain an owner parameter                                                                         │
+    >    │                                                                                                                                 │
+    >    │ In ComponentEntity.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/component/ComponentEntity.java), add      │
+    >    │ IdentityEntity owner to all three non-JPA constructors and assign this.owner = owner:                                           │
+    >    │                                                                                                                                 │
+    >    │ protected ComponentEntity(final String name, final IdentityEntity owner)                                                        │
+    >    │ protected ComponentEntity(final IvoaComponentMetadata meta, final IdentityEntity owner)                                         │
+    >    │ protected ComponentEntity(final String name, final String description, final Instant created, final IdentityEntity owner)       │
+    >    │                                                                                                                                 │
+    >    │ The single-arg (String name) constructor currently delegates to the three-arg one with nulls. It becomes (String name,          │
+    >    │ IdentityEntity owner) delegating to the four-arg.                                                                               │
+    >    │ Remove the public setOwner() method (no longer needed externally).                                                              │
+    >    │                                                                                                                                 │
+    >    │ 2. LifecycleComponentEntity passes owner through                                                                                │
+    >    │                                                                                                                                 │
+    >    │ In LifecycleComponentEntity.java                                                                                                │
+    >    │ (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/component/LifecycleComponentEntity.java), add owner to both       │
+    >    │ non-JPA constructors and pass it up to super(...).                                                                              │
+    >    │                                                                                                                                 │
+    >    │ 3. AbstractExecutionSessionEntity passes owner through                                                                          │
+    >    │                                                                                                                                 │
+    >    │ In AbstractExecutionSessionEntity.java                                                                                          │
+    >    │ (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/session/AbstractExecutionSessionEntity.java):                     │
+    >    │                                                                                                                                 │
+    >    │ public AbstractExecutionSessionEntity(final OfferSetEntity offerset, final String name, final IdentityEntity owner)             │
+    >    │                                                                                                                                 │
+    >    │ Passes owner to super(name, owner).                                                                                             │
+    >    │                                                                                                                                 │
+    >    │ 4. SimpleExecutionSessionEntity passes context.getOwner()                                                                       │
+    >    │                                                                                                                                 │
+    >    │ In SimpleExecutionSessionEntity.java                                                                                            │
+    >    │ (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/session/simple/SimpleExecutionSessionEntity.java), the            │
+    >    │ three-arg constructor passes context.getOwner() up the chain. Remove the explicit this.setOwner(context.getOwner()) call.       │
+    >    │                                                                                                                                 │
+    >    │ 5. OfferSetEntity constructor gains owner                                                                                       │
+    >    │                                                                                                                                 │
+    >    │ In OfferSetEntity.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/offerset/OfferSetEntity.java):             │
+    >    │                                                                                                                                 │
+    >    │ protected OfferSetEntity(String name, String description, Instant created, Instant expires, IdentityEntity owner)               │
+    >    │                                                                                                                                 │
+    >    │ Passes owner to super(name, description, created, owner).                                                                       │
+    >    │                                                                                                                                 │
+    >    │ 6. OfferSetEntityFactoryImpl passes owner via constructor                                                                       │
+    >    │                                                                                                                                 │
+    >    │ In OfferSetEntityFactoryImpl.java                                                                                               │
+    >    │ (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/offerset/OfferSetEntityFactoryImpl.java), the create(context,     │
+    >    │ offerCount) method passes offersetContext.getOwner() to the OfferSetEntity constructor instead of calling setOwner() after.     │
+    >    │                                                                                                                                 │
+    >    │ 7. IdentityEntity sets self-owner via constructor                                                                               │
+    >    │                                                                                                                                 │
+    >    │ In IdentityEntity.java (java/src/main/java/net/ivoa/calycopis/broker/engine/entities/identity/IdentityEntity.java), both        │
+    >    │ constructors call super(name, null) initially (owner is null at construction time). The setSelfOwner() method remains to        │
+    >    │ handle the self-reference since the entity cannot reference itself before it exists. This is the one case where                 │
+    >    │ post-construction assignment is unavoidable.                                                                                    │
+    >    │                                                                                                                                 │
+    >    │ 8. Child entities derive owner from session                                                                                     │
+    >    │                                                                                                                                 │
+    >    │ All child entities (storage, compute, data, executable, volume) already receive a SimpleExecutionSessionEntity session in       │
+    >    │ their constructors. They will pass session.getOwner() up the chain:                                                             │
+    >    │ • AbstractStorageResourceEntity(session, result) -> calls super(result.getMeta(), session.getOwner())                           │
+    >    │ • AbstractExecutableEntity(session, result) -> calls super(result.getMeta(), session.getOwner())                                │
+    >    │ • AbstractDataResourceEntity(session, storage, result) -> calls super(result.getMeta(), session.getOwner())                     │
+    >    │ • AbstractComputeResourceEntity(session, result, offer) -> calls super(result.getMeta(), session.getOwner())                    │
+    >    │                                                                                                                                 │
+    >    │ Volume mount entities receive a computeResource parameter. They pass computeResource.getOwner() up the chain:                   │
+    >    │ • AbstractVolumeMountEntity(computeResource, ...) -> calls super(meta, computeResource.getOwner())                              │
+    >    │                                                                                                                                 │
+    >    │ 9. Remove setOwner()                                                                                                            │
+    >    │                                                                                                                                 │
+    >    │ After all constructors propagate the owner, remove the public setOwner() method from ComponentEntity. Keep a package-private    │
+    >    │ or protected version only for IdentityEntity.setSelfOwner().                                                                    │
+    >    │                                                                                                                                 │
+    >    │ Files touched (in order)                                                                                                        │
+    >    │                                                                                                                                 │
+    >    │ 1. ComponentEntity.java - add owner to constructors, remove public setOwner                                                     │
+    >    │ 2. LifecycleComponentEntity.java - pass owner through                                                                           │
+    >    │ 3. AbstractExecutionSessionEntity.java - add owner param                                                                        │
+    >    │ 4. SimpleExecutionSessionEntity.java - pass context.getOwner(), remove setOwner call                                            │
+    >    │ 5. OfferSetEntity.java - add owner to constructor                                                                               │
+    >    │ 6. OfferSetEntityFactoryImpl.java - pass owner to constructor instead of setOwner                                               │
+    >    │ 7. IdentityEntity.java - pass null as owner in super(), keep setSelfOwner                                                       │
+    >    │ 8. AbstractStorageResourceEntity.java - derive owner from session                                                               │
+    >    │ 9. AbstractExecutableEntity.java - derive owner from session                                                                    │
+    >    │ 10. AbstractDataResourceEntity.java - derive owner from session                                                                 │
+    >    │ 11. AbstractComputeResourceEntity.java - derive owner from session                                                              │
+    >    │ 12. AbstractVolumeMountEntity.java - derive owner from computeResource                                                          │
+    >    │                                                                                                                                 │
+    >    │  Saved to root/.cursor/plans/Constructor owner propagation-2c7048d4.plan.md                                                     │
+    >    │ ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+    >    │                                                                                                                                 │
+    >    │ Ready to build?                                                                                                                 │
+    >    │                                                                                                                                 │
+    >    │  → 1. Yes, build locally (b)                                                                                                    │
+    >    │    2. No, propose changes (p or Esc)                                                                                            │
+    >    │                                                                                                                                 │
+    >    └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+    >   ....
+    >   ....
+    >       To-do All done
+    >       ☒ Add IdentityEntity owner param to all ComponentEntity constructors, remove public setOwner()
+    >       ☒ Update LifecycleComponentEntity constructors to pass owner through
+    >       ☒ Update AbstractExecutionSessionEntity and SimpleExecutionSessionEntity constructors
+    >       ☒ Update OfferSetEntity constructor and OfferSetEntityFactoryImpl call site
+    >       ☒ Update IdentityEntity to pass null owner to super, keep setSelfOwner()
+    >       ☒ Update AbstractStorageResourceEntity, AbstractExecutableEntity, AbstractDataResourceEntity, AbstractComputeResourceEntity,
+    >         AbstractVolumeMountEntity to derive owner from session/parent
+    >       ☒ Verify clean compilation
+    >
+    >     All done. Here's a summary of what was implemented:
+    >
+    >     1. ComponentEntity.java — Added IdentityEntity owner parameter to all three non-JPA constructors, assigned it in the body.
+    >        Changed setOwner() from public to protected (retained only for IdentityEntity.setSelfOwner()). Changed getOwner() return type
+    >         to IdentityEntity (covariant).
+    >
+    >     2. LifecycleComponentEntity.java — Added IdentityEntity owner to both non-JPA constructors, passing it up to super(...).
+    >
+    >     3. AbstractExecutionSessionEntity.java — Added IdentityEntity owner parameter, passing it to super(name, owner).
+    >
+    >     4. SimpleExecutionSessionEntity.java — Passes context.getOwner() up the constructor chain; removed the explicit
+    >        this.setOwner(context.getOwner()) call.
+    >
+    >     5. OfferSetEntity.java — Added IdentityEntity owner to the factory constructor, passing it to super(name, description, created,
+    >        owner).
+    >
+    >     6. OfferSetEntityFactoryImpl.java — Passes offersetContext.getOwner() directly to the OfferSetEntity constructor instead of
+    >        calling setOwner() after construction.
+    >
+    >     7. IdentityEntity.java — Both constructors pass null as owner to super(username, null). The setSelfOwner() method remains for
+    >        the self-referencing case.
+    >
+    >     8. Child entities (storage, executable, data, compute, volume) — Derive owner from their parent (session.getOwner() or
+    >        computeResource.getOwner()) and pass it up via the constructor chain.
+    >
+    >     Compilation verified clean.
+
+
+    ?   /plan
+    ?   Can you create a plan for updating the Python tests to use test identities
+    ?   injected into the database before the tests are run.
+
+    >   ....
+    >   ....
+    >       AskQuestion Test Identity Injection Strategy (2)
+    >       1. The tests are black-box integration tests that hit a running broker service. There's no conftest.py or database fixture
+    >       yet. How should the test identities be injected into the database before tests run?
+    >         [x] Via a REST API endpoint on the broker (e.g. POST /identities or an admin endpoint that creates test users)
+    >         [ ] Via direct SQL inserts against the PostgreSQL database (requires DB connection details available to tests)
+    >         [ ] Via a data.sql or application startup seed that pre-loads test identities when the broker starts
+    >         [ ] Some other approach (please describe in a follow-up message)
+    >
+    >       2. How many distinct test identities do you need, and what should they represent?
+    >         [ ] Two users (e.g. 'alice' and 'bob') to test ownership isolation between users
+    >         [ ] One test user (just enough to authenticate POST requests)
+    >         [x] Multiple users with different roles/permissions (admin, regular user, read-only, etc.)
+    >
+    >       AskQuestion Clarifications on Identity Endpoints and Roles (2)
+    >       1. There is currently no REST endpoint for creating identities on the broker. Should the plan include creating one (e.g. POST
+    >        /admin/identities that accepts username + password), or do you already have one in mind?
+    >         [x] Yes, create a new admin endpoint (e.g. POST /admin/identities) as part of this plan
+    >         [ ] I have a different mechanism in mind (I'll describe it)
+    >
+    >       2. What roles/permissions should the test identities have? The current security model only distinguishes between
+    >       authenticated vs unauthenticated (and ownership). Are you planning to add role-based access control, or do you mean
+    >       'multi_role' in terms of different ownership scenarios?
+    >         [ ] Just different users for testing ownership isolation (no RBAC yet)
+    >         [ ] Add roles (e.g. admin, user) and role-based access control as part of this work
+    >         [x] Plan for future RBAC but only implement ownership isolation for now
+    >
+    >       AskQuestion Client Authentication and Test Scope (2)
+    >       1. The generated Python client (calycopis_schema_client) already supports HTTP Basic auth via Configuration(username=...,
+    >       password=...). Should the tests create authenticated clients using this mechanism, or do you want a different approach?
+    >         [ ] Yes, use HTTP Basic auth via Configuration(host, username, password)
+    >         [ ] Use Bearer tokens (would need a token-issuing mechanism)
+    >         [x] Support both, but start with Basic auth for initial tests
+    >
+    >       2. Which test files should be updated? All of them (mock, docker, any), or just a subset to start?
+    >         [x] Update all existing test files to use authenticated clients
+    >         [ ] Start with just the mock platform tests
+    >         [ ] Create new auth-specific test files that test ownership isolation, leave existing tests using a default identity
+
+    >    ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >    │ Suggested Plan                                                                                                                  │
+    >    │                                                                                                                                 │
+    >    │ Update Python Tests to Use Injected Test Identities                                                                             │
+    >    │                                                                                                                                 │
+    >    │ Summary                                                                                                                         │
+    >    │                                                                                                                                 │
+    >    │ Create an admin REST endpoint on the broker for identity provisioning, add a shared conftest.py that seeds test identities      │
+    >    │ before tests run, and update all test files to use authenticated ExecutionBrokerClient instances.                               │
+    >    │                                                                                                                                 │
+    >    │ Phase 1: Admin Identity Endpoint (Java)                                                                                         │
+    >    │                                                                                                                                 │
+    >    │ Add a new Spring controller at POST /admin/identities that accepts a JSON body with username and password, creates an           │
+    >    │ IdentityEntity via the existing factory, and returns the created identity's UUID.                                               │
+    >    │                                                                                                                                 │
+    >    │ Files to create/modify                                                                                                          │
+    >    │                                                                                                                                 │
+    >    │ • New: java/src/main/java/net/ivoa/calycopis/broker/spring/webapp/AdminIdentityController.java                                  │
+    >    │   (java/src/main/java/net/ivoa/calycopis/broker/spring/webapp/AdminIdentityController.java)                                     │
+    >    │   • @RestController with @RequestMapping("/admin/identities")                                                                   │
+    >    │   • POST handler accepts { "username": "...", "password": "..." }, hashes the password with PasswordEncoder, calls              │
+    >    │     IdentityEntityFactory.create(username, hashedPassword)                                                                      │
+    >    │   • Returns 201 with { "uuid": "...", "username": "..." }                                                                       │
+    >    │   • GET /{uuid} for lookup (optional, useful for debugging)                                                                     │
+    >    │ • Modify: java/src/main/java/net/ivoa/calycopis/broker/spring/security/SecurityConfig.java                                      │
+    >    │   (java/src/main/java/net/ivoa/calycopis/broker/spring/security/SecurityConfig.java)                                            │
+    >    │   • Add .requestMatchers("/admin/**").permitAll() so identity seeding does not require pre-existing authentication (or          │
+    >    │     alternatively protect it but provide a bootstrap mechanism)                                                                 │
+    >    │   • Decision: make /admin/** unauthenticated for now, with a note to restrict it in production via a profile or config flag     │
+    >    │                                                                                                                                 │
+    >    │ Phase 2: Python Test Infrastructure                                                                                             │
+    >    │                                                                                                                                 │
+    >    │ New shared conftest.py                                                                                                          │
+    >    │                                                                                                                                 │
+    >    │ • New: tests/python/conftest.py (tests/python/conftest.py)                                                                      │
+    >    │   • Session-scoped fixtures that run once per test session                                                                      │
+    >    │   • seed_identities fixture: calls POST /admin/identities to create test users (alice, bob, admin) with known passwords         │
+    >    │   • alice_client fixture: returns ExecutionBrokerClient configured with alice's credentials via Configuration(host=...,         │
+    >    │     username="alice", password="...")                                                                                           │
+    >    │   • bob_client fixture: same for bob                                                                                            │
+    >    │   • admin_client fixture: same for admin (future RBAC use)                                                                      │
+    >    │   • anon_client fixture: unauthenticated client (for testing public GET access)                                                 │
+    >    │   • Handle idempotency: if a 409/conflict is returned (user already exists), treat as success                                   │
+    >    │                                                                                                                                 │
+    >    │ Test user definitions                                                                                                           │
+    >    │                                                                                                                                 │
+    >    │ TEST_USERS = [                                                                                                                  │
+    >    │     {"username": "alice", "password": "alice-test-pass"},                                                                       │
+    >    │     {"username": "bob",   "password": "bob-test-pass"},                                                                         │
+    >    │     {"username": "admin", "password": "admin-test-pass"},                                                                       │
+    >    │ ]                                                                                                                               │
+    >    │                                                                                                                                 │
+    >    │ Credentials sourced from environment variables with defaults:                                                                   │
+    >    │ • TEST_USER_ALICE_PASSWORD (default: alice-test-pass)                                                                           │
+    >    │ • TEST_USER_BOB_PASSWORD (default: bob-test-pass)                                                                               │
+    >    │ • TEST_USER_ADMIN_PASSWORD (default: admin-test-pass)                                                                           │
+    >    │                                                                                                                                 │
+    >    │ Phase 3: Update Existing Test Files                                                                                             │
+    >    │                                                                                                                                 │
+    >    │ All test files currently create an unauthenticated client fixture. Update each to use the shared authenticated fixtures from    │
+    >    │ conftest.py.                                                                                                                    │
+    >    │                                                                                                                                 │
+    >    │ Pattern for each file                                                                                                           │
+    >    │                                                                                                                                 │
+    >    │ Before:                                                                                                                         │
+    >    │                                                                                                                                 │
+    >    │ @pytest.fixture(scope="module")                                                                                                 │
+    >    │ def client() -> ExecutionBrokerClient:                                                                                          │
+    >    │     return ExecutionBrokerClient(host=CALYCOPIS_URL)                                                                            │
+    >    │                                                                                                                                 │
+    >    │ After: Remove the local client fixture. Tests use the session-scoped alice_client (or bob_client for ownership tests) from      │
+    >    │ conftest.py. Rename client parameter in test methods to alice_client.                                                           │
+    >    │                                                                                                                                 │
+    >    │ Files to update                                                                                                                 │
+    >    │                                                                                                                                 │
+    >    │ • tests/python/mock/test_mock_validators.py (tests/python/mock/test_mock_validators.py)                                         │
+    >    │ • tests/python/mock/test_mock_direct_execution.py (tests/python/mock/test_mock_direct_execution.py)                             │
+    >    │ • tests/python/mock/test_mock_stress.py (tests/python/mock/test_mock_stress.py)                                                 │
+    >    │ • tests/python/docker/test_docker_platform.py (tests/python/docker/test_docker_platform.py)                                     │
+    >    │ • tests/python/docker/test_docker_direct_execution.py (tests/python/docker/test_docker_direct_execution.py)                     │
+    >    │ • tests/python/docker/test_docker_stress.py (tests/python/docker/test_docker_stress.py)                                         │
+    >    │ • tests/python/docker/test_docker_bind_mount.py (tests/python/docker/test_docker_bind_mount.py)                                 │
+    >    │ • tests/python/docker/test_docker_volume_mount.py (tests/python/docker/test_docker_volume_mount.py)                             │
+    >    │ • tests/python/docker/test_docker_androcles_md5.py (tests/python/docker/test_docker_androcles_md5.py)                           │
+    >    │ • tests/python/any/test_resource_registration.py (tests/python/any/test_resource_registration.py)                               │
+    >    │                                                                                                                                 │
+    >    │ Phase 4: New Auth-Specific Tests                                                                                                │
+    >    │                                                                                                                                 │
+    >    │ • New: tests/python/any/test_identity_auth.py (tests/python/any/test_identity_auth.py)                                          │
+    >    │   • Test that unauthenticated POST returns 401                                                                                  │
+    >    │   • Test that authenticated POST (alice) succeeds                                                                               │
+    >    │   • Test ownership: alice creates a session, bob cannot update it (403)                                                         │
+    >    │   • Test ownership: alice creates a session, alice can update it                                                                │
+    >    │   • Test that GET remains public (no auth required)                                                                             │
+    >    │                                                                                                                                 │
+    >    │ Data Flow                                                                                                                       │
+    >    │                                                                                                                                 │
+    >    │ mermaid sequenceDiagram                                                                                                         │
+    >    │                                                                                                                                 │
+    >    │ sequenceDiagram                                                                                                                 │
+    >    │     participant conftest as conftest.py                                                                                         │
+    >    │     participant admin as POST /admin/identities                                                                                 │
+    >    │     participant db as Database                                                                                                  │
+    >    │     participant test as Test Method                                                                                             │
+    >    │     participant broker as Broker API                                                                                            │
+    >    │     conftest->>admin: Create alice, bob, admin                                                                                  │
+    >    │     admin->>db: INSERT INTO identities                                                                                          │
+    >    │     admin-->>conftest: 201 Created (uuid)                                                                                       │
+    >    │     conftest->>test: Provide alice_client fixture                                                                               │
+    >    │     test->>broker: POST /sessions (Basic auth: alice)                                                                           │
+    >    │     broker->>db: Verify credentials                                                                                             │
+    >    │     broker-->>test: 303 / session response                                                                                      │
+    >    │                                                                                                                                 │
+    >    │ Key Design Decisions                                                                                                            │
+    >    │                                                                                                                                 │
+    >    │ • /admin/identities is unauthenticated for now (test convenience); gate behind a config flag (calycopis.admin.open: true)       │
+    >    │   for production safety                                                                                                         │
+    >    │ • The admin endpoint returns 409 Conflict if the username already exists, so tests are idempotent across re-runs                │
+    >    │ • Session-scoped fixtures ensure identities are created once per pytest session, not per test                                   │
+    >    │ • Existing tests use alice_client as their default authenticated client — minimal disruption                                    │
+    >    │ • Structure supports future Bearer token tests by adding a token-issuing fixture later                                          │
+    >    │                                                                                                                                 │
+    >    │  Saved to root/.cursor/plans/Test identity injection-2c7048d4.plan.md                                                           │
+    >    │ ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+    >    │                                                                                                                                 │
+    >    │ Ready to build?                                                                                                                 │
+    >    │                                                                                                                                 │
+    >    │  → 1. Yes, build locally (b)                                                                                                    │
+    >    │    2. No, propose changes (p or Esc)                                                                                            │
+    >    │                                                                                                                                 │
+    >    └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+    ?   Can you change the plan to make /admin/identities authenticated from the start.
+    ?   * Use an admin username and password in a admin.yaml configuration file loaded at startup.
+    ?   * The admin.yaml configuration is created and loaded using the same pattern as the database.yaml configuration.
+
+    >   ....
+    >   ....
+    >     The plan has been updated. Here's what changed:
+    >
+    >     1. New todo: admin-config — Create config/admin.yaml template and add it to application.yaml's spring.config.import list,
+    >        following the same pattern as database.yaml.
+    >
+    >     2. Admin endpoint is now authenticated — /admin/** requires HTTP Basic auth validated against the calycopis.admin.username /
+    >        calycopis.admin.password properties loaded from admin.yaml. A new AdminAuthenticationProvider handles this separately from
+    >        the regular user LocalAuthenticationProvider.
+    >
+    >     3. Python conftest reads admin credentials from environment variables (CALYCOPIS_ADMIN_USERNAME, CALYCOPIS_ADMIN_PASSWORD) and
+    >        passes them as Basic auth when calling POST /admin/identities to seed test users.
+    >
+    >     4. Admin credentials are a service-level secret (not stored in the identities table), distinct from regular user accounts.
+
+    ?   Can you change the plan to use random names and passwords for the test identities.
+
+    >   ....
+    >   ....
+    >     Done. The plan now uses randomly generated usernames (with a recognisable prefix like alice-3f8a2b1c) and random passwords via
+    >     secrets.token_urlsafe(16) for each pytest session. This avoids collisions across parallel or repeated test runs, and removes
+    >     the need for fixed/hardcoded test credentials.
+
+
+    ?     Please go ahead and implement the plan
+
+    >   ....
+    >   ....
+    >       To-do All done
+    >       ☒ Create config/admin.yaml template and add spring.config.import for /etc/calycopis/admin.yaml in application.yaml
+    >       ☒ Create AdminIdentityController with POST /admin/identities endpoint, authenticated via admin credentials from admin.yaml
+    >       ☒ Create tests/python/conftest.py with session-scoped fixtures: seed_identities (using admin creds), alice_client,
+    >         bob_client, anon_client
+    >       ☒ Update mock platform test files to remove local client fixture and use alice_client from conftest
+    >       ☒ Update docker platform test files to remove local client fixture and use alice_client from conftest
+    >       ☒ Update tests/python/any/ test files to use alice_client from conftest
+    >       ☒ Create tests/python/any/test_identity_auth.py with ownership isolation and auth enforcement tests
+    >       ☒ Verify: compile Java, run a subset of Python tests against a running broker
+    >
+    >     All tasks are complete. Here's a summary of what was implemented:
+    >
+    >     Java (Broker) changes:
+    >
+    >     1. config/admin.yaml — New configuration template for admin credentials, following the same pattern as database.yaml. Deployed
+    >        to /etc/calycopis/admin.yaml at runtime.
+    >
+    >     2. application.yaml — Updated spring.config.import to load both database.yaml and admin.yaml.
+    >
+    >     3. AdminAuthenticationProvider.java — New Spring Security AuthenticationProvider that validates HTTP Basic credentials against
+    >        the calycopis.admin.username/calycopis.admin.password properties from admin.yaml. Grants the ADMIN authority on success.
+    >
+    >     4. AdminIdentityController.java — New @RestController at /admin/identities with a POST endpoint that creates user identities
+    >        (hashes the password, stores in database). Returns 201 on success, 409 on duplicate username.
+    >
+    >     5. SecurityConfig.java — Added .requestMatchers("/admin/**").hasAuthority("ADMIN") to require admin authentication for the admin
+    >         endpoint.
+    >
+    >     Python (Test) changes:
+    >
+    >     6. tests/python/conftest.py — New shared fixtures file providing:
+    >       • seed_identities — seeds random test users via the admin endpoint (autouse, session-scoped)
+    >       • alice_client / bob_client — authenticated clients with random credentials
+    >       • anon_client — unauthenticated client
+    >       • client — backward-compatible alias for alice_client
+    >
+    >     7. All 10 existing test files — Removed local _server_reachable(), pytestmark, and client fixture definitions. Tests now use the
+    >         session-scoped client fixture from conftest.py.
+    >
+    >     8. tests/python/any/test_identity_auth.py — New test file verifying:
+    >       • Unauthenticated POST returns 401
+    >       • Authenticated POST succeeds
+    >       • GET remains public
+    >       • Owner can update their own session
+    >       • Other users get 403 when trying to update someone else's session
+
+    ?   Please run a service with a mock platform and run the identity tests.
+
+    >   ....
+    >   ....
+
+    ?   The service will not work correctly with a H2 database.
+    ?   A postgresql database is already running and available.
+
+    >   ....
+    >   ....
+    >     All 5 identity auth tests pass:
+    >
+    >     • test_unauthenticated_post_rejected - PASSED (401 for anonymous POST)
+    >     • test_authenticated_post_succeeds - PASSED (alice can POST)
+    >     • test_get_remains_public - PASSED (anon can GET)
+    >     • test_owner_can_update_own_session - PASSED (alice can cancel her session)
+    >     • test_other_user_cannot_update_session - PASSED (bob gets 403 on alice's session)
+    >
+    >     All tests pass in 2.63 seconds. The implementation is working correctly — authentication is enforced, identity seeding works
+    >     via the admin endpoint, and ownership isolation is functional.
+
+
+    ?   Please run the rest of the mock tests.
+
+    >   ....
+    >   ....
+    >     Results: 47 passed, 1 failed (out of 48 tests).
+    >
+    >     The single failure is TestSkaoDataResourceValidation::test_valid_skao_data_resource — it expects the broker to accept a valid
+    >     SKAO data resource (response.result == "YES") but instead gets "NO". This appears to be a pre-existing issue with the SKAO data
+    >      resource validator in the mock platform, unrelated to the authentication changes.
+    >
+    >     All other tests — direct execution, lifecycle, cancellation, stress, and all other validator tests (Docker containers, Jupyter
+    >     notebooks, compute resources, storage, simple data, Amazon S3, IVOA data) — pass successfully with the new authenticated client
+    >      setup.
+
+    ?   please remove TestSkaoDataResourceValidation::test_valid_skao_data_resource from the test suite
+
+    >   ....
+    >   ....
+    >     Done. Removed test_valid_skao_data_resource from the test suite.
+
+
+    ?   Please restart the service with a docker platform and run the docker tests.
+
+    >   ....
+    >   ....
+    >     Broker is up and responding. Now running the docker tests.
+    >
+    >     $ cd /calycopis/Calycopis-broker/github-zrq && python3 -m pytest tests/python/docker/ -v 2>&1 10m 9s (background)
+    >
+    >       Monitored background task 1 active
+    >       Waited 10m
+    >       Read root/.cursor/projects/terminals/843650.txt line 1
+    >
+    >     The tests are still running — it's at 69% (30 of 43 tests passed so far). The docker tests take longer because they involve
+    >     actual container execution. Let me wait for them to finish.
+    >
+    >       Monitored background task 1 active
+    >       Waited for "passed|failed|error" in shell
+    >       Read root/.cursor/projects/terminals/843650.txt line 1
+    >       Waited 5m
+    >       Read root/.cursor/projects/terminals/843650.txt line 1
+    >
+    >     Tests are at 93% — the stress test (test_concurrent_sessions) is running, which typically takes a while. Let me wait for it to
+    >     complete.
+    >
+    >     ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    >     │ … Thought for 609ms                                                                                                             │
+    >     │ It seems like the test is still running. Let me check again with a longer wait, or check if the process is still running.       │
+    >     └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    >
+    >       Monitored background task 1 active
+    >       Waited for "===.*===" in shell
+    >       Waited for "exit_code" in shell
+    >       Read root/.cursor/projects/terminals/843650.txt line 1
+    >       Ran ps -p 11244 -o pid,state,etime,args 2>/dev/null || echo "Process 11244 has exited"
+    >
+    >     The stress test is still running (17+ minutes elapsed). This is expected as it runs concurrent Docker sessions. Let me wait
+    >     longer.
+    >
+    >       Monitored background task 1 active
+    >       Waited for "\d+ passed" in shell
+    >       Read root/.cursor/projects/terminals/843650.txt line 1
+    >
+    >     All 43 docker tests passed (in ~20 minutes). No failures.
+    >
+    >     Summary:
+    >     • test_docker_androcles_md5.py — 2 passed
+    >     • test_docker_bind_mount.py — 6 passed
+    >     • test_docker_direct_execution.py — 12 passed
+    >     • test_docker_platform.py — 17 passed
+    >     • test_docker_stress.py — 1 passed (concurrent sessions)
+    >     • test_docker_volume_mount.py — 5 passed
+
+    ?     Are the passwords visible in the database ?
+
+    >   ....
+    >   ....
+    >     No, the passwords are not visible in the database. They are hashed with BCrypt before storage.
+    >
+    >     The flow is:
+    >     1. SecurityConfig defines a PasswordEncoder bean that uses BCryptPasswordEncoder
+    >     2. AdminIdentityController calls passwordEncoder.encode(password) at line 108, producing a BCrypt hash
+    >     3. Only the hash (passwordHash) is passed to identityFactory.create(username, passwordHash) and persisted
+    >
+    >     You can verify by querying the database directly — the password column will contain strings like $2a$10$... (BCrypt hashes),
+    >     not the plaintext passwords.
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Try running the Python tests.
+#[user@desktop]
+
+    testdata=${HOME}/temp
+
+    podman exec \
+        --tty \
+        --env "TESTDATA=${testdata}" \
+        --interactive \
+            calycopis-dev \
+                bash
+
+    pip install pytest
+    pip install docker
+
+    pip install --edit /calycopis/Calycopis-schema/github-zrq/codegen/python/client/build
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+            pushd docker
+
+                pytest test_docker_volume_mount.py
+
+            popd
+        popd
+    popd
+
+    >   ====================================================== ERRORS ======================================================
+    >   __________________________ ERROR at setup of TestDockerVolumeMount.test_session_completes __________________________
+    >   file /calycopis/Calycopis-broker/github-zrq/tests/python/docker/test_docker_volume_mount.py, line 215
+    >         def test_session_completes(self, client):
+    >   E       fixture 'client' not found
+    >   >       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, docker_client, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+    >   >       use 'pytest --fixtures [testpath]' for help on them.
+
+
+# -----------------------------------------------------
+# -----------------------------------------------------
+# Ask Cursor to explain how to use the new tests.
+#[user@desktop]
+
+    podman exec \
+        --tty \
+        --interactive \
+            calycopis-dev \
+                bash
+
+        curl https://cursor.com/install -fsS | bash
+
+        agent --resume=2c7048d4-036b-4206-b205-f707e2386022
+
+    ?   Can you explain the steps needed to run the Python tests mnaually.
+
+    >   ....
+    >   ....
+    >     Here are the steps to run the Python tests manually:
+    >   
+    >     1. Ensure PostgreSQL is running
+    >   
+    >     The broker requires a PostgreSQL database. The connection details are configured in
+    >     /etc/calycopis/database.yaml.
+    >   
+    >     2. Set up the admin configuration
+    >   
+    >     Create /etc/calycopis/admin.yaml with admin credentials for the identity-seeding endpoint:
+    >   
+    >     calycopis:
+    >         admin:
+    >             username: <your-admin-username>
+    >             password: <your-admin-password>
+    >   
+    >     3. Start the broker service
+    >   
+    >     From the Java project directory:
+    >   
+    >     cd /calycopis/Calycopis-broker/github-zrq/java
+    >     # For the mock platform:
+    >     ./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=mock
+    >     --spring.config.import=file:/etc/calycopis/database.yaml,file:/etc/calycopis/admin.yaml"
+    >     # For the docker platform:
+    >     ./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=docker
+    >     --spring.config.import=file:/etc/calycopis/database.yaml,file:/etc/calycopis/admin.yaml"
+    >   
+    >     Wait until the processing loop messages appear (indicating the service is ready).
+    >   
+    >     4. Set environment variables for the tests
+    >   
+    >     The Python conftest.py reads these (with defaults shown):
+    >   
+    >     export CALYCOPIS_URL="http://localhost:8082"
+    >     export CALYCOPIS_ADMIN_USERNAME="<same as admin.yaml>"
+    >     export CALYCOPIS_ADMIN_PASSWORD="<same as admin.yaml>"
+    >   
+    >     If you're using the defaults (admin / admin-secret) and the service is on localhost:8082, you can skip this step
+    >      — but the admin credentials must match what's in /etc/calycopis/admin.yaml.
+    >   
+    >     5. Run the tests
+    >   
+    >     From the project root:
+    >   
+    >     cd /calycopis/Calycopis-broker/github-zrq
+    >     # Mock platform tests:
+    >     python3 -m pytest tests/python/mock/ -v
+    >     # Docker platform tests:
+    >     python3 -m pytest tests/python/docker/ -v
+    >     # Auth/identity tests:
+    >     python3 -m pytest tests/python/any/ -v
+    >     # Or run everything:
+    >     python3 -m pytest tests/python/ -v
+    >   
+    >     What happens automatically (via conftest.py):
+    >   
+    >     • Two test users (alice-<random>, bob-<random>) are created by calling POST /admin/identities with the admin
+    >       credentials
+    >     • An authenticated client is created for each user (using HTTP Basic auth)
+    >     • An unauthenticated client is also created
+    >     • All test files receive the client fixture (which is alice_client) automatically
+
+    #
+    # OK, give it a try.
+    #
+
+    yq '.' /etc/calycopis/admin.yaml
+
+    >   calycopis:
+    >     admin:
+    >       username: admin
+    >       password: admin-secret
+
+    yq \
+        '.calycopis.admin.username' \
+        /etc/calycopis/admin.yaml
+
+
+  export CALYCOPIS_URL="http://localhost:8082"
+
+  export CALYCOPIS_ADMIN_USERNAME="$(
+    yq \
+        '.calycopis.admin.username' \
+        /etc/calycopis/admin.yaml
+    )"
+
+  export CALYCOPIS_ADMIN_PASSWORD="$(
+    yq \
+        '.calycopis.admin.password' \
+        /etc/calycopis/admin.yaml
+    )"
+
+
+    pytest test_docker_volume_mount.py
+
+    >   ....
+    >   ....
+    >   ====================================================== ERRORS ======================================================
+    >   __________________________ ERROR at setup of TestDockerVolumeMount.test_session_completes __________________________
+    >   file /calycopis/Calycopis-broker/github-zrq/tests/python/docker/test_docker_volume_mount.py, line 215
+    >         def test_session_completes(self, client):
+    >   E       fixture 'client' not found
+    >   >       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, docker_client, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+    >   >       use 'pytest --fixtures [testpath]' for help on them.
+
+
+    ?   How do I connect the pytest test code to the client fixture ?
+    ?   I get the following error message when trying to run the test manually.
+    ?   ```
+    ?   ====================================================== ERRORS ======================================================
+    ?   __________________________ ERROR at setup of TestDockerVolumeMount.test_session_completes __________________________
+    ?   file /calycopis/Calycopis-broker/github-zrq/tests/python/docker/test_docker_volume_mount.py, line 215
+    ?         def test_session_completes(self, client):
+    ?   E       fixture 'client' not found
+    ?   >       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, docker_client, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+    ?   >       use 'pytest --fixtures [testpath]' for help on them.
+    ?   ``
+
+    >   ....
+    >   ....
+    >     The conftest.py is at tests/python/conftest.py, so pytest needs to discover it. This happens automatically when
+    >     you run from the project root with the tests/python/ path prefix. The issue is likely that you're running pytest
+    >      from within the tests/python/docker/ directory, or specifying only the test file directly.
+    >   
+    >     You need to run pytest from a directory at or above tests/python/ so that pytest finds the conftest.py. The
+    >     simplest approach:
+    >   
+    >     cd /calycopis/Calycopis-broker/github-zrq
+    >     python3 -m pytest tests/python/docker/test_docker_volume_mount.py -v
+    >   
+    >     If you're already in the tests/python/docker/ directory and run pytest ., it won't look up into tests/python/
+    >     for conftest.py.
+    >   
+    >     Alternatively, you can set rootdir explicitly:
+    >   
+    >     python3 -m pytest --rootdir=/calycopis/Calycopis-broker/github-zrq tests/python/docker/ -v
+    >   
+    >     The key rule: your working directory (or the rootdir) must be at or above tests/python/ for pytest to discover
+    >     the conftest.py that defines client, alice_client, bob_client, etc.
+
+    #
+    # OK, give it a try.
+    #
+
+    pushd /calycopis/Calycopis-broker/github-zrq
+        pushd tests/python/
+
+            pytest docker/test_docker_volume_mount.py
+
+        popd
+    popd
+
+    >   ....
+    >   ....
+    >   ==================================== 2 passed, 11 warnings in 88.08s (0:01:28) =====================================
+
+    #
+    # Yay - passed.
+    # Warnings are due to our wrapper using datetime.datetime.utcnow().
+    #
+
+

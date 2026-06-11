@@ -1,0 +1,69 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+# AIMetrics: [
+#     {
+#     "timestamp": "2026-06-09T21:28:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 5,
+#       "units": "%"
+#       }
+#     }
+#   ]
+#
+
+executable:
+  kind: "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/executable/docker-container.yaml"
+  meta:
+    description: |-
+      A simple Alpine based container that uses the coreutils hashing tools to calculate a checksum of a file or directory.
+      See https://www.gnu.org/software/coreutils/manual/html_node/Summarizing-files.html
+      Command line parameters (positional):
+        1) HASH   - md5sum|shasum|sha256sum|sha512sum (default: md5sum)
+        2) FORMAT - native|json                       (default: json)
+      Environment parameters (named):
+        INPUT - path to the target file or directory  (default: /input)
+  image:
+    locations:
+      - "ghcr.io/zarquan/heliophorus-androcles:sha-9a2513b"
+    digest: "sha256:0dfeaad1f37ab8cd506f3a16d1ade56d035694a34e0ff28be51b97f1924c4df3"
+compute:
+  kind: "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/compute/simple-compute-resource.yaml"
+  meta:
+    description: >-
+      A simple compute resource, with a volume mount for the input data.
+      You can add additional constraints for the number of cores and size of memory if needed.
+  volumes:
+    - kind: "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/volume/simple-volume-mount.yaml"
+      path: "/input"
+      mode: "READONLY"
+      resource: "input-data"
+data:
+  - kind: "https://www.purl.org/ivoa.net/Calycopis-openapi/schema/v1.0/kinds/data/abstract-data-resource.yaml"
+    meta:
+      name: "input-data"
+      description: |-
+        A description of the input data that we want to be checksummed.
+        Replace this element with a concrete data resource e.g.
+        a simple-data-resource element with a download URL.
+

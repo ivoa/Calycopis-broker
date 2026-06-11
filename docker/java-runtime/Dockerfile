@@ -48,6 +48,11 @@ LABEL org.opencontainers.image.authors  "https://github.com/Zarquan"
 EXPOSE 8082/tcp
 
 #
+# Create log directory for Spring/Log4j2 file appender.
+RUN mkdir -p /var/log/calycopis
+VOLUME /var/log/calycopis
+
+#
 # Install our webapp jar file.
 # https://spring.io/guides/gs/spring-boot-docker
 RUN mkdir /opt/calycopis
@@ -56,14 +61,20 @@ COPY ${jarfile} /opt/calycopis/${jarfile}
 
 #
 # Create our run script, needed to use ${jarfile} in our ENTRYPOINT.
-COPY <<EOF /opt/calycopis/run.sh
-#!/bin/sh
-java -jar /opt/calycopis/${jarfile}
-EOF
+#COPY <<EOF /opt/calycopis/run.sh
+##!/bin/sh
+#java -jar /opt/calycopis/${jarfile}
+#EOF
+
+RUN printf '%s\n' \
+  '#!/bin/sh' \
+  "exec java -jar /opt/calycopis/${jarfile}" \
+  > /opt/calycopis/run.sh \
 
 RUN chmod a+x /opt/calycopis/run.sh
 
-ENTRYPOINT ["/opt/calycopis/run.sh"]
+#ENTRYPOINT ["/opt/calycopis/run.sh"]
+ENTRYPOINT ["/bin/sh", "/opt/calycopis/run.sh"]
 
 
 

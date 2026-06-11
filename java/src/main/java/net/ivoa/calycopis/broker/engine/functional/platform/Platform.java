@@ -1,0 +1,193 @@
+/*
+ * <meta:header>
+ *   <meta:licence>
+ *     Copyright (C) 2026 University of Manchester.
+ *
+ *     This information is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This information is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   </meta:licence>
+ * </meta:header>
+ *
+ * AIMetrics: [
+ *     {
+ *     "timestamp": "2026-05-20T14:41:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 5,
+ *       "units": "%"
+ *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-26T16:50:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 2,
+ *       "units": "%"
+ *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-05-27T06:10:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 1,
+ *       "units": "%"
+ *       }
+ *     },
+ *     {
+ *     "timestamp": "2026-06-03T01:33:00",
+ *     "name": "Cursor CLI",
+ *     "version": "2026.02.13-41ac335",
+ *     "model": "Claude 4.6 Opus (Thinking)",
+ *     "contribution": {
+ *       "value": 10,
+ *       "units": "%"
+ *       }
+ *     }
+ *   ]
+ *
+ */
+
+package net.ivoa.calycopis.broker.engine.functional.platform;
+
+import java.net.URI;
+import java.util.UUID;
+
+import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEntity;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceEntity;
+import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidatorFactory;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValidatorFactory;
+import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataStorageLinker;
+import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidatorFactory;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityFactory;
+import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntityUpdater;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidatorFactory;
+import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactory;
+import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOfferFactory;
+import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
+import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingRequestFactory;
+import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingTransactionHandler;
+
+/**
+ * Platform is basically a factory of factories.
+ * It provides a set of factories that provide platform specific implementations of the entities and validators.
+ * 
+ */
+public interface Platform
+extends FactoryBase
+    {
+
+    /**
+     * Initialize the platform.
+     *
+     */
+    public void initialize();
+
+    /**
+     * Get a LifecycleComponentEntity using the appropriate factory for the kind.
+     *  
+     */
+    public LifecycleComponentEntity select(final URI kind, final UUID uuid);
+    
+    /**
+     * Get the ProcessingRequestFactory for this platform.
+     *
+     */
+    public ProcessingRequestFactory getProcessingRequestFactory();
+
+    /**
+     * Get the ProcessingTransactionHandler for this platform.
+     *
+     */
+    public ProcessingTransactionHandler getProcessingTransactionHandler();
+    
+    /**
+     * Get the ComputeResourceOfferFactory for this platform.
+     *
+     */
+    public SimpleComputeResourceOfferFactory getComputeResourceOfferFactory();
+
+    /**
+     * Get the ComputeResourceValidatorFactory for this platform.
+     *
+     */
+    public AbstractComputeResourceValidatorFactory getComputeResourceValidators();
+    
+    /**
+     * Get the DataResourceValidatorFactory for this platform.
+     *
+     */
+    public AbstractDataResourceValidatorFactory getDataResourceValidators();
+
+    /**
+     * Get the ExecutableValidatorFactory for this platform.
+     *
+     */
+    public AbstractExecutableValidatorFactory getExecutableValidators();
+
+    /**
+     * Get the StorageResourceValidatorFactory for this platform.
+     *
+     */
+    public AbstractStorageResourceValidatorFactory getStorageResourceValidators();
+
+    /**
+     * Get the VolumeMountValidatorFactory for this platform.
+     *
+     */
+    public AbstractVolumeMountValidatorFactory getVolumeMountValidators();
+
+    /**
+     * Get the DataStorageLinker for this platform.
+     * 
+     */
+    public AbstractDataStorageLinker getDataStorageLinker();
+
+    /**
+     * Get the OfferSetEntityFactory for this platform.
+     *
+     */
+    public OfferSetEntityFactory getOfferSetEntityFactory();
+
+    /**
+     * Get the ExecutionSessionEntityFactory for this platform.
+     * 
+     */
+    public SimpleExecutionSessionEntityFactory getExecutionSessionEntityFactory();
+
+    /**
+     * Get the ExecutionSessionEntityUpdateHandler for this platform.
+     * 
+     */
+    public SimpleExecutionSessionEntityUpdater getExecutionSessionEntityUpdater();
+
+    /**
+     * Populate costs and metrics on session and component entities.
+     * Called during offer building to attach platform-specific cost and metric data.
+     *
+     */
+    public void populateCostsAndMetrics(
+        final SimpleExecutionSessionEntity sessionEntity,
+        final AbstractComputeResourceEntity computeResourceEntity,
+        final OfferSetRequestParserContext context
+        );
+
+    }

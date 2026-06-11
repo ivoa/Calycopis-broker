@@ -58,11 +58,11 @@ calycopis-broker
         calycopis-broker-engine  - business logic and JPA entities
 
         packages
-            net.ivoa.calycopis.broker.api.datamodel..
+            net.ivoa.calycopis.broker.api.model..
             net.ivoa.calycopis.broker.api.functional..
 
         packages
-            net.ivoa.calycopis.broker.engine.datamodel..
+            net.ivoa.calycopis.broker.engine.entities..
             net.ivoa.calycopis.broker.engine.functional..
 
 # -----------------------------------------------------
@@ -76,7 +76,7 @@ calycopis-broker
             calycopis-schema-spring
 
         packages
-            net.ivoa.calycopis.broker.spring.datamodel..
+            net.ivoa.calycopis.broker.spring.model..
             net.ivoa.calycopis.broker.spring.functional..
 
     Quarkus/VODML service
@@ -88,7 +88,7 @@ calycopis-broker
             calycopis-vodml-quarkus
 
         packages
-            net.ivoa.calycopis.broker.quarkus.datamodel..
+            net.ivoa.calycopis.broker.quarkus.model..
             net.ivoa.calycopis.broker.quarkus.functional..
 
     Docker platform components
@@ -99,7 +99,7 @@ calycopis-broker
             calycopis-broker-engine
 
         packages
-            net.ivoa.calycopis.broker.docker.datamodel..
+            net.ivoa.calycopis.broker.docker.model..
             net.ivoa.calycopis.broker.docker.functional..
 
     Slurm platform components

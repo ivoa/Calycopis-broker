@@ -1,0 +1,159 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#
+#     This information is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This information is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this software. If not, see <http://www.gnu.org/licenses/>.
+#   </meta:licence>
+# </meta:header>
+#
+#zrq-notes-indent
+#
+# AIMetrics: []
+#
+
+    Target:
+
+        A list of things needed to make a deployable service.
+
+    Result:
+
+        Work in progress ...
+
+# -----------------------------------------------------
+# Spring transition
+
+    Create a Spring free interface for JpaRepositories.
+        ProcessingRequestRepository
+
+    Resolve the inheritance tree for JpaRepositories.
+
+    ProcessingServiceImpl is complicated
+
+    Deprecate
+        CancelComponentRequestEntity
+
+
+
+# -----------------------------------------------------
+# major
+
+    Authentication.
+    OIDC auth in webapp
+    IdentityEntity
+        Component.Owner -> Identity
+
+    Check what is being stored in the DB.
+
+    Create storage pool.
+    Create Docker impelemtation of SimpleStorage.
+
+
+# -----------------------------------------------------
+# medium
+
+    Fix warnings in client
+    Wrap client classes, adding default kind.
+
+    Create a re-usable component to record preparation time.
+    Use recorded time to predict preparation time.
+
+    Create a re-usable component for resource booking.
+    Implement resource booking for a storage pool.
+
+    Mock tests trigger internal failure on Docker platform
+    Docker tests trigger internal failure on Mock platform
+
+    Two stage delete for expired offers.
+    Two stage delete for expired processing requests.
+
+    Refactor mock classes to use a simple duration rather than loop count.
+    Remove MockMonitorableComponent
+
+    Find somewhere to store stdout and stderr.
+
+    Split the create and select functionality in DockerSimpleDataResourceEntityFactory and AbstractDataResourceEntityFactory.
+
+    Resolve the PURL issues.
+
+    Add support for JupyterNotebooks
+    Add support for VirtualDesktops
+
+    Add metrics to schema
+        metrics:
+          - kind: min-max-metric
+            min: float
+            max: float
+    Add costs to schema
+        costs:
+          - kind: min-max-cost
+            min: float
+            max: float
+    Add 'payment-required' redirect.
+        location
+        ivoa-payment-gateway-kind
+
+    Investigate 'default' type for inheritance.
+    https://github.com/OAI/OpenAPI-Specification/issues/3105
+    https://github.com/OAI/sig-moonwalk
+    - probably not
+
+# -----------------------------------------------------
+
+    How do we include a `generic` placeholder data object in our schema.
+    So the application says it needs one data object as 'config' and a set of data objects as 'data'.
+    Does SimpleDataResource work for that ?
+    User can substitute a different type of AbstractDataResource.
+
+    ** What if we use AbstractDataResource as the placeholder.
+    ** Allow AbstractDataResource in the schema, but that gets caught in the validation step.
+    ** This looks like it might work.
+
+
+# -----------------------------------------------------
+# minor
+
+    How many of the JpaRepositories are actually used ?
+    I think it might just be the base class AbstractXyz ones.
+    -- done
+
+    Get rid of Optional, just return null.
+    Or make use of the NoSuchElementException that Optional throws.
+
+    Remove the XyzEntity interfaces
+
+    Do we need XyzEntityFactory interfaces - we aren't using Autowire any more.
+    -- planned but not implemented
+
+    Decide on one pattern for entities and their interfaces:
+
+        AbstractDataResource is the interface
+        AbstractDataResourceEntity is the entity class
+
+        AbstractExecutable is the interface
+        AbstractExecutableEntityImpl is the entity class
+
+    Message and MessageEntityImpl should have kind rather than type.
+
+    Merge AbstractExecutionSession and SimpleExecutionSession into just ExecutionSession.
+    Remove AbstractExecutionSession et al.
+
+    Change SimpleExecutionSessionEntityUpdateHandler to SimpleExecutionSessionEntityUpdater
+    Change getSessionUpdateHandler to getSessionUpdater
+
+
+
+
+
+

@@ -1,0 +1,33 @@
+---
+description: Ask the user before working around unexpected or unusual behaviour from an API or service
+alwaysApply: true
+---
+
+When you encounter unexpected or unusual behaviour from an API, service, or component — such as
+a missing header, an undocumented status code, a malformed response, or any response that does not
+match what the specification or documentation says should happen — **stop and ask the user before
+writing code to work around it**.
+
+Do not assume the unexpected behaviour is intentional. It may be an unintentional bug in the
+component producing the response, and the correct fix may be to correct that component rather
+than to add compensating logic in the client or caller.
+
+Examples of unexpected behaviour that should trigger this rule:
+
+- A 303 redirect response without a `Location` header.
+- A response status code that contradicts the API specification.
+- A response body that is missing required fields or contains unexpected types.
+- Timeouts or error codes that the documentation does not describe.
+- Inconsistencies between what the code comments or documentation say and what actually happens.
+
+When you detect something like this:
+
+1. **Describe the unexpected behaviour** clearly to the user, including what you expected
+   and what you actually observed.
+2. **Ask the user** whether the behaviour is intentional or whether it might be a bug
+   in the upstream component.
+3. **Wait for the user's guidance** before deciding whether to work around it in the
+   current code or to fix the root cause elsewhere.
+
+This avoids burying workarounds in client code that mask real bugs, and ensures that
+the user is aware of potential issues in other parts of the system.

@@ -3,7 +3,7 @@
     |
     | <meta:header>
     |   <meta:licence>
-    |     Copyright (C) 2024 University of Manchester.
+    |     Copyright (C) 2026 University of Manchester.
     |
     |     This information is free software: you can redistribute it and/or modify
     |     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,19 @@
     |   </meta:licence>
     | </meta:header>
     |
+    | AIMetrics: [
+    |     {
+    |     "timestamp": "2026-05-30T06:03:00",
+    |     "name": "Cursor CLI",
+    |     "version": "2026.02.13-41ac335",
+    |     "model": "Claude 4.6 Opus (Thinking)",
+    |     "contribution": {
+    |       "value": 5,
+    |       "units": "%"
+    |       }
+    |     }
+    |   ]
+    |
     +-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -32,7 +45,7 @@
 	</parent>
 	<groupId>net.ivoa.calycopis</groupId>
 	<artifactId>calycopis-broker</artifactId>
-	<version>1.0.3-SNAPSHOT</version>
+	<version>1.0.6-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Calycopis broker webapp</name>
 	<description>IVOA ExecutionBroker Spring Boot implementation</description>
@@ -90,8 +103,8 @@
             +-->
         <dependency>
             <groupId>net.ivoa.calycopis</groupId>
-            <artifactId>calycopis-spring</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <artifactId>calycopis-schema-spring</artifactId>
+            <version>1.0.6-SNAPSHOT</version>
         </dependency>
 
         <!--+
@@ -210,6 +223,19 @@
         	<artifactId>storage-units-model</artifactId>
         	<version>2025.8.6</version>
     	</dependency>
+
+        <!--+
+            | Spring Security and OAuth2 Resource Server.
+            | (versions are managed by SpringBoot)
+            +-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
 
         <!--+
             | Spring dependencies.

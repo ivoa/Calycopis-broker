@@ -1,7 +1,7 @@
 #
 # <meta:header>
 #   <meta:licence>
-#     Copyright (c) 2026, Manchester (http://www.manchester.ac.uk/)
+#     Copyright (c) 2026, University of Manchester (http://www.manchester.ac.uk/)
 #
 #     This information is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,26 @@
 # AIMetrics: [
 #     {
 #     "timestamp": "2026-04-14T17:00:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 5,
+#       "units": "%"
+#       }
+#     },
+#     {
+#     "timestamp": "2026-05-30T06:03:00",
+#     "name": "Cursor CLI",
+#     "version": "2026.02.13-41ac335",
+#     "model": "Claude 4.6 Opus (Thinking)",
+#     "contribution": {
+#       "value": 5,
+#       "units": "%"
+#       }
+#     },
+#     {
+#     "timestamp": "2026-06-03T03:47:00",
 #     "name": "Cursor CLI",
 #     "version": "2026.02.13-41ac335",
 #     "model": "Claude 4.6 Opus (Thinking)",
@@ -49,19 +69,22 @@ server:
 logging:
     level:
         net.ivoa: DEBUG
-        net.ivoa.calycopis.functional.processing: INFO
         com.baeldung: INFO
         org.hibernate: INFO
         org.apache.tomcat: INFO
         org.apache.catalina: INFO
         org.springframework: INFO
+#       net.ivoa.calycopis.broker.spring: INFO
 
 spring:
     application:
         name: Ambleck
 
     config:
-        import: file:/etc/calycopis/database.yaml
+        import:
+          - file:/etc/calycopis/database.yaml
+          - file:/etc/calycopis/admin.yaml
+          - optional:file:/etc/calycopis/platform.yaml
 
     # https://stackoverflow.com/a/55679297
     mvc:
@@ -97,9 +120,54 @@ spring:
             settings:
                 web-allow-others: true
 
+#   security:
+#       oauth2:
+#           resourceserver:
+#               jwt:
+#                   issuer-uri: ${OIDC_ISSUER_URI:}
+
+calycopis:
+  security:
+    public-read: true
+
 broker:
   docker:
     helper-image: "alpine:3"
+  costs-and-metrics:
+    session:
+      costs:
+        - type: "urn:ivoa:calycopis:cost:monetary"
+          description: "Estimated monetary cost"
+          min: 0.10
+          max: 0.50
+        - type: "urn:ivoa:calycopis:cost:energy"
+          description: "Estimated energy use in kWh"
+          min: 0.02
+          max: 0.10
+        - type: "urn:ivoa:calycopis:cost:carbon"
+          description: "Estimated carbon emissions in gCO2"
+          min: 5.0
+          max: 25.0
+      metrics:
+        - type: "urn:ivoa:calycopis:metric:compute-performance"
+          description: "Compute performance benchmark"
+          min: 150.0
+          max: 200.0
+    compute:
+      costs:
+        - type: "urn:ivoa:calycopis:cost:monetary"
+          description: "Compute cost per hour"
+          min: 0.05
+          max: 0.25
+      metrics:
+        - type: "urn:ivoa:calycopis:metric:compute-performance"
+          description: "CPU benchmark score"
+          min: 150.0
+          max: 200.0
+        - type: "urn:ivoa:calycopis:metric:io-throughput"
+          description: "IO throughput in MB/s"
+          min: 100.0
+          max: 500.0
   # Delay and loop count for the MockXyzResourceEntity classes
   mock-entities:
     actions:

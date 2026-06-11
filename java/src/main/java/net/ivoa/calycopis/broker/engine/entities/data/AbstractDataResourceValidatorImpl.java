@@ -1,0 +1,105 @@
+/*
+ * <meta:header>
+ *   <meta:licence>
+ *     Copyright (C) 2025 University of Manchester.
+ *
+ *     This information is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This information is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   </meta:licence>
+ * </meta:header>
+ *
+ *
+ */
+
+package net.ivoa.calycopis.broker.engine.entities.data;
+
+import java.util.Map;
+
+import lombok.extern.slf4j.Slf4j;
+import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
+import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
+import net.ivoa.calycopis.broker.engine.functional.validator.AbstractValidator;
+import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
+
+/**
+ * 
+ */
+@Slf4j
+public abstract class AbstractDataResourceValidatorImpl
+extends AbstractValidator<IvoaAbstractDataResource, AbstractDataResourceEntity>
+implements AbstractDataResourceValidator
+    {
+
+    /**
+     * StorageLinker to connect storage and data resources together.
+     * 
+     */
+    private final AbstractDataStorageLinker storageLinker ;
+    
+    /**
+     * Protected constructor.
+     * 
+     */
+    protected AbstractDataResourceValidatorImpl(
+        final AbstractDataStorageLinker storageLinker
+        ){
+        super();
+        this.storageLinker = storageLinker ;
+        }
+
+    /**
+     * Check our context for for a duplicate resource.
+     * 
+     */
+    protected boolean duplicateCheck(
+        final IvoaAbstractDataResource requested,
+        final OfferSetRequestParserContext context
+        ){
+        boolean success = true ;
+        AbstractDataResourceValidator.Result duplicate = context.findDataValidatorResult(
+            requested
+            );
+        if (duplicate != null)
+            {
+            context.addWarning(
+                "urn:duplicate-resource",
+                "Duplicate data resource found [${requested}][${duplicate}]",
+                Map.of(
+                    "requested",
+                    context.makeDataValidatorResultKey(requested),
+                    "duplicate",
+                    context.makeDataValidatorResultKey(duplicate)
+                    )
+                );
+            success = false ;
+            }
+        return success;
+        }
+
+    /**
+     * Find (or create) the corresponding storage resource.
+     *  
+     */
+    protected AbstractStorageResourceValidator.Result linkStorage(
+        final IvoaAbstractDataResource requested,
+        final IvoaAbstractDataResource validated,
+        final OfferSetRequestParserContext context
+        ){
+        return this.storageLinker.linkStorage(
+            requested,
+            validated,
+            context
+            );
+        }
+    }
+   
