@@ -70,13 +70,13 @@ from time import sleep as _sleep
 import docker
 import pytest
 
-from calycopis_schema_client.models import (
+from calycopis_openapi_client.models import (
     ExecutionRequest,
     SimpleExecutionSessionPhase,
 )
-from calycopis_schema_client.models.docker_image_spec import DockerImageSpec
-from calycopis_schema_client.models.component_metadata import ComponentMetadata
-from calycopis_schema_client.wrappers import (
+from calycopis_openapi_client.models.docker_image_spec import DockerImageSpec
+from calycopis_openapi_client.models.component_metadata import ComponentMetadata
+from calycopis_openapi_client.wrappers import (
     DockerContainer,
     SimpleComputeResource,
     SimpleDataResource,
@@ -89,8 +89,7 @@ from calycopis_schema_client.wrappers import (
 # ---------------------------------------------------------------------------
 
 BIND_MOUNT_TEST_FILE = os.environ.get(
-    "BIND_MOUNT_TEST_FILE",
-    "/home/Zarquan/temp/random.txt",
+    "TESTFILE"
 )
 
 PHASE_TIMEOUT = float(os.environ.get("PHASE_TIMEOUT", "180"))

@@ -1,0 +1,28 @@
+#
+# <meta:header>
+#   <meta:licence>
+#     Copyright (c) 2026, Manchester University (http://www.manchester.ac.uk/)
+#
+#     This work is made available under the Creative Commons
+#     Attribution-ShareAlike 4.0 International licence.
+#
+#     For details of the licence terms see:
+#     https://creativecommons.org/licenses/by-sa/4.0/
+#   </meta:licence>
+# </meta:header>
+#
+# AIMetrics: []
+#
+# Requirements for our Python tests.
+#
+
+--index-url https://pypi.org/simple
+--extra-index-url https://repo.dev.uksrc.org/repository/localpypi/simple
+--pre
+
+pytest
+docker
+
+calycopis_openapi_client >= 1.0.7.dev1, <= 1.0.7.dev99
+
+
