@@ -25,7 +25,7 @@ package net.ivoa.calycopis.broker.engine.entities.compute;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorFactoryImpl;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractComputeResource;
 
 /**
  * A Factory for AbstractComputeResourceValidators.

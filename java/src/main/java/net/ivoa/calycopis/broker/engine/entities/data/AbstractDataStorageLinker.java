@@ -26,7 +26,7 @@ package net.ivoa.calycopis.broker.engine.entities.data;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBase;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractDataResource;
 
 /**
  * 

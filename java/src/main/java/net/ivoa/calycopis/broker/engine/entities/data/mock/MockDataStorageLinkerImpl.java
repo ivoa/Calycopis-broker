@@ -34,10 +34,10 @@ import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResource
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.SimpleStorageResource;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator.ResultEnum;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleStorageResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractStorageResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaComponentMetadata;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleStorageResource;
 
 /**
  * 

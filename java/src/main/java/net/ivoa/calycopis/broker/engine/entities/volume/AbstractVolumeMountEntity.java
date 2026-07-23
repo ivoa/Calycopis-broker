@@ -59,8 +59,8 @@ import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResource
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
-import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractVolumeMount;
+import net.ivoa.calycopis.openapi.spring.model.IvoaComponentMetadata;
 
 /**
  *

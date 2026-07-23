@@ -78,11 +78,11 @@ import net.ivoa.calycopis.broker.engine.entities.metric.MetricItemBean;
 import net.ivoa.calycopis.broker.engine.entities.metric.SimpleMinMaxFloatMetricEntity;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractCostItem;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractMetricItem;
-import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
-import net.ivoa.calycopis.schema.spring.model.IvoaMessageItem;
-import net.ivoa.calycopis.schema.spring.model.IvoaMessageItem.LevelEnum;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractCostItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractMetricItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaComponentMetadata;
+import net.ivoa.calycopis.openapi.spring.model.IvoaMessageItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaMessageItem.LevelEnum;
 
 /**
  * JPA Entity for a Component

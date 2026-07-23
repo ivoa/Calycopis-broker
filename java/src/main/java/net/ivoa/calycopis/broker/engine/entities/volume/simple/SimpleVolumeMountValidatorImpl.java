@@ -57,9 +57,9 @@ import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountEntit
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorImpl;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
-import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleVolumeMount;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractVolumeMount;
+import net.ivoa.calycopis.openapi.spring.model.IvoaComponentMetadata;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleVolumeMount;
 
 /**
  *

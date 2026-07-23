@@ -57,7 +57,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEntity;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSession;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
  * Public interface for an execution session.

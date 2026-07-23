@@ -97,14 +97,14 @@ import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessio
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.functional.booking.AbstractResourceOffer;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractOption;
-import net.ivoa.calycopis.schema.spring.model.IvoaScheduleStartDurationInstant;
-import net.ivoa.calycopis.schema.spring.model.IvoaScheduleStartDurationInterval;
-import net.ivoa.calycopis.schema.spring.model.IvoaScheduledExecutionSchedule;
-import net.ivoa.calycopis.schema.spring.model.IvoaScheduledExecutionSession;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSession;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleSessionConnector;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractOption;
+import net.ivoa.calycopis.openapi.spring.model.IvoaScheduleStartDurationInstant;
+import net.ivoa.calycopis.openapi.spring.model.IvoaScheduleStartDurationInterval;
+import net.ivoa.calycopis.openapi.spring.model.IvoaScheduledExecutionSchedule;
+import net.ivoa.calycopis.openapi.spring.model.IvoaScheduledExecutionSession;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleExecutionSession;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleExecutionSessionPhase;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleSessionConnector;
 
 /**
  * An execution session Entity.

@@ -26,7 +26,7 @@ package net.ivoa.calycopis.broker.engine.entities.volume.simple;
 import java.net.URI;
 
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMount;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleVolumeMount.ModeEnum;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleVolumeMount.ModeEnum;
 
 /**
  *

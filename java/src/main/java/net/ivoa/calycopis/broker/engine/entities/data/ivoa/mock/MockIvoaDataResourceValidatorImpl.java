@@ -52,7 +52,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceEntit
 import net.ivoa.calycopis.broker.engine.entities.data.ivoa.IvoaDataResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.mock.MockDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaIvoaDataResource;
 
 /**
  * 

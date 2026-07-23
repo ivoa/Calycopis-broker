@@ -52,7 +52,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.mock.MockDataStorageLinker
 import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.data.simple.SimpleDataResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleDataResource;
 
 /**
  * 

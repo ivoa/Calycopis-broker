@@ -35,7 +35,7 @@ package net.ivoa.calycopis.broker.engine.entities.storage;
 
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorFactoryImpl;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractStorageResource;
 
 /**
  * An AbstractStorageResourceValidatorFactory implementation.

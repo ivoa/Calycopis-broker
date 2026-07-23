@@ -36,7 +36,7 @@ import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSet;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutionSession;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractExecutionSession;
 
 /**
  * 

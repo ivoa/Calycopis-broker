@@ -42,8 +42,8 @@ import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionS
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleStorageResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractStorageResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleStorageResource;
 
 /**
  * A SimpleStorageResource Entity.

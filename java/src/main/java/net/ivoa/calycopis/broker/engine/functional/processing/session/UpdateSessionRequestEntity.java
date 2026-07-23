@@ -48,7 +48,7 @@ import net.ivoa.calycopis.broker.engine.entities.component.LifecycleComponentEnt
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
  * A session-level processing request that checks whether all components

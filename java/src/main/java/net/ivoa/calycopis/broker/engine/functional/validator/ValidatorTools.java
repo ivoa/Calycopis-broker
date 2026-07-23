@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
+import net.ivoa.calycopis.openapi.spring.model.IvoaComponentMetadata;
 
 /**
  * Provides a set of tools for validators to use.

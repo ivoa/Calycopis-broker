@@ -56,11 +56,11 @@ import net.ivoa.calycopis.broker.engine.functional.platform.mock.MockPlatformSet
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
 import net.ivoa.calycopis.broker.engine.functional.processing.mock.MockDelayAction;
-import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
-import net.ivoa.calycopis.schema.spring.model.IvoaLifecyclePhase;
-import net.ivoa.calycopis.schema.spring.model.IvoaLifecycleSchedule;
-import net.ivoa.calycopis.schema.spring.model.IvoaLifecycleStartDurationInstant;
-import net.ivoa.calycopis.schema.spring.model.IvoaLifecycleStartDurationInterval;
+import net.ivoa.calycopis.openapi.spring.model.IvoaComponentMetadata;
+import net.ivoa.calycopis.openapi.spring.model.IvoaLifecyclePhase;
+import net.ivoa.calycopis.openapi.spring.model.IvoaLifecycleSchedule;
+import net.ivoa.calycopis.openapi.spring.model.IvoaLifecycleStartDurationInstant;
+import net.ivoa.calycopis.openapi.spring.model.IvoaLifecycleStartDurationInterval;
 
 /**
  * 

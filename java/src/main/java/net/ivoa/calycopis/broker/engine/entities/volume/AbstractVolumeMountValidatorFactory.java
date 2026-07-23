@@ -24,7 +24,7 @@
 package net.ivoa.calycopis.broker.engine.entities.volume;
 
 import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorFactory;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractVolumeMount;
 
 /**
  *

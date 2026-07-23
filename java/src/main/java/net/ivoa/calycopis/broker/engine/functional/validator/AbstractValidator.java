@@ -26,8 +26,8 @@ import java.time.Duration;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
-import net.ivoa.calycopis.schema.spring.model.IvoaLifecycleSchedule;
-import net.ivoa.calycopis.schema.spring.model.IvoaLifecycleStartDurationInstant;
+import net.ivoa.calycopis.openapi.spring.model.IvoaLifecycleSchedule;
+import net.ivoa.calycopis.openapi.spring.model.IvoaLifecycleStartDurationInstant;
 
 /**
  * Base class for Validatior implementations.

@@ -48,14 +48,14 @@ import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEn
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
-import net.ivoa.calycopis.schema.spring.model.IvoaDockerContainer;
-import net.ivoa.calycopis.schema.spring.model.IvoaDockerExternalPort;
-import net.ivoa.calycopis.schema.spring.model.IvoaDockerImageSpec;
-import net.ivoa.calycopis.schema.spring.model.IvoaDockerInternalPort;
-import net.ivoa.calycopis.schema.spring.model.IvoaDockerNetworkPort;
-import net.ivoa.calycopis.schema.spring.model.IvoaDockerNetworkSpec;
-import net.ivoa.calycopis.schema.spring.model.IvoaDockerPlatformSpec;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractExecutable;
+import net.ivoa.calycopis.openapi.spring.model.IvoaDockerContainer;
+import net.ivoa.calycopis.openapi.spring.model.IvoaDockerExternalPort;
+import net.ivoa.calycopis.openapi.spring.model.IvoaDockerImageSpec;
+import net.ivoa.calycopis.openapi.spring.model.IvoaDockerInternalPort;
+import net.ivoa.calycopis.openapi.spring.model.IvoaDockerNetworkPort;
+import net.ivoa.calycopis.openapi.spring.model.IvoaDockerNetworkSpec;
+import net.ivoa.calycopis.openapi.spring.model.IvoaDockerPlatformSpec;
 
 /**
  * JPA Entity for DockerContainer executables.

@@ -39,7 +39,7 @@ import jakarta.persistence.Table;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainer.DockerExternalPort;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainer.DockerInternalPort;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainer.DockerNetworkPort;
-import net.ivoa.calycopis.schema.spring.model.IvoaDockerNetworkPort;
+import net.ivoa.calycopis.openapi.spring.model.IvoaDockerNetworkPort;
 
 /**
  * JPA Entity for DockerContainer ports.

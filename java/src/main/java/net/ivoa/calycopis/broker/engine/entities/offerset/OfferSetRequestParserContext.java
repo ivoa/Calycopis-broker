@@ -66,13 +66,13 @@ import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.message.MessageSubject;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidator;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractCostItem;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractMetricItem;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
-import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractComputeResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractCostItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractMetricItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractStorageResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractVolumeMount;
+import net.ivoa.calycopis.openapi.spring.model.IvoaExecutionRequest;
 
 /**
  *

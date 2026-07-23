@@ -23,7 +23,7 @@
 package net.ivoa.calycopis.broker.engine.entities.session.simple;
 
 import net.ivoa.calycopis.broker.engine.entities.component.AbstractEntityRepository;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
  * JpaRepository for ExecutionSessionEntity.
