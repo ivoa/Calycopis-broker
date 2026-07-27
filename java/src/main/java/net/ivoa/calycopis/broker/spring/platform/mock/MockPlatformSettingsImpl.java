@@ -52,14 +52,14 @@ import net.ivoa.calycopis.broker.engine.functional.platform.mock.MockPlatformSet
 
 /**
  * Spring-specific implementation of MockPlatformSettings, bound from
- * the broker.mock-entities section of the application configuration.
+ * the calycopis.broker.mock-entities section of the application configuration.
  *
  * Delay values are in seconds. Use the getXxxDelayMillis() methods
  * to get the delay in milliseconds for use with Thread.sleep().
  *
  */
 @Component
-@ConfigurationProperties(prefix = "broker.mock-entities")
+@ConfigurationProperties(prefix = "calycopis.broker.mock-entities")
 public class MockPlatformSettingsImpl
 implements MockPlatformSettings
     {

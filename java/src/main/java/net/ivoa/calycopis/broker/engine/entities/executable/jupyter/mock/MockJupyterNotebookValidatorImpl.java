@@ -29,7 +29,7 @@ import java.util.Map;
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.JupyterNotebookEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.executable.jupyter.JupyterNotebookValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.schema.spring.model.IvoaJupyterNotebook;
+import net.ivoa.calycopis.openapi.spring.model.IvoaJupyterNotebook;
 
 /**
  * 

@@ -63,8 +63,8 @@ import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionS
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaS3DataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaS3DataResource;
 
 /**
  * A Validator implementation to handle AmazonS3DataResources.

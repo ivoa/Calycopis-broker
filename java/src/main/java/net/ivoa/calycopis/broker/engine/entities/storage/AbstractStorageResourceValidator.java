@@ -43,7 +43,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValida
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractStorageResource;
 
 /**
  * Public interface for AbstractStorageResource Validators.

@@ -75,16 +75,16 @@ import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValid
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractCostItem;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractMetricItem;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractStorageResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
-import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
-import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
-import net.ivoa.calycopis.schema.spring.model.IvoaMessageItem.LevelEnum;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleComputeResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractComputeResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractCostItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractMetricItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractStorageResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractVolumeMount;
+import net.ivoa.calycopis.openapi.spring.model.IvoaComponentMetadata;
+import net.ivoa.calycopis.openapi.spring.model.IvoaExecutionRequest;
+import net.ivoa.calycopis.openapi.spring.model.IvoaMessageItem.LevelEnum;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleComputeResource;
 
 /**
  *

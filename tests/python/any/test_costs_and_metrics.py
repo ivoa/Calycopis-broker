@@ -52,15 +52,15 @@ Usage:
 
 import pytest
 
-from calycopis_schema_client.models import (
+from calycopis_openapi_client.models import (
     ExecutionRequest,
     OfferSetResponse,
     SimpleMinMaxFloatCost,
     SimpleMinMaxFloatMetric,
 )
-from calycopis_schema_client.models.docker_image_spec import DockerImageSpec
-from calycopis_schema_client.models.component_metadata import ComponentMetadata
-from calycopis_schema_client.wrappers import DockerContainer
+from calycopis_openapi_client.models.docker_image_spec import DockerImageSpec
+from calycopis_openapi_client.models.component_metadata import ComponentMetadata
+from calycopis_openapi_client.wrappers import DockerContainer
 
 
 COST_KIND_URI = (

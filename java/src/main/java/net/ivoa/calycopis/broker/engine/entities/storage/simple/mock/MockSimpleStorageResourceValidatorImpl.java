@@ -39,8 +39,8 @@ import java.util.Map;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.storage.simple.SimpleStorageResourceValidatorImpl;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleStorageResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleStorageSize;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleStorageResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleStorageSize;
 
 /**
  * 

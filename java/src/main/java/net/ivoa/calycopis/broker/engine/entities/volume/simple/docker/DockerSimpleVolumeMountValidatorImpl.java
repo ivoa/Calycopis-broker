@@ -29,7 +29,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.volume.simple.SimpleVolumeMountValidatorImpl;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleVolumeMount;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleVolumeMount;
 
 /**
  *

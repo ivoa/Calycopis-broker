@@ -52,7 +52,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceEntity
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaS3DataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaS3DataResource;
 
 /**
  * An AmazonS3DataResourceEntity implementation.

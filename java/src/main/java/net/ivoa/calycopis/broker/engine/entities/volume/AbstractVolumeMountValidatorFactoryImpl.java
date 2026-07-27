@@ -25,7 +25,7 @@ package net.ivoa.calycopis.broker.engine.entities.volume;
 import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorFactoryImpl;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractVolumeMount;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractVolumeMount;
 
 /**
  *

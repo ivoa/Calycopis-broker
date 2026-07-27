@@ -50,8 +50,8 @@ import uuid
 
 import pytest
 
-from calycopis_schema_client import ApiClient, Configuration
-from calycopis_schema_client.wrappers.execution_client import ExecutionBrokerClient
+from calycopis_openapi_client import ApiClient, Configuration
+from calycopis_openapi_client.wrappers.execution_client import ExecutionBrokerClient
 
 
 # ---------------------------------------------------------------------------

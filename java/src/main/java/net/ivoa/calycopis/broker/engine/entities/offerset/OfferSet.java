@@ -27,7 +27,7 @@ import java.time.Instant;
 
 import net.ivoa.calycopis.broker.engine.entities.component.Component;
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSession;
-import net.ivoa.calycopis.schema.spring.model.IvoaOfferSetResponse.ResultEnum;
+import net.ivoa.calycopis.openapi.spring.model.IvoaOfferSetResponse.ResultEnum;
 
 /**
  * 

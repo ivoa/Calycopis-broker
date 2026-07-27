@@ -33,7 +33,7 @@ import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableEn
 import net.ivoa.calycopis.broker.engine.entities.executable.AbstractExecutableValidator;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaJupyterNotebook;
+import net.ivoa.calycopis.openapi.spring.model.IvoaJupyterNotebook;
 
 /**
  *

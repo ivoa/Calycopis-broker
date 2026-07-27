@@ -40,9 +40,9 @@ import lombok.extern.slf4j.Slf4j;
 import net.ivoa.calycopis.broker.engine.entities.compute.simple.SimpleComputeResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.entities.volume.AbstractVolumeMountValidatorFactory;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleComputeCores;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleComputeMemory;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleComputeResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleComputeCores;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleComputeMemory;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleComputeResource;
 
 /**
  * A validator implementation to handle SimpleComputeResources on a Docker platform.

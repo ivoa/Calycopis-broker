@@ -36,7 +36,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
-import net.ivoa.calycopis.schema.spring.model.IvoaMessageItem.LevelEnum;
+import net.ivoa.calycopis.openapi.spring.model.IvoaMessageItem.LevelEnum;
 
 /**
  * JPA Entity for MessageItems.

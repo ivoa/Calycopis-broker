@@ -24,7 +24,7 @@ package net.ivoa.calycopis.broker.engine.entities.executable;
 
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorFactoryImpl;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutable;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractExecutable;
 
 /**
  *   

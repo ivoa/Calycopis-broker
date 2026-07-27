@@ -81,22 +81,22 @@ Usage:
 
 import pytest
 
-from calycopis_schema_client.models import (
+from calycopis_openapi_client.models import (
     ExecutionRequest,
     OfferSetResponse,
 )
-from calycopis_schema_client.models.docker_image_spec import DockerImageSpec
-from calycopis_schema_client.models.docker_internal_port import DockerInternalPort
-from calycopis_schema_client.models.docker_network_port import DockerNetworkPort
-from calycopis_schema_client.models.docker_network_spec import DockerNetworkSpec
-from calycopis_schema_client.models.simple_compute_cores import SimpleComputeCores
-from calycopis_schema_client.models.simple_compute_memory import SimpleComputeMemory
-from calycopis_schema_client.models.simple_storage_size import SimpleStorageSize
-from calycopis_schema_client.models.ivoa_data_resource_block import IvoaDataResourceBlock
-from calycopis_schema_client.models.skao_data_resource_block import SkaoDataResourceBlock
-from calycopis_schema_client.models.skao_replica_item import SkaoReplicaItem
-from calycopis_schema_client.models.component_metadata import ComponentMetadata
-from calycopis_schema_client.wrappers import (
+from calycopis_openapi_client.models.docker_image_spec import DockerImageSpec
+from calycopis_openapi_client.models.docker_internal_port import DockerInternalPort
+from calycopis_openapi_client.models.docker_network_port import DockerNetworkPort
+from calycopis_openapi_client.models.docker_network_spec import DockerNetworkSpec
+from calycopis_openapi_client.models.simple_compute_cores import SimpleComputeCores
+from calycopis_openapi_client.models.simple_compute_memory import SimpleComputeMemory
+from calycopis_openapi_client.models.simple_storage_size import SimpleStorageSize
+from calycopis_openapi_client.models.ivoa_data_resource_block import IvoaDataResourceBlock
+from calycopis_openapi_client.models.skao_data_resource_block import SkaoDataResourceBlock
+from calycopis_openapi_client.models.skao_replica_item import SkaoReplicaItem
+from calycopis_openapi_client.models.component_metadata import ComponentMetadata
+from calycopis_openapi_client.wrappers import (
     DockerContainer,
     IvoaDataResource,
     JupyterNotebook,

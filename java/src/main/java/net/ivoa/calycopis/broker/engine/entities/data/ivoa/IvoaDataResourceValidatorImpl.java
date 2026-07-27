@@ -66,11 +66,11 @@ import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionS
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceValidator;
 import net.ivoa.calycopis.broker.engine.functional.validator.Validator;
 import net.ivoa.calycopis.broker.engine.functional.validator.ValidatorTools;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataLinkItem;
-import net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataResourceBlock;
-import net.ivoa.calycopis.schema.spring.model.IvoaIvoaObsCoreItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaIvoaDataLinkItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaIvoaDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaIvoaDataResourceBlock;
+import net.ivoa.calycopis.openapi.spring.model.IvoaIvoaObsCoreItem;
 
 /**
  * A Validator implementation to handle IvoaDataResources.

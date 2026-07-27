@@ -68,9 +68,9 @@ import net.ivoa.calycopis.broker.engine.entities.identity.IdentityEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetEntity;
 import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.broker.spring.security.IdentityResolver;
-import net.ivoa.calycopis.schema.spring.api.RequestsApiDelegate;
-import net.ivoa.calycopis.schema.spring.model.IvoaExecutionRequest;
-import net.ivoa.calycopis.schema.spring.model.IvoaOfferSetResponse;
+import net.ivoa.calycopis.openapi.spring.api.RequestsApiDelegate;
+import net.ivoa.calycopis.openapi.spring.model.IvoaExecutionRequest;
+import net.ivoa.calycopis.openapi.spring.model.IvoaOfferSetResponse;
 
 @Slf4j
 @Service

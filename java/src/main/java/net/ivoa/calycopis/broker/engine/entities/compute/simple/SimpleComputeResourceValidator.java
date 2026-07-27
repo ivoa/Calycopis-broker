@@ -27,7 +27,7 @@ import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResource
 import net.ivoa.calycopis.broker.engine.entities.compute.AbstractComputeResourceValidator;
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.functional.booking.compute.simple.SimpleComputeResourceOffer;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractComputeResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractComputeResource;
 
 /**
  * 

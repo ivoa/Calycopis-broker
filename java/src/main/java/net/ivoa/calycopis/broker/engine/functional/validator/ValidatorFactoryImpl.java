@@ -33,7 +33,7 @@ import java.util.Map;
 import net.ivoa.calycopis.broker.engine.entities.component.ComponentEntity;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
 import net.ivoa.calycopis.broker.engine.functional.factory.FactoryBaseImpl;
-import net.ivoa.calycopis.schema.spring.model.IvoaComponentMetadata;
+import net.ivoa.calycopis.openapi.spring.model.IvoaComponentMetadata;
 
 /**
  * Base class for validator factories.

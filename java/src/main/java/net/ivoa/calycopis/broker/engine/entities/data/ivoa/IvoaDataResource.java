@@ -26,8 +26,8 @@ package net.ivoa.calycopis.broker.engine.entities.data.ivoa;
 import java.net.URI;
 
 import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaIvoaDataLinkItem;
-import net.ivoa.calycopis.schema.spring.model.IvoaIvoaObsCoreItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaIvoaDataLinkItem;
+import net.ivoa.calycopis.openapi.spring.model.IvoaIvoaObsCoreItem;
 
 /**
  * Public interface for an IVOA DataResource.

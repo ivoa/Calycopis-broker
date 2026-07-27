@@ -26,7 +26,7 @@ package net.ivoa.calycopis.broker.spring.jpa;
 import org.springframework.stereotype.Repository;
 
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleExecutionSessionPhase;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleExecutionSessionPhase;
 
 /**
  * 

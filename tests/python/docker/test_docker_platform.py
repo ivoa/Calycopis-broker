@@ -70,16 +70,16 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from calycopis_schema_client.models import (
+from calycopis_openapi_client.models import (
     ExecutionRequest,
     OfferSetResponse,
     SimpleExecutionSessionPhase,
 )
-from calycopis_schema_client.models.docker_image_spec import DockerImageSpec
-from calycopis_schema_client.models.simple_compute_cores import SimpleComputeCores
-from calycopis_schema_client.models.simple_compute_memory import SimpleComputeMemory
-from calycopis_schema_client.models.component_metadata import ComponentMetadata
-from calycopis_schema_client.wrappers import (
+from calycopis_openapi_client.models.docker_image_spec import DockerImageSpec
+from calycopis_openapi_client.models.simple_compute_cores import SimpleComputeCores
+from calycopis_openapi_client.models.simple_compute_memory import SimpleComputeMemory
+from calycopis_openapi_client.models.component_metadata import ComponentMetadata
+from calycopis_openapi_client.wrappers import (
     DockerContainer,
     SimpleComputeResource,
 )

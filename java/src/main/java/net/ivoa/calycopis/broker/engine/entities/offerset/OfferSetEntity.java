@@ -43,9 +43,9 @@ import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessio
 import net.ivoa.calycopis.broker.engine.entities.session.AbstractExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.util.ListWrapper;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractExecutionSession;
-import net.ivoa.calycopis.schema.spring.model.IvoaOfferSetResponse;
-import net.ivoa.calycopis.schema.spring.model.IvoaOfferSetResponse.ResultEnum;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractExecutionSession;
+import net.ivoa.calycopis.openapi.spring.model.IvoaOfferSetResponse;
+import net.ivoa.calycopis.openapi.spring.model.IvoaOfferSetResponse.ResultEnum;
 
 @Slf4j
 @Entity

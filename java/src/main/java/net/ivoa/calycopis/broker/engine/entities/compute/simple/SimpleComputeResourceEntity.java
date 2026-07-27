@@ -50,9 +50,9 @@ import net.ivoa.calycopis.broker.engine.functional.platform.Platform;
 import net.ivoa.calycopis.broker.engine.functional.processing.ProcessingAction;
 import net.ivoa.calycopis.broker.engine.functional.processing.component.ComponentProcessingRequest;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleComputeCores;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleComputeMemory;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleComputeResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleComputeCores;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleComputeMemory;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleComputeResource;
 
 /**
  * A Simple compute resource.

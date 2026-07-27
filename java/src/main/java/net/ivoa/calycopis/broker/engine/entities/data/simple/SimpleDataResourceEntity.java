@@ -43,8 +43,8 @@ import net.ivoa.calycopis.broker.engine.entities.data.AbstractDataResourceValida
 import net.ivoa.calycopis.broker.engine.entities.session.simple.SimpleExecutionSessionEntity;
 import net.ivoa.calycopis.broker.engine.entities.storage.AbstractStorageResourceEntity;
 import net.ivoa.calycopis.broker.engine.util.URIBuilder;
-import net.ivoa.calycopis.schema.spring.model.IvoaAbstractDataResource;
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaAbstractDataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleDataResource;
 
 /**
  * A SimpleDataResourceEntity implementation.

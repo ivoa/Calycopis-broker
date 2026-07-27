@@ -51,7 +51,7 @@ import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourc
 import net.ivoa.calycopis.broker.engine.entities.data.amazon.AmazonS3DataResourceValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.data.mock.MockDataStorageLinker;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.schema.spring.model.IvoaS3DataResource;
+import net.ivoa.calycopis.openapi.spring.model.IvoaS3DataResource;
 
 /**
  * 

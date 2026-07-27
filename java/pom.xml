@@ -40,12 +40,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<version>4.1.0</version>
+		<relativePath/>
 	</parent>
 	<groupId>net.ivoa.calycopis</groupId>
 	<artifactId>calycopis-broker</artifactId>
-	<version>1.0.6-SNAPSHOT</version>
+	<version>1.0.7-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Calycopis broker webapp</name>
 	<description>IVOA ExecutionBroker Spring Boot implementation</description>
@@ -103,8 +103,8 @@
             +-->
         <dependency>
             <groupId>net.ivoa.calycopis</groupId>
-            <artifactId>calycopis-schema-spring</artifactId>
-            <version>1.0.6-SNAPSHOT</version>
+            <artifactId>calycopis-openapi-spring</artifactId>
+            <version>1.0.7-SNAPSHOT</version>
         </dependency>
 
         <!--+
@@ -128,16 +128,12 @@
         <!--+
             | Embedded H2 database.
             | https://www.baeldung.com/spring-boot-h2-database
-            +-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
+            +-->
 
         <!--+
             | ThreeTen time classes.
@@ -255,6 +251,10 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
 
         <!--+
             | Jackson annotations.
@@ -312,15 +312,11 @@
 	</dependencies>
 
 	<build>
-
 		<plugins>
-
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-
 		</plugins>
 	</build>
-
 </project>

@@ -45,11 +45,11 @@ import net.ivoa.calycopis.broker.engine.functional.platform.CostsAndMetricsSetti
 
 /**
  * Spring-specific implementation of CostsAndMetricsSettings, bound from
- * the broker.costs-and-metrics section of the application configuration.
+ * the calycopis.broker.costs-and-metrics section of the application configuration.
  *
  */
 @Component
-@ConfigurationProperties(prefix = "broker.costs-and-metrics")
+@ConfigurationProperties(prefix = "calycopis.broker.costs-and-metrics")
 public class CostsAndMetricsSettingsImpl
 implements CostsAndMetricsSettings
     {

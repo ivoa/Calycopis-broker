@@ -61,9 +61,7 @@ server:
             enabled: true
     # https://www.baeldung.com/spring-boot-context-path
     servlet:
-        #context-path: /baeldung
         context-path: /
-
 
 # https://howtodoinjava.com/spring-boot/configure-logging-application-yml/
 logging:
@@ -78,13 +76,13 @@ logging:
 
 spring:
     application:
-        name: Ambleck
+        name: Calycopis-broker
 
     config:
         import:
-          - file:/etc/calycopis/database.yaml
-          - file:/etc/calycopis/admin.yaml
-          - optional:file:/etc/calycopis/platform.yaml
+          - file:/etc/calycopis/config/database.yaml
+          - file:/etc/calycopis/config/admin.yaml
+          - optional:file:/etc/calycopis/config/platform.yaml
 
     # https://stackoverflow.com/a/55679297
     mvc:
@@ -94,80 +92,58 @@ spring:
     profiles:
         active: "@calycopis-platform@"
 
-    # https://www.baeldung.com/spring-boot-h2-database
-    # https://stackoverflow.com/a/38047021
-    datasource:
-#       url: jdbc:h2:mem:testdb
-#       username: sa
-#       password: password
-#       driverClassName: org.h2.Driver
-
+#   datasource:
 #       url: jdbc:postgresql://postgresql:5432/calycopis
 #       username: albert
 #       password: UVai0wie-wa9Eed4g
 #       driverClassName: org.postgresql.Driver
 
-#       initialize: true
     jpa:
-        # https://medium.com/@hweemyoung/when-hibernate-dialect-not-working-d2c1eca549e3
-        #database-platform: org.hibernate.dialect.H2Dialect
         hibernate:
           ddl-auto: create
 
-    h2:
-        console:
-            enabled: true
-            settings:
-                web-allow-others: true
-
-#   security:
-#       oauth2:
-#           resourceserver:
-#               jwt:
-#                   issuer-uri: ${OIDC_ISSUER_URI:}
-
 calycopis:
-  security:
-    public-read: true
+  broker:
 
-broker:
-  docker:
-    helper-image: "alpine:3"
-  costs-and-metrics:
-    session:
-      costs:
-        - type: "urn:ivoa:calycopis:cost:monetary"
-          description: "Estimated monetary cost"
-          min: 0.10
-          max: 0.50
-        - type: "urn:ivoa:calycopis:cost:energy"
-          description: "Estimated energy use in kWh"
-          min: 0.02
-          max: 0.10
-        - type: "urn:ivoa:calycopis:cost:carbon"
-          description: "Estimated carbon emissions in gCO2"
-          min: 5.0
-          max: 25.0
-      metrics:
-        - type: "urn:ivoa:calycopis:metric:compute-performance"
-          description: "Compute performance benchmark"
-          min: 150.0
-          max: 200.0
-    compute:
-      costs:
-        - type: "urn:ivoa:calycopis:cost:monetary"
-          description: "Compute cost per hour"
-          min: 0.05
-          max: 0.25
-      metrics:
-        - type: "urn:ivoa:calycopis:metric:compute-performance"
-          description: "CPU benchmark score"
-          min: 150.0
-          max: 200.0
-        - type: "urn:ivoa:calycopis:metric:io-throughput"
-          description: "IO throughput in MB/s"
-          min: 100.0
-          max: 500.0
+    docker:
+      helper-image: "alpine:3"
+
+    costs-and-metrics:
+      session:
+        costs:
+          - type: "urn:ivoa:calycopis:cost:monetary"
+            description: "Estimated monetary cost"
+            min: 0.10
+            max: 0.50
+          - type: "urn:ivoa:calycopis:cost:energy"
+            description: "Estimated energy use in kWh"
+            min: 0.02
+            max: 0.10
+          - type: "urn:ivoa:calycopis:cost:carbon"
+            description: "Estimated carbon emissions in gCO2"
+            min: 5.0
+            max: 25.0
+        metrics:
+          - type: "urn:ivoa:calycopis:metric:compute-performance"
+            description: "Compute performance benchmark"
+            min: 150.0
+            max: 200.0
+      compute:
+        costs:
+          - type: "urn:ivoa:calycopis:cost:monetary"
+            description: "Compute cost per hour"
+            min: 0.05
+            max: 0.25
+        metrics:
+          - type: "urn:ivoa:calycopis:metric:compute-performance"
+            description: "CPU benchmark score"
+            min: 150.0
+            max: 200.0
+          - type: "urn:ivoa:calycopis:metric:io-throughput"
+            description: "IO throughput in MB/s"
+            min: 100.0
+            max: 500.0
+
   # Delay and loop count for the MockXyzResourceEntity classes
   mock-entities:
     actions:

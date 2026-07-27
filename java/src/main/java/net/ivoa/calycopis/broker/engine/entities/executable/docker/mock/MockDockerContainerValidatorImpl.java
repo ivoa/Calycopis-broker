@@ -29,7 +29,7 @@ import java.util.Map;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerEntityFactory;
 import net.ivoa.calycopis.broker.engine.entities.executable.docker.DockerContainerValidatorImpl;
 import net.ivoa.calycopis.broker.engine.entities.offerset.OfferSetRequestParserContext;
-import net.ivoa.calycopis.schema.spring.model.IvoaDockerContainer;
+import net.ivoa.calycopis.openapi.spring.model.IvoaDockerContainer;
 
 /**
  * 

@@ -39,7 +39,7 @@ import java.net.URI;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
-import net.ivoa.calycopis.schema.spring.model.IvoaSimpleMinMaxFloatMetric;
+import net.ivoa.calycopis.openapi.spring.model.IvoaSimpleMinMaxFloatMetric;
 
 /**
  * Adapter that wraps a SimpleMinMaxFloatMetricEntity as an IvoaSimpleMinMaxFloatMetric
