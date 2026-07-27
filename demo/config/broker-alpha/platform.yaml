@@ -36,39 +36,40 @@
 # lowest energy use, lowest carbon emissions.
 #
 
-broker:
-  costs-and-metrics:
-    session:
-      costs:
-        - type: "urn:ivoa:calycopis:cost:monetary"
-          description: "Estimated monetary cost"
-          min: 0.30
-          max: 0.80
-        - type: "urn:ivoa:calycopis:cost:energy"
-          description: "Estimated energy use in kWh"
-          min: 0.01
-          max: 0.03
-        - type: "urn:ivoa:calycopis:cost:carbon"
-          description: "Estimated carbon emissions in gCO2"
-          min: 2.0
-          max: 8.0
-      metrics:
-        - type: "urn:ivoa:calycopis:metric:compute-performance"
-          description: "Compute performance benchmark"
-          min: 250.0
-          max: 300.0
-    compute:
-      costs:
-        - type: "urn:ivoa:calycopis:cost:monetary"
-          description: "Compute cost per hour"
-          min: 0.15
-          max: 0.40
-      metrics:
-        - type: "urn:ivoa:calycopis:metric:compute-performance"
-          description: "CPU benchmark score"
-          min: 250.0
-          max: 300.0
-        - type: "urn:ivoa:calycopis:metric:io-throughput"
-          description: "IO throughput in MB/s"
-          min: 800.0
-          max: 1200.0
+calycopis:
+  broker:
+    costs-and-metrics:
+      session:
+        costs:
+          - type: "urn:ivoa:calycopis:cost:monetary"
+            description: "Estimated monetary cost"
+            min: 0.30
+            max: 0.80
+          - type: "urn:ivoa:calycopis:cost:energy"
+            description: "Estimated energy use in kWh"
+            min: 0.01
+            max: 0.03
+          - type: "urn:ivoa:calycopis:cost:carbon"
+            description: "Estimated carbon emissions in gCO2"
+            min: 2.0
+            max: 8.0
+        metrics:
+          - type: "urn:ivoa:calycopis:metric:compute-performance"
+            description: "Compute performance benchmark"
+            min: 250.0
+            max: 300.0
+      compute:
+        costs:
+          - type: "urn:ivoa:calycopis:cost:monetary"
+            description: "Compute cost per hour"
+            min: 0.15
+            max: 0.40
+        metrics:
+          - type: "urn:ivoa:calycopis:metric:compute-performance"
+            description: "CPU benchmark score"
+            min: 250.0
+            max: 300.0
+          - type: "urn:ivoa:calycopis:metric:io-throughput"
+            description: "IO throughput in MB/s"
+            min: 800.0
+            max: 1200.0

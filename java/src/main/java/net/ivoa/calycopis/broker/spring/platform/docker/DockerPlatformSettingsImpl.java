@@ -52,11 +52,11 @@ import net.ivoa.calycopis.broker.engine.functional.platform.docker.DockerPlatfor
 
 /**
  * Spring-specific implementation of DockerPlatformSettings, bound from
- * the broker.docker section of the application configuration.
+ * the calycopis.broker.docker section of the application configuration.
  *
  */
 @Component
-@ConfigurationProperties(prefix = "broker.docker")
+@ConfigurationProperties(prefix = "calycopis.broker.docker")
 public class DockerPlatformSettingsImpl
 implements DockerPlatformSettings
     {
